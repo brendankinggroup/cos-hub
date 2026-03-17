@@ -1482,32 +1482,56 @@ function showFileStatus(msg,color){
 
 // ── EXPORT FUNCTIONS ──────────────────────────────────────────────────────
 function getDealSummaryData(){
-  // Pull ALL values directly from calcMAO's stored globals — single source of truth
-  const mao=window._c_mao||0;
-  const fee=window._c_fee||+(document.getElementById('c-fee')||{value:13000}).value||13000;
-  const arv=window._c_arv||+(document.getElementById('c-arv')||{value:0}).value||0;
-  const repairs=window._c_repairs||0;
-  const disposition=window._c_disposition||(mao+fee);
-  const allin=window._c_allin||(mao+fee+repairs);
-  const eq=window._c_eq!=null?window._c_eq:(arv-allin);
-  const roi=window._c_roi||0;
-  const sqft=window._c_sqft||+(document.getElementById('c-sqft')||{value:0}).value||0;
-  const psf=window._c_psf||0;
-  const pct=window._c_pct?Math.round(window._c_pct*100):+(document.getElementById('c-pct')||{value:70}).value||70;
-  const score=window._c_score||0;
-  const maoLo=window._c_maoLo||Math.round(mao*.95);
-  const maoHi=window._c_maoHi||Math.round(mao*1.03);
+  // Helper: parse a dollar string like "$287,000" or "$287K" back to a number
+  function parseFm(s){
+    if(!s||s==='—')return 0;
+    s=String(s).replace(/[^0-9.\-KkMm]/g,'');
+    if(/[Kk]$/.test(s))return parseFloat(s)*1000;
+    if(/[Mm]$/.test(s))return parseFloat(s)*1000000;
+    return parseFloat(s)||0;
+  }
+  // Helper: read text from a DOM element
+  function txt(id){const el=document.getElementById(id);return el?el.textContent.trim():'';}
+  // Helper: read input value as number
+  function val(id,fallback){return +(document.getElementById(id)||{value:fallback}).value||fallback;}
 
-  // DOM reads for text fields & selections
+  // ── Read RAW INPUTS (what the user typed) ──
+  const arv=val('c-arv',0);
+  const sqft=val('c-sqft',0);
+  const psf=val('c-psf',25);
+  const fee=val('c-fee',13000);
+  const pct=val('c-pct',70);
+  const closeDays=val('c-close-days',14);
+
+  // ── Read COMPUTED OUTPUTS directly from the DOM elements calcMAO() wrote to ──
+  // These are the actual displayed values the user sees on screen
+  const mao=parseFm(txt('c-mao'));
+  const maoLo=parseFm(txt('c-mao-lo'));
+  const maoHi=parseFm(txt('c-mao-hi'));
+  const disposition=parseFm(txt('c-disposition'));
+  const allin=parseFm(txt('c-allin'));
+  const eq=parseFm(txt('c-equity'));
+  const roiText=txt('c-roi');
+  const roi=parseFloat(roiText)||0;
+  const score=+(txt('c-score-num'))||0;
+
+  // Repairs: read active total from DOM, fallback to recalculate from inputs
+  const repTotalText=txt('c-rep-total');
+  let repairs=parseFm(repTotalText);
+  if(!repairs){
+    const repOverride=val('c-rep-override',0);
+    const flat=['c-r1','c-r2','c-r3','c-r4'].reduce((s,id)=>s+val(id,0),0);
+    repairs=repOverride>0?repOverride:(sqft*psf+flat);
+  }
+
+  // ── Read TEXT FIELDS ──
   const sellerName=(document.getElementById('c-seller-name')||{value:''}).value.trim()||'[Seller Name]';
   const propAddr=(document.getElementById('c-prop-addr')||{value:''}).value.trim()||'[Property Address]';
-  const closeDays=+(document.getElementById('c-close-days')||{value:14}).value||14;
   const distress=(document.getElementById('c-distress')||{value:''}).value||'';
   const hood=(document.getElementById('c-hood')||{value:''}).value||'';
   const scriptEl=document.getElementById('c-verbal-script');
   const script=scriptEl?scriptEl.textContent:'';
 
-  // Score label from the actual score number
   const scoreLbl=score>=80?'FIRE DEAL':score>=60?'SOLID DEAL':score>=40?'WORTH A LOOK':'PASS';
 
   return{mao,fee,arv,repairs,disposition,allin,eq,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script};
