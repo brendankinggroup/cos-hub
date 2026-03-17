@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Submit Your Property — Cash Offer Specialist</title>
+    <meta name="description" content="Submit your Las Vegas property details and photos for a fast cash offer within 24 hours.">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'DM Sans',sans-serif;background:#06080f;color:#e0e0e0;line-height:1.6;-webkit-font-smoothing:antialiased}
+        :root{--bg:#06080f;--bg2:#0b0e18;--bg3:#141826;--border:#1a2030;--blue:#4f8ef7;--green:#0ecf8a;--red:#f04060;--orange:#f7a84f;--text:#e0e0e0;--muted:#a0a0a0;--heading:#fff}
+
+        /* === LAYOUT === */
+        .app{max-width:600px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+        .app-header{padding:16px 20px;text-align:center;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(6,8,15,0.95);backdrop-filter:blur(10px);z-index:50}
+        .app-logo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--blue)}
+        .app-body{flex:1;padding:20px}
+        .app-footer{padding:20px;text-align:center;border-top:1px solid var(--border);font-size:12px;color:#505060}
+        .app-footer a{color:var(--blue);text-decoration:none}
+
+        /* === PROGRESS BAR === */
+        .progress-wrap{padding:12px 20px;border-bottom:1px solid var(--border);background:var(--bg)}
+        .progress-info{display:flex;justify-content:space-between;margin-bottom:8px;font-size:12px;color:var(--muted)}
+        .progress-step{font-weight:600;color:var(--green)}
+        .progress-bar{height:4px;background:var(--border);border-radius:4px;overflow:hidden}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:4px;transition:width 0.4s ease}
+
+        /* === STEP CONTAINER === */
+        .step{display:none;animation:fadeIn 0.3s ease}
+        .step.active{display:block}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        .step-title{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:700;color:var(--heading);margin-bottom:6px}
+        .step-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+
+        /* === FORM ELEMENTS === */
+        .field{margin-bottom:16px}
+        .field label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px}
+        .field .req{color:var(--red);margin-left:2px}
+        .field input,.field select,.field textarea{
+            width:100%;padding:12px 14px;border-radius:8px;border:1px solid var(--border);
+            background:var(--bg2);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;
+            transition:border 0.3s;-webkit-appearance:none
+        }
+        .field textarea{resize:vertical;min-height:80px}
+        .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(79,142,247,0.12)}
+        .field input.err,.field select.err{border-color:var(--red)!important}
+        .field .err-msg{color:var(--red);font-size:12px;margin-top:3px;display:none}
+        .field .err-msg.show{display:block}
+        .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+        /* === BUTTONS === */
+        .btn-row{display:flex;gap:10px;margin-top:28px}
+        .btn{
+            flex:1;padding:14px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;
+            font-size:16px;font-weight:700;cursor:pointer;text-transform:uppercase;
+            letter-spacing:0.5px;transition:all 0.3s;border:none;text-align:center
+        }
+        .btn-next{background:var(--green);color:var(--bg)}
+        .btn-next:hover{filter:brightness(1.1);transform:translateY(-1px)}
+        .btn-back{background:transparent;color:var(--muted);border:1px solid var(--border)}
+        .btn-back:hover{border-color:var(--blue);color:var(--blue)}
+        .btn-submit{background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;font-size:18px;padding:16px}
+        .btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(14,207,138,0.25)}
+
+        /* === CONDITION RATER === */
+        .condition-grid{display:flex;flex-direction:column;gap:12px}
+        .cond-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
+        .cond-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .cond-label{font-weight:600;font-size:14px;color:var(--heading)}
+        .cond-val{font-size:12px;font-weight:600;color:var(--muted);min-width:80px;text-align:right}
+        .cond-stars{display:flex;gap:6px}
+        .cond-star{
+            width:36px;height:36px;border-radius:8px;border:1px solid var(--border);
+            background:var(--bg);display:flex;align-items:center;justify-content:center;
+            cursor:pointer;font-size:16px;transition:all 0.2s;color:#404050
+        }
+        .cond-star.active{background:var(--green);border-color:var(--green);color:var(--bg)}
+        .cond-star.bad{background:var(--red);border-color:var(--red);color:#fff}
+        .cond-star.mid{background:var(--orange);border-color:var(--orange);color:var(--bg)}
+        .cond-photo{margin-top:8px}
+        .cond-photo-btn{
+            display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:6px;
+            border:1px dashed var(--border);background:transparent;color:var(--muted);font-size:12px;
+            cursor:pointer;transition:all 0.3s;font-family:'DM Sans',sans-serif
+        }
+        .cond-photo-btn:hover{border-color:var(--blue);color:var(--blue)}
+        .cond-photo-btn.has-photo{border-color:var(--green);color:var(--green);border-style:solid}
+        .cond-photo-preview{width:48px;height:48px;border-radius:6px;object-fit:cover;margin-top:6px;display:none}
+
+        /* === PHOTO UPLOAD === */
+        .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+        .photo-slot{
+            aspect-ratio:1;border:2px dashed var(--border);border-radius:10px;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;
+            cursor:pointer;transition:all 0.3s;overflow:hidden;position:relative;
+            background:var(--bg2)
+        }
+        .photo-slot:hover{border-color:var(--blue)}
+        .photo-slot.filled{border:2px solid var(--green);border-style:solid}
+        .photo-slot-icon{font-size:24px;color:var(--muted);margin-bottom:4px}
+        .photo-slot-label{font-size:10px;color:var(--muted);text-align:center;padding:0 4px}
+        .photo-slot img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover}
+        .photo-slot .remove-photo{
+            position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+            background:var(--red);color:#fff;border:none;font-size:14px;cursor:pointer;
+            display:none;align-items:center;justify-content:center;z-index:2
+        }
+        .photo-slot.filled .remove-photo{display:flex}
+        .photo-count{text-align:center;margin-top:12px;font-size:13px;color:var(--muted)}
+        .photo-count span{color:var(--green);font-weight:700}
+        .bulk-upload{
+            margin-top:16px;padding:20px;border:2px dashed var(--border);border-radius:10px;
+            text-align:center;cursor:pointer;transition:all 0.3s
+        }
+        .bulk-upload:hover{border-color:var(--blue)}
+        .bulk-upload-icon{font-size:32px;margin-bottom:8px}
+        .bulk-upload-text{font-size:14px;color:var(--muted)}
+        .bulk-upload-sub{font-size:12px;color:#505060;margin-top:4px}
+
+        /* === TOGGLE / CHECKBOX === */
+        .toggle-group{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+        .toggle-item{
+            display:flex;align-items:center;justify-content:space-between;
+            padding:12px 16px;background:var(--bg2);border:1px solid var(--border);
+            border-radius:8px;cursor:pointer;transition:all 0.3s
+        }
+        .toggle-item:hover{border-color:var(--blue)}
+        .toggle-item.selected{border-color:var(--green);background:rgba(14,207,138,0.05)}
+        .toggle-text{font-size:14px;font-weight:500}
+        .toggle-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;transition:all 0.3s;font-size:14px;color:transparent}
+        .toggle-item.selected .toggle-check{border-color:var(--green);background:var(--green);color:var(--bg)}
+
+        /* === OPTION PILLS === */
+        .pill-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+        .pill{
+            padding:10px 18px;border-radius:20px;border:1px solid var(--border);
+            background:var(--bg2);color:var(--muted);font-size:13px;font-weight:600;
+            cursor:pointer;transition:all 0.3s
+        }
+        .pill:hover{border-color:var(--blue);color:var(--blue)}
+        .pill.active{border-color:var(--green);background:rgba(14,207,138,0.1);color:var(--green)}
+
+        /* === RESULTS === */
+        .results{display:none;text-align:center;padding:30px 0}
+        .results.show{display:block;animation:fadeIn 0.5s ease}
+        .results-icon{font-size:64px;margin-bottom:20px}
+        .results-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:700;color:var(--heading);margin-bottom:10px}
+        .results-sub{font-size:14px;color:var(--muted);margin-bottom:30px;max-width:400px;margin-left:auto;margin-right:auto}
+        .results-offer{
+            background:linear-gradient(135deg,var(--bg2),var(--bg3));border:2px solid var(--green);
+            border-radius:12px;padding:30px;margin:20px 0
+        }
+        .results-offer-label{font-size:13px;color:var(--green);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+        .results-offer-range{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:700;color:var(--green)}
+        .results-offer-note{font-size:12px;color:var(--muted);margin-top:8px}
+        .results-timeline{
+            display:flex;gap:16px;justify-content:center;margin:24px 0;flex-wrap:wrap
+        }
+        .results-timeline-item{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500}
+        .results-timeline-icon{color:var(--green)}
+        .results-call{
+            display:inline-block;background:linear-gradient(135deg,var(--red),var(--orange));
+            color:#fff;padding:16px 40px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;
+            font-size:18px;font-weight:700;text-decoration:none;text-transform:uppercase;margin-top:10px;
+            transition:all 0.3s
+        }
+        .results-call:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(240,64,96,0.3)}
+        .results-or{font-size:13px;color:#505060;margin-top:12px}
+
+        /* === REPAIR ESTIMATE PREVIEW === */
+        .repair-preview{
+            background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+            padding:16px;margin-top:20px
+        }
+        .repair-preview-title{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;color:var(--heading);margin-bottom:10px}
+        .repair-line{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid rgba(26,32,48,0.5)}
+        .repair-line:last-child{border:none;font-weight:700;color:var(--green);padding-top:10px;margin-top:4px;border-top:1px solid var(--border)}
+        .repair-line-label{color:var(--muted)}
+        .repair-line-val{color:var(--text)}
+
+        /* === AUTOSAVE INDICATOR === */
+        .autosave{position:fixed;bottom:16px;right:16px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:11px;color:var(--green);opacity:0;transition:opacity 0.3s;z-index:100}
+        .autosave.show{opacity:1}
+
+        /* === RESPONSIVE === */
+        @media(max-width:480px){
+            .photo-grid{grid-template-columns:repeat(2,1fr)}
+            .row{grid-template-columns:1fr}
+            .cond-star{width:32px;height:32px;font-size:14px}
+            .results-offer-range{font-size:28px}
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <!-- HEADER -->
+    <div class="app-header">
+        <div class="app-logo">CASH OFFER SPECIALIST</div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="progress-wrap">
+        <div class="progress-info">
+            <span class="progress-step" id="progLabel">Step 1 of 5</span>
+            <span id="progTime">~4 min remaining</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:20%"></div></div>
+    </div>
+
+    <!-- BODY -->
+    <div class="app-body">
+
+        <!-- ========== STEP 1: PROPERTY BASICS ========== -->
+        <div class="step active" id="step1">
+            <div class="step-title">Property Details</div>
+            <div class="step-sub">Start with the basics about your property.</div>
+
+            <div class="field">
+                <label>Property Address<span class="req">*</span></label>
+                <input type="text" id="f-address" placeholder="123 Main Street" autocomplete="street-address">
+                <div class="err-msg" id="e-address">Please enter the property address</div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label>City</label>
+                    <input type="text" id="f-city" value="Las Vegas" readonly>
+                </div>
+                <div class="field">
+                    <label>Zip Code<span class="req">*</span></label>
+                    <input type="text" id="f-zip" placeholder="89123" maxlength="5" inputmode="numeric">
+                    <div class="err-msg" id="e-zip">Please enter zip code</div>
+                </div>
+            </div>
+            <div class="field">
+                <label>Property Type<span class="req">*</span></label>
+                <div class="pill-group" id="f-proptype">
+                    <div class="pill" data-val="Single Family">Single Family</div>
+                    <div class="pill" data-val="Condo">Condo</div>
+                    <div class="pill" data-val="Townhouse">Townhouse</div>
+                    <div class="pill" data-val="Mobile Home">Mobile Home</div>
+                    <div class="pill" data-val="Multi-Family">Multi-Family</div>
+                </div>
+                <div class="err-msg" id="e-proptype">Please select property type</div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label>Bedrooms<span class="req">*</span></label>
+                    <select id="f-beds"><option value="">Select</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option value="6+">6+</option></select>
+                    <div class="err-msg" id="e-beds">Required</div>
+                </div>
+                <div class="field">
+                    <label>Bathrooms<span class="req">*</span></label>
+                    <select id="f-baths"><option value="">Select</option><option>1</option><option>1.5</option><option>2</option><option>2.5</option><option>3</option><option>3.5</option><option>4</option><option value="5+">5+</option></select>
+                    <div class="err-msg" id="e-baths">Required</div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label>Approx. Sq Ft<span class="req">*</span></label>
+                    <input type="number" id="f-sqft" placeholder="2000" inputmode="numeric">
+                    <div class="err-msg" id="e-sqft">Required</div>
+                </div>
+                <div class="field">
+                    <label>Year Built</label>
+                    <input type="number" id="f-year" placeholder="1998" inputmode="numeric">
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label>Lot Size (sq ft)</label>
+                    <input type="number" id="f-lot" placeholder="6000" inputmode="numeric">
+                </div>
+                <div class="field">
+                    <label>HOA?</label>
+                    <select id="f-hoa"><option value="">Select</option><option value="No">No</option><option value="Yes">Yes</option><option value="Not Sure">Not Sure</option></select>
+                </div>
+            </div>
+            <div class="field">
+                <label>Pool?</label>
+                <select id="f-pool"><option value="">Select</option><option value="No">No</option><option value="Yes - Working">Yes — Working</option><option value="Yes - Needs Repair">Yes — Needs Repair</option></select>
+            </div>
+
+            <div class="btn-row"><div class="btn btn-next" onclick="goStep(2)">Next →</div></div>
+        </div>
+
+        <!-- ========== STEP 2: CONDITION ========== -->
+        <div class="step" id="step2">
+            <div class="step-title">Property Condition</div>
+            <div class="step-sub">Rate each area from 1 (needs replacement) to 5 (great shape). Add a photo if you can — it helps us give a more accurate offer.</div>
+
+            <div class="condition-grid" id="condGrid"></div>
+
+            <div style="margin-top:20px">
+                <div class="field">
+                    <label>Solar Panels?</label>
+                    <select id="f-solar"><option value="">Select</option><option value="None">None</option><option value="Owned">Owned (paid off)</option><option value="Leased">Leased</option><option value="Not Sure">Not Sure</option></select>
+                </div>
+                <div class="field">
+                    <label>Any unpermitted additions or work?</label>
+                    <select id="f-unpermit"><option value="">Select</option><option value="No">No</option><option value="Yes">Yes</option><option value="Not Sure">Not Sure</option></select>
+                </div>
+                <div class="field">
+                    <label>Any code enforcement issues or liens?</label>
+                    <select id="f-liens"><option value="">Select</option><option value="No">No</option><option value="Yes">Yes</option><option value="Not Sure">Not Sure</option></select>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <div class="btn btn-back" onclick="goStep(1)">← Back</div>
+                <div class="btn btn-next" onclick="goStep(3)">Next →</div>
+            </div>
+        </div>
+
+        <!-- ========== STEP 3: PHOTOS ========== -->
+        <div class="step" id="step3">
+            <div class="step-title">Property Photos</div>
+            <div class="step-sub">Photos help us make a stronger offer faster. Snap a few with your phone — the more the better.</div>
+
+            <div class="photo-grid" id="photoGrid"></div>
+            <div class="photo-count"><span id="photoCount">0</span> of 15 photos uploaded</div>
+
+            <div class="bulk-upload" onclick="document.getElementById('bulkInput').click()">
+                <div class="bulk-upload-icon">📸</div>
+                <div class="bulk-upload-text">Tap to add more photos</div>
+                <div class="bulk-upload-sub">Take photos or choose from your gallery</div>
+            </div>
+            <input type="file" id="bulkInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handleBulkPhotos(this)">
+
+            <div class="btn-row">
+                <div class="btn btn-back" onclick="goStep(2)">← Back</div>
+                <div class="btn btn-next" onclick="goStep(4)">Next →</div>
+            </div>
+        </div>
+
+        <!-- ========== STEP 4: FINANCIALS ========== -->
+        <div class="step" id="step4">
+            <div class="step-title">Your Situation</div>
+            <div class="step-sub">This helps us tailor the best offer for you. All information is confidential.</div>
+
+            <div class="field">
+                <label>Approximate Mortgage Balance</label>
+                <input type="text" id="f-mortgage" placeholder="$250,000" inputmode="numeric" oninput="formatMoney(this)">
+            </div>
+            <div class="field">
+                <label>What are you hoping to get for the property?</label>
+                <input type="text" id="f-asking" placeholder="$400,000 or 'Make me an offer'" oninput="formatMoney(this)">
+            </div>
+            <div class="field">
+                <label>Why are you considering selling?<span class="req">*</span></label>
+                <select id="f-reason">
+                    <option value="">Select reason</option>
+                    <option>Relocating</option>
+                    <option>Inherited Property</option>
+                    <option>Divorce</option>
+                    <option>Facing Foreclosure</option>
+                    <option>Tired Landlord</option>
+                    <option>Behind on Payments</option>
+                    <option>Downsizing</option>
+                    <option>Vacant Property</option>
+                    <option>Needs Too Many Repairs</option>
+                    <option>Job Loss</option>
+                    <option>Retirement</option>
+                    <option>Just Want to Sell</option>
+                    <option>Other</option>
+                </select>
+                <div class="err-msg" id="e-reason">Please select a reason</div>
+            </div>
+            <div class="field">
+                <label>How soon do you need to sell?<span class="req">*</span></label>
+                <div class="pill-group" id="f-timeline">
+                    <div class="pill" data-val="ASAP">ASAP</div>
+                    <div class="pill" data-val="1-2 Weeks">1–2 Weeks</div>
+                    <div class="pill" data-val="1 Month">1 Month</div>
+                    <div class="pill" data-val="2-3 Months">2–3 Months</div>
+                    <div class="pill" data-val="No Rush">No Rush</div>
+                </div>
+                <div class="err-msg" id="e-timeline">Please select a timeline</div>
+            </div>
+            <div class="field">
+                <label>Is anyone currently living in the property?</label>
+                <select id="f-occupancy">
+                    <option value="">Select</option>
+                    <option>Yes — I live here</option>
+                    <option>Yes — Tenant</option>
+                    <option>No — Vacant</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Anything else we should know?</label>
+                <textarea id="f-notes" placeholder="Any other details that might help us make a better offer..."></textarea>
+            </div>
+
+            <div class="btn-row">
+                <div class="btn btn-back" onclick="goStep(3)">← Back</div>
+                <div class="btn btn-next" onclick="goStep(5)">Next →</div>
+            </div>
+        </div>
+
+        <!-- ========== STEP 5: CONTACT ========== -->
+        <div class="step" id="step5">
+            <div class="step-title">Almost Done!</div>
+            <div class="step-sub">Tell us how to reach you and we'll have an offer ready fast.</div>
+
+            <div class="field">
+                <label>Your Name<span class="req">*</span></label>
+                <input type="text" id="f-name" placeholder="John Smith" autocomplete="name">
+                <div class="err-msg" id="e-name">Please enter your name</div>
+            </div>
+            <div class="field">
+                <label>Phone Number<span class="req">*</span></label>
+                <input type="tel" id="f-phone" placeholder="(702) 555-1234" autocomplete="tel">
+                <div class="err-msg" id="e-phone">Please enter your phone number</div>
+            </div>
+            <div class="field">
+                <label>Email (optional)</label>
+                <input type="email" id="f-email" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <div class="field">
+                <label>Preferred contact method</label>
+                <div class="pill-group" id="f-contactpref">
+                    <div class="pill active" data-val="Text">Text</div>
+                    <div class="pill" data-val="Call">Call</div>
+                    <div class="pill" data-val="Email">Email</div>
+                </div>
+            </div>
+
+            <div id="repairPreview"></div>
+
+            <div class="btn-row">
+                <div class="btn btn-back" onclick="goStep(4)">← Back</div>
+                <div class="btn btn-submit" onclick="submitForm()">Submit for My Cash Offer</div>
+            </div>
+        </div>
+
+        <!-- ========== RESULTS ========== -->
+        <div class="results" id="results">
+            <div class="results-icon">🎉</div>
+            <div class="results-title">We Got Everything!</div>
+            <div class="results-sub">Thank you for submitting your property details. Our team is reviewing your information right now.</div>
+
+            <div class="results-offer">
+                <div class="results-offer-label">Your Preliminary Offer Range</div>
+                <div class="results-offer-range" id="resRange">$0 — $0</div>
+                <div class="results-offer-note">Final offer may be adjusted after our review</div>
+            </div>
+
+            <div class="results-timeline">
+                <div class="results-timeline-item"><span class="results-timeline-icon">✓</span> No obligation</div>
+                <div class="results-timeline-item"><span class="results-timeline-icon">✓</span> Close in 7–14 days</div>
+                <div class="results-timeline-item"><span class="results-timeline-icon">✓</span> $0 fees</div>
+            </div>
+
+            <div style="font-size:14px;color:var(--muted);margin-bottom:20px">We'll contact you within <strong style="color:var(--green)">2–4 hours</strong> with your offer</div>
+
+            <a href="tel:7252261303" class="results-call">CALL NOW: (725) 226-1303</a>
+            <div class="results-or">Can't wait? Give us a call anytime.</div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="app-footer">
+        Cash Offer Specialist | Las Vegas, NV<br>
+        <a href="tel:7252261303">(725) 226-1303</a> · <a href="mailto:info@cashofferspecialist.com">info@cashofferspecialist.com</a>
+    </div>
+</div>
+
+<!-- AUTOSAVE TOAST -->
+<div class="autosave" id="autosave">✓ Progress saved</div>
+
+<script>
+// ============================================
+// CONFIG
+// ============================================
+const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY_HERE';
+const CLOUDINARY_CLOUD = 'YOUR_CLOUD_NAME'; // Sign up free at cloudinary.com
+const CLOUDINARY_PRESET = 'YOUR_UPLOAD_PRESET'; // Create an unsigned upload preset
+
+// ============================================
+// CONDITION AREAS
+// ============================================
+const AREAS = [
+    {id:'kitchen', label:'Kitchen', icon:'🍳'},
+    {id:'master_bath', label:'Primary Bathroom', icon:'🚿'},
+    {id:'sec_bath', label:'Other Bathrooms', icon:'🛁'},
+    {id:'flooring', label:'Flooring', icon:'🏠'},
+    {id:'roof', label:'Roof', icon:'🏗️'},
+    {id:'hvac', label:'HVAC / Air Conditioning', icon:'❄️'},
+    {id:'water_heater', label:'Water Heater', icon:'🔥'},
+    {id:'electrical', label:'Electrical', icon:'⚡'},
+    {id:'plumbing', label:'Plumbing', icon:'🔧'},
+    {id:'foundation', label:'Foundation', icon:'🧱'},
+    {id:'windows', label:'Windows & Doors', icon:'🪟'},
+    {id:'exterior', label:'Exterior / Siding', icon:'🏡'},
+    {id:'paint', label:'Paint & Drywall', icon:'🎨'},
+    {id:'landscape', label:'Yard / Landscaping', icon:'🌵'}
+];
+
+const RATING_LABELS = ['','Needs Replacement','Poor','Fair','Good','Great'];
+const REPAIR_COSTS = {
+    kitchen:     [0, 25000, 18000, 10000, 4000, 0],
+    master_bath: [0, 15000, 10000, 6000, 2000, 0],
+    sec_bath:    [0, 12000, 8000, 5000, 1500, 0],
+    flooring:    [0, 12000, 8000, 5000, 2000, 0],
+    roof:        [0, 14000, 10000, 6000, 2000, 0],
+    hvac:        [0, 10000, 7000, 4000, 1500, 0],
+    water_heater:[0, 3000, 2000, 1000, 500, 0],
+    electrical:  [0, 8000, 5000, 3000, 1000, 0],
+    plumbing:    [0, 10000, 7000, 4000, 1500, 0],
+    foundation:  [0, 20000, 14000, 8000, 3000, 0],
+    windows:     [0, 10000, 7000, 4000, 1500, 0],
+    exterior:    [0, 12000, 8000, 5000, 2000, 0],
+    paint:       [0, 6000, 4000, 2500, 1000, 0],
+    landscape:   [0, 5000, 3000, 2000, 800, 0]
+};
+
+// ============================================
+// PHOTO SLOTS
+// ============================================
+const PHOTO_SLOTS = [
+    {id:'front', label:'Front of Home'},
+    {id:'back', label:'Back of Home'},
+    {id:'street', label:'Street View'},
+    {id:'kitchen_p', label:'Kitchen'},
+    {id:'living', label:'Living Room'},
+    {id:'master_bed', label:'Primary Bedroom'},
+    {id:'master_bath_p', label:'Primary Bath'},
+    {id:'bath2', label:'2nd Bathroom'},
+    {id:'garage', label:'Garage'},
+    {id:'yard', label:'Backyard'},
+    {id:'damage1', label:'Problem Area 1'},
+    {id:'damage2', label:'Problem Area 2'}
+];
+
+// ============================================
+// STATE
+// ============================================
+let currentStep = 1;
+let conditionRatings = {};
+let conditionPhotos = {};
+let photos = {};
+let photoUrls = {};
+let extraPhotos = [];
+
+// ============================================
+// INIT
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+    buildConditionGrid();
+    buildPhotoGrid();
+    initPills();
+    loadSaved();
+});
+
+// ============================================
+// PILL SELECTORS
+// ============================================
+function initPills() {
+    document.querySelectorAll('.pill-group').forEach(group => {
+        group.querySelectorAll('.pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                group.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                autoSave();
+            });
+        });
+    });
+}
+
+function getPillVal(id) {
+    const active = document.querySelector(`#${id} .pill.active`);
+    return active ? active.dataset.val : '';
+}
+
+// ============================================
+// CONDITION GRID
+// ============================================
+function buildConditionGrid() {
+    const grid = document.getElementById('condGrid');
+    grid.innerHTML = AREAS.map(a => `
+        <div class="cond-item">
+            <div class="cond-header">
+                <div class="cond-label">${a.icon} ${a.label}</div>
+                <div class="cond-val" id="cv-${a.id}">Tap to rate</div>
+            </div>
+            <div class="cond-stars" id="cs-${a.id}">
+                ${[1,2,3,4,5].map(n => `<div class="cond-star" data-area="${a.id}" data-val="${n}" onclick="rateCond('${a.id}',${n})">${n}</div>`).join('')}
+            </div>
+            <div class="cond-photo">
+                <button class="cond-photo-btn" id="cpb-${a.id}" onclick="document.getElementById('cpi-${a.id}').click()">📷 Add photo</button>
+                <input type="file" id="cpi-${a.id}" accept="image/*" capture="environment" style="display:none" onchange="handleCondPhoto('${a.id}',this)">
+                <img class="cond-photo-preview" id="cpp-${a.id}">
+            </div>
+        </div>
+    `).join('');
+}
+
+function rateCond(area, val) {
+    conditionRatings[area] = val;
+    const stars = document.querySelectorAll(`#cs-${area} .cond-star`);
+    stars.forEach(s => {
+        const v = parseInt(s.dataset.val);
+        s.classList.remove('active','bad','mid');
+        if (v <= val) {
+            if (val <= 2) s.classList.add('bad');
+            else if (val <= 3) s.classList.add('mid');
+            else s.classList.add('active');
+        }
+    });
+    document.getElementById(`cv-${area}`).textContent = RATING_LABELS[val];
+    autoSave();
+}
+
+// ============================================
+// PHOTO HANDLING
+// ============================================
+function buildPhotoGrid() {
+    const grid = document.getElementById('photoGrid');
+    grid.innerHTML = PHOTO_SLOTS.map(s => `
+        <div class="photo-slot" id="ps-${s.id}" onclick="document.getElementById('pi-${s.id}').click()">
+            <div class="photo-slot-icon">📷</div>
+            <div class="photo-slot-label">${s.label}</div>
+            <input type="file" id="pi-${s.id}" accept="image/*" capture="environment" style="display:none" onchange="handleSlotPhoto('${s.id}',this)">
+            <button class="remove-photo" onclick="event.stopPropagation();removePhoto('${s.id}')">&times;</button>
+        </div>
+    `).join('');
+}
+
+async function compressImage(file, maxWidth=1200, quality=0.7) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let w = img.width, h = img.height;
+                if (w > maxWidth) { h = h * maxWidth / w; w = maxWidth; }
+                canvas.width = w; canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                canvas.toBlob(resolve, 'image/jpeg', quality);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+async function handleSlotPhoto(slotId, input) {
+    if (!input.files[0]) return;
+    const compressed = await compressImage(input.files[0]);
+    const url = URL.createObjectURL(compressed);
+    photos[slotId] = compressed;
+
+    const slot = document.getElementById(`ps-${slotId}`);
+    let img = slot.querySelector('img');
+    if (!img) { img = document.createElement('img'); slot.appendChild(img); }
+    img.src = url;
+    slot.classList.add('filled');
+    updatePhotoCount();
+
+    // Upload to Cloudinary in background
+    uploadToCloudinary(compressed, slotId);
+}
+
+async function handleCondPhoto(area, input) {
+    if (!input.files[0]) return;
+    const compressed = await compressImage(input.files[0], 800, 0.6);
+    conditionPhotos[area] = compressed;
+    const url = URL.createObjectURL(compressed);
+    const preview = document.getElementById(`cpp-${area}`);
+    preview.src = url; preview.style.display = 'block';
+    document.getElementById(`cpb-${area}`).classList.add('has-photo');
+    document.getElementById(`cpb-${area}`).textContent = '✓ Photo added';
+
+    uploadToCloudinary(compressed, `cond_${area}`);
+}
+
+async function handleBulkPhotos(input) {
+    for (const file of input.files) {
+        const compressed = await compressImage(file);
+        const id = `extra_${Date.now()}_${Math.random().toString(36).substr(2,4)}`;
+        extraPhotos.push({id, blob: compressed});
+        uploadToCloudinary(compressed, id);
+    }
+    updatePhotoCount();
+    input.value = '';
+}
+
+function removePhoto(slotId) {
+    delete photos[slotId];
+    delete photoUrls[slotId];
+    const slot = document.getElementById(`ps-${slotId}`);
+    const img = slot.querySelector('img');
+    if (img) img.remove();
+    slot.classList.remove('filled');
+    updatePhotoCount();
+}
+
+function updatePhotoCount() {
+    const total = Object.keys(photos).length + Object.keys(conditionPhotos).length + extraPhotos.length;
+    document.getElementById('photoCount').textContent = total;
+}
+
+async function uploadToCloudinary(blob, tag) {
+    if (CLOUDINARY_CLOUD === 'YOUR_CLOUD_NAME') {
+        console.log(`Cloudinary not configured. Photo "${tag}" stored locally only.`);
+        return;
+    }
+    try {
+        const fd = new FormData();
+        fd.append('file', blob, `${tag}.jpg`);
+        fd.append('upload_preset', CLOUDINARY_PRESET);
+        fd.append('tags', tag);
+        const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {method:'POST', body:fd});
+        const data = await r.json();
+        if (data.secure_url) {
+            photoUrls[tag] = data.secure_url;
+            console.log(`Uploaded ${tag}:`, data.secure_url);
+        }
+    } catch(err) {
+        console.error(`Upload failed for ${tag}:`, err);
+    }
+}
+
+// ============================================
+// NAVIGATION & VALIDATION
+// ============================================
+function goStep(n) {
+    if (n > currentStep && !validateStep(currentStep)) return;
+    document.getElementById(`step${currentStep}`).classList.remove('active');
+    currentStep = n;
+    document.getElementById(`step${currentStep}`).classList.add('active');
+    updateProgress();
+    autoSave();
+    window.scrollTo({top:0,behavior:'smooth'});
+
+    // Show repair preview on step 5
+    if (n === 5) showRepairPreview();
+}
+
+function validateStep(n) {
+    let ok = true;
+    const check = (id) => {
+        const el = document.getElementById(id);
+        const err = document.getElementById('e-'+id.replace('f-',''));
+        if (!el || !el.value || el.value.trim() === '') {
+            if (el) el.classList.add('err');
+            if (err) err.classList.add('show');
+            ok = false;
+        } else {
+            if (el) el.classList.remove('err');
+            if (err) err.classList.remove('show');
+        }
+    };
+    const checkPill = (id) => {
+        if (!getPillVal(id)) {
+            document.getElementById('e-'+id.replace('f-','')).classList.add('show');
+            ok = false;
+        } else {
+            document.getElementById('e-'+id.replace('f-','')).classList.remove('show');
+        }
+    };
+
+    if (n === 1) { check('f-address'); check('f-zip'); checkPill('f-proptype'); check('f-beds'); check('f-baths'); check('f-sqft'); }
+    if (n === 4) { check('f-reason'); checkPill('f-timeline'); }
+    if (n === 5) { check('f-name'); check('f-phone'); }
+    return ok;
+}
+
+function updateProgress() {
+    const pct = currentStep * 20;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progLabel').textContent = `Step ${currentStep} of 5`;
+    const mins = Math.max(1, (5 - currentStep) * 1);
+    document.getElementById('progTime').textContent = currentStep < 5 ? `~${mins} min remaining` : 'Last step!';
+}
+
+// ============================================
+// REPAIR ESTIMATE
+// ============================================
+function calcRepairs() {
+    let total = 0;
+    const lines = [];
+    AREAS.forEach(a => {
+        const r = conditionRatings[a.id] || 3;
+        const cost = REPAIR_COSTS[a.id] ? REPAIR_COSTS[a.id][r] : 0;
+        if (cost > 0) lines.push({label: a.label, cost});
+        total += cost;
+    });
+    const contingency = Math.round(total * 0.15);
+    return {lines, subtotal: total, contingency, total: total + contingency};
+}
+
+function showRepairPreview() {
+    const rep = calcRepairs();
+    if (rep.total === 0) { document.getElementById('repairPreview').innerHTML = ''; return; }
+    let html = '<div class="repair-preview"><div class="repair-preview-title">Estimated Repair Costs</div>';
+    rep.lines.forEach(l => { html += `<div class="repair-line"><span class="repair-line-label">${l.label}</span><span class="repair-line-val">$${l.cost.toLocaleString()}</span></div>`; });
+    html += `<div class="repair-line"><span class="repair-line-label">Contingency (15%)</span><span class="repair-line-val">$${rep.contingency.toLocaleString()}</span></div>`;
+    html += `<div class="repair-line"><span class="repair-line-label">Total Estimated Repairs</span><span class="repair-line-val">$${rep.total.toLocaleString()}</span></div>`;
+    html += '</div>';
+    document.getElementById('repairPreview').innerHTML = html;
+}
+
+// ============================================
+// OFFER CALCULATION — 80% formula for Las Vegas
+// ============================================
+function calcOffer() {
+    const sqft = parseInt(document.getElementById('f-sqft').value) || 1500;
+    const beds = parseInt(document.getElementById('f-beds').value) || 3;
+    const rates = {5:230, 4:200, 3:170, 2:130, 1:90};
+
+    // Average condition rating
+    const ratings = Object.values(conditionRatings);
+    const avgRating = ratings.length > 0 ? Math.round(ratings.reduce((a,b)=>a+b,0)/ratings.length) : 3;
+
+    let estValue = sqft * (rates[avgRating] || 170);
+    if (beds >= 4) estValue *= 1.05;
+
+    const repairs = calcRepairs().total;
+    const fee = 10000; // assignment fee
+    const holding = 5000; // holding costs
+
+    // (Value × 0.80) - Repairs - Fee - Holding
+    let offer = (estValue * 0.80) - repairs - fee - holding;
+    offer = Math.max(offer, 50000);
+
+    // Range: -5% to +5%
+    const low = Math.round(offer * 0.95);
+    const high = Math.round(offer * 1.05);
+    return {low, high, estValue: Math.round(estValue), repairs};
+}
+
+// ============================================
+// SUBMIT
+// ============================================
+async function submitForm() {
+    if (!validateStep(5)) return;
+
+    const offer = calcOffer();
+    const data = {
+        // Property
+        address: document.getElementById('f-address').value,
+        city: document.getElementById('f-city').value,
+        zip: document.getElementById('f-zip').value,
+        propertyType: getPillVal('f-proptype'),
+        beds: document.getElementById('f-beds').value,
+        baths: document.getElementById('f-baths').value,
+        sqft: document.getElementById('f-sqft').value,
+        yearBuilt: document.getElementById('f-year').value,
+        lotSize: document.getElementById('f-lot').value,
+        hoa: document.getElementById('f-hoa').value,
+        pool: document.getElementById('f-pool').value,
+        // Condition
+        conditionRatings: {...conditionRatings},
+        solar: document.getElementById('f-solar').value,
+        unpermitted: document.getElementById('f-unpermit').value,
+        liens: document.getElementById('f-liens').value,
+        // Financials
+        mortgage: document.getElementById('f-mortgage').value,
+        asking: document.getElementById('f-asking').value,
+        reason: document.getElementById('f-reason').value,
+        timeline: getPillVal('f-timeline'),
+        occupancy: document.getElementById('f-occupancy').value,
+        notes: document.getElementById('f-notes').value,
+        // Contact
+        name: document.getElementById('f-name').value,
+        phone: document.getElementById('f-phone').value,
+        email: document.getElementById('f-email').value,
+        contactPref: getPillVal('f-contactpref'),
+        // Calculated
+        estimatedRepairs: offer.repairs,
+        estimatedValue: offer.estValue,
+        offerLow: offer.low,
+        offerHigh: offer.high,
+        photoUrls: {...photoUrls},
+        photoCount: Object.keys(photos).length + Object.keys(conditionPhotos).length + extraPhotos.length,
+        timestamp: new Date().toISOString(),
+        page: 'apply.html'
+    };
+
+    // Save to localStorage
+    let leads = JSON.parse(localStorage.getItem('cosApplyLeads')||'[]');
+    leads.push(data); localStorage.setItem('cosApplyLeads', JSON.stringify(leads));
+
+    // Send lead
+    await sendLead(data, offer);
+
+    // Show results
+    document.getElementById('step5').classList.remove('active');
+    document.getElementById('resRange').textContent = `$${offer.low.toLocaleString()} — $${offer.high.toLocaleString()}`;
+    document.getElementById('results').classList.add('show');
+    document.getElementById('progFill').style.width = '100%';
+    document.getElementById('progLabel').textContent = 'Complete!';
+    document.getElementById('progTime').textContent = '';
+    window.scrollTo({top:0,behavior:'smooth'});
+
+    // Clear saved state
+    localStorage.removeItem('cosApplyDraft');
+}
+
+async function sendLead(data, offer) {
+    // Build condition summary
+    let condSummary = '';
+    AREAS.forEach(a => {
+        const r = data.conditionRatings[a.id];
+        if (r) condSummary += `${a.label}: ${RATING_LABELS[r]} (${r}/5)\n`;
+    });
+
+    // Build photo links
+    let photoLinks = '';
+    Object.entries(data.photoUrls).forEach(([k,v]) => { photoLinks += `${k}: ${v}\n`; });
+
+    if (WEB3FORMS_KEY === 'YOUR_ACCESS_KEY_HERE') {
+        const body = `NEW PROPERTY SUBMISSION\n\n📍 ${data.address}, ${data.city} ${data.zip}\nType: ${data.propertyType} | ${data.beds}bd/${data.baths}ba | ${data.sqft} sqft\nYear: ${data.yearBuilt} | Lot: ${data.lotSize} | HOA: ${data.hoa} | Pool: ${data.pool}\n\n🔧 CONDITION:\n${condSummary}\nSolar: ${data.solar} | Unpermitted: ${data.unpermitted} | Liens: ${data.liens}\n\n💰 FINANCIALS:\nMortgage: ${data.mortgage} | Asking: ${data.asking}\nReason: ${data.reason} | Timeline: ${data.timeline}\nOccupancy: ${data.occupancy}\nNotes: ${data.notes}\n\n👤 CONTACT:\n${data.name} | ${data.phone} | ${data.email}\nPrefers: ${data.contactPref}\n\n📊 ESTIMATES:\nEst. Value: $${data.estimatedValue.toLocaleString()}\nEst. Repairs: $${data.estimatedRepairs.toLocaleString()}\nOffer Range: $${offer.low.toLocaleString()} — $${offer.high.toLocaleString()}\nPhotos: ${data.photoCount}\n\n📸 PHOTO LINKS:\n${photoLinks || 'No Cloudinary uploads (not configured)'}`;
+
+        window.open(`mailto:info@cashofferspecialist.com?subject=Property Submission - ${encodeURIComponent(data.address)}&body=${encodeURIComponent(body)}`,'_blank');
+        return;
+    }
+
+    try {
+        const r = await fetch('https://api.web3forms.com/submit', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({
+                access_key: WEB3FORMS_KEY,
+                subject: `🏠 Property Submission — ${data.address}, ${data.zip}`,
+                from_name: 'COS Apply Page',
+                to: 'info@cashofferspecialist.com',
+                'Property': `${data.address}, ${data.city} ${data.zip}`,
+                'Type': `${data.propertyType} | ${data.beds}bd/${data.baths}ba | ${data.sqft}sqft`,
+                'Details': `Year: ${data.yearBuilt} | Lot: ${data.lotSize} | HOA: ${data.hoa} | Pool: ${data.pool}`,
+                'Condition Summary': condSummary,
+                'Special Issues': `Solar: ${data.solar} | Unpermitted: ${data.unpermitted} | Liens: ${data.liens}`,
+                'Mortgage': data.mortgage, 'Asking': data.asking,
+                'Reason': data.reason, 'Timeline': data.timeline,
+                'Occupancy': data.occupancy, 'Notes': data.notes,
+                'Seller': `${data.name} | ${data.phone} | ${data.email} | Prefers: ${data.contactPref}`,
+                'Est Value': `$${data.estimatedValue.toLocaleString()}`,
+                'Est Repairs': `$${data.estimatedRepairs.toLocaleString()}`,
+                'Offer Range': `$${offer.low.toLocaleString()} — $${offer.high.toLocaleString()}`,
+                'Photos': data.photoCount + ' uploaded',
+                'Photo Links': photoLinks || 'Cloudinary not configured',
+                'Submitted': new Date().toLocaleString()
+            })
+        });
+        const res = await r.json();
+        if (res.success) console.log('Lead sent'); else console.error('Web3Forms:', res);
+    } catch(err) { console.error('Send failed:', err); }
+}
+
+// ============================================
+// AUTOSAVE
+// ============================================
+let saveTimer;
+function autoSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+        const draft = {
+            step: currentStep,
+            address: document.getElementById('f-address').value,
+            zip: document.getElementById('f-zip').value,
+            proptype: getPillVal('f-proptype'),
+            beds: document.getElementById('f-beds').value,
+            baths: document.getElementById('f-baths').value,
+            sqft: document.getElementById('f-sqft').value,
+            year: document.getElementById('f-year').value,
+            lot: document.getElementById('f-lot').value,
+            hoa: document.getElementById('f-hoa').value,
+            pool: document.getElementById('f-pool').value,
+            solar: document.getElementById('f-solar').value,
+            unpermit: document.getElementById('f-unpermit').value,
+            liens: document.getElementById('f-liens').value,
+            mortgage: document.getElementById('f-mortgage').value,
+            asking: document.getElementById('f-asking').value,
+            reason: document.getElementById('f-reason').value,
+            timeline: getPillVal('f-timeline'),
+            occupancy: document.getElementById('f-occupancy').value,
+            notes: document.getElementById('f-notes').value,
+            name: document.getElementById('f-name').value,
+            phone: document.getElementById('f-phone').value,
+            email: document.getElementById('f-email').value,
+            contactPref: getPillVal('f-contactpref'),
+            conditionRatings: conditionRatings
+        };
+        localStorage.setItem('cosApplyDraft', JSON.stringify(draft));
+        const toast = document.getElementById('autosave');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1500);
+    }, 800);
+}
+
+function loadSaved() {
+    const raw = localStorage.getItem('cosApplyDraft');
+    if (!raw) return;
+    try {
+        const d = JSON.parse(raw);
+        if (d.address) document.getElementById('f-address').value = d.address;
+        if (d.zip) document.getElementById('f-zip').value = d.zip;
+        if (d.beds) document.getElementById('f-beds').value = d.beds;
+        if (d.baths) document.getElementById('f-baths').value = d.baths;
+        if (d.sqft) document.getElementById('f-sqft').value = d.sqft;
+        if (d.year) document.getElementById('f-year').value = d.year;
+        if (d.lot) document.getElementById('f-lot').value = d.lot;
+        if (d.hoa) document.getElementById('f-hoa').value = d.hoa;
+        if (d.pool) document.getElementById('f-pool').value = d.pool;
+        if (d.solar) document.getElementById('f-solar').value = d.solar;
+        if (d.unpermit) document.getElementById('f-unpermit').value = d.unpermit;
+        if (d.liens) document.getElementById('f-liens').value = d.liens;
+        if (d.mortgage) document.getElementById('f-mortgage').value = d.mortgage;
+        if (d.asking) document.getElementById('f-asking').value = d.asking;
+        if (d.reason) document.getElementById('f-reason').value = d.reason;
+        if (d.occupancy) document.getElementById('f-occupancy').value = d.occupancy;
+        if (d.notes) document.getElementById('f-notes').value = d.notes;
+        if (d.name) document.getElementById('f-name').value = d.name;
+        if (d.phone) document.getElementById('f-phone').value = d.phone;
+        if (d.email) document.getElementById('f-email').value = d.email;
+        // Restore pills
+        if (d.proptype) { document.querySelectorAll('#f-proptype .pill').forEach(p => { p.classList.toggle('active', p.dataset.val === d.proptype); }); }
+        if (d.timeline) { document.querySelectorAll('#f-timeline .pill').forEach(p => { p.classList.toggle('active', p.dataset.val === d.timeline); }); }
+        if (d.contactPref) { document.querySelectorAll('#f-contactpref .pill').forEach(p => { p.classList.toggle('active', p.dataset.val === d.contactPref); }); }
+        // Restore condition ratings
+        if (d.conditionRatings) {
+            Object.entries(d.conditionRatings).forEach(([area, val]) => { rateCond(area, val); });
+        }
+    } catch(e) { console.log('Could not restore draft'); }
+}
+
+// ============================================
+// HELPERS
+// ============================================
+function formatMoney(el) {
+    let v = el.value.replace(/[^0-9]/g, '');
+    if (v) el.value = '$' + parseInt(v).toLocaleString();
+    else el.value = '';
+}
+
+// Clear error on input
+document.addEventListener('input', (e) => {
+    if (e.target.classList.contains('err')) {
+        e.target.classList.remove('err');
+        const errId = 'e-' + e.target.id.replace('f-','');
+        const err = document.getElementById(errId);
+        if (err) err.classList.remove('show');
+    }
+});
+</script>
+</body>
+</html>
