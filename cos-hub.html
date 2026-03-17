@@ -1,0 +1,1701 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COS Hub — Wholesale Deal Tools</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#06080f;--s1:#0b0e18;--s2:#0f1220;--card:#141826;--border:#1a2030;--border2:#243048;
+  --blue:#4f8ef7;--bluedim:#0e2040;--green:#0ecf8a;--greendim:#042b1c;
+  --amber:#f0a500;--red:#f04060;--purple:#9b6ff7;--cyan:#00d4ff;
+  --t1:#eef2ff;--t2:#8899bb;--t3:#4a5878;
+  --r:8px;--r2:12px;
+}
+body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;min-height:100vh;font-size:15px}
+input,select,textarea{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--t1);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+select option{background:#141826}
+input[type=range]{background:transparent;border:none;padding:2px 0;cursor:pointer;accent-color:var(--blue)}
+input[type=checkbox]{width:auto;cursor:pointer;accent-color:var(--blue)}
+button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.panel{animation:fadeUp .2s ease}
+.hdr{font-family:'Barlow Condensed',sans-serif;font-weight:900;letter-spacing:.04em}
+.label{font-size:12px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;display:block}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.tag-pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;margin:3px}
+@media (max-width:860px){#analyzer-cards{grid-template-columns:1fr 1fr !important}#filter-grid{grid-template-columns:repeat(4,1fr) !important}#leads-grid{grid-template-columns:1fr !important}#calc-top{grid-template-columns:1fr !important}#scripts-grid{grid-template-columns:1fr !important}#exit-grid{grid-template-columns:repeat(2,1fr) !important}#calc-stats{grid-template-columns:1fr 1fr !important}}@media (max-width:600px){#analyzer-cards{grid-template-columns:1fr !important}#filter-grid{grid-template-columns:repeat(3,1fr) !important}#leads-grid{grid-template-columns:1fr !important}#calc-top{grid-template-columns:1fr !important}#scripts-grid{grid-template-columns:1fr !important}#exit-grid{grid-template-columns:1fr !important}#calc-stats{grid-template-columns:1fr 1fr !important}button{padding:8px 12px !important;font-size:11px !important}}
+</style>
+</head>
+<body>
+<div style="max-width:860px;margin:0 auto;padding:20px 24px">
+
+<!-- TOP NAV -->
+<div style="display:flex;align-items:center;gap:6px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+  <div style="margin-right:8px">
+    <div class="hdr" style="font-size:32px;color:var(--t1)">COS <span style="color:var(--blue)">HUB</span></div>
+    <div style="font-size:11px;color:var(--t3);letter-spacing:.1em;margin-top:-2px">WHOLESALE OPERATIONS · LAS VEGAS</div>
+  </div>
+  <div style="display:flex;gap:5px;flex-wrap:wrap">
+    <button onclick="nav('analyzer')" id="n-analyzer" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue)">📊 DEAL ANALYZER</button>
+    <button onclick="nav('calc')" id="n-calc" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">🧮 CALCULATOR</button>
+    <button onclick="nav('scripts')" id="n-scripts" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">📝 SCRIPTS</button>
+    <button id="kb-btn" style="padding:8px 12px;font-size:14px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer;position:relative" title="Keyboard Shortcuts: 1/Alt+1 Deal Analyzer, 2/Alt+2 Calculator, 3/Alt+3 Scripts, Ctrl/Cmd+E Export, Ctrl/Cmd+K Copy Script, Esc Close">⌨️</button>
+  </div>
+  <div style="margin-left:auto;font-size:13px;color:var(--t3)" id="list-counter">No list loaded</div>
+</div>
+
+<!-- DEAL ANALYZER -->
+<div id="p-analyzer" class="panel">
+  <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+    <div class="card">
+      <span class="label">List Type</span>
+      <select id="list-type" onchange="updateListType()" style="margin-bottom:8px">
+        <option value="preforeclosure">Pre-Foreclosure (NOD List)</option>
+        <option value="taxdelinquent">Tax Delinquent</option>
+        <option value="probate">Probate / Estate</option>
+        <option value="absentee">Absentee Owners</option>
+        <option value="vacant">Vacant / Abandoned</option>
+        <option value="mls_expired">MLS — Expired Listings</option>
+        <option value="mls_active">MLS — Active Listings (Cash Offer)</option>
+        <option value="mls_pricecut">MLS — Price Reduced</option>
+        <option value="fsbo">FSBO</option>
+        <option value="taxlien">Tax Lien / Code Violation</option>
+        <option value="highequity">High Equity Absentee</option>
+        <option value="divorce">Divorce / Lis Pendens</option>
+        <option value="distressed_landvoice">🔥 Landvoice Distressed (Mixed)</option>
+        <option value="damage">Water/Fire Damage</option>
+        <option value="senior">Senior Downsizing</option>
+        <option value="bankruptcy">Bankruptcy</option>
+        <option value="military">Military PCS</option>
+      </select>
+      <div id="list-type-desc" style="font-size:13px;color:var(--t2);line-height:1.5;padding:9px 12px;background:var(--card);border-radius:6px;border-left:2px solid var(--blue)"></div>
+    </div>
+    <div class="card">
+      <span class="label">Contact Route</span>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button id="route-seller" onclick="setRoute('seller')" style="flex:1;padding:11px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--green);background:var(--greendim);color:var(--green)">🏠 Direct to Seller</button>
+        <button id="route-agent" onclick="setRoute('agent')" style="flex:1;padding:11px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3)">🤝 Through Agent</button>
+      </div>
+      <div id="route-desc" style="font-size:13px;color:var(--t2);line-height:1.5;padding:9px 12px;background:var(--card);border-radius:6px;border-left:2px solid var(--green)"></div>
+    </div>
+    <div class="card">
+      <span class="label">Load Your List</span>
+
+      <!-- Drop zone / upload area -->
+      <div id="drop-zone" onclick="document.getElementById('file-upload').click()"
+        ondragover="event.preventDefault();this.style.borderColor='var(--green)';this.style.background='#042b1c'"
+        ondragleave="this.style.borderColor='var(--border2)';this.style.background='transparent'"
+        ondrop="handleFileDrop(event)"
+        style="border:1.5px dashed var(--border2);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;margin-bottom:8px;transition:all .15s">
+        <div style="font-size:18px;margin-bottom:4px">📂</div>
+        <div style="font-size:11px;font-weight:700;color:var(--t2)">Click to upload or drag & drop</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:3px">CSV files · any size · PropStream, REsimpli, BatchLeads, custom</div>
+        <div id="file-name-display" style="font-size:10px;color:var(--green);margin-top:5px;display:none"></div>
+      </div>
+      <input type="file" id="file-upload" accept=".csv,.txt" style="display:none" onchange="handleFileUpload(this)"/>
+
+      <!-- Divider -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        <span style="font-size:10px;color:var(--t3)">or paste</span>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+      </div>
+
+      <!-- Paste area -->
+      <textarea id="csv-input" placeholder="Paste CSV rows here...&#10;Name, Address, ARV, Asking, Repairs, Distress, DOM, Source" rows="2" style="font-size:11px;resize:none;margin-bottom:6px"></textarea>
+
+      <!-- Action buttons -->
+      <div style="display:flex;gap:5px">
+        <button onclick="loadSample()" style="flex:1;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:6px;font-size:11px;font-weight:700">Sample Data</button>
+        <button onclick="parseCSV()" style="flex:1;background:var(--greendim);color:var(--green);border:1px solid var(--green);border-radius:6px;padding:6px;font-size:11px;font-weight:700">Analyze List →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span class="label" style="margin-bottom:0">LIST STACKING FILTERS <span style="color:var(--amber);font-size:9px">— stack multiple signals to find the hottest leads</span></span>
+      <div style="display:flex;gap:5px">
+        <button onclick="applyFilters()" style="background:var(--blue);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:11px;font-weight:700">Apply Filters</button>
+        <button onclick="clearFilters()" style="background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px">Reset</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="stack-filters"></div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+    <div style="font-size:12px;font-weight:700;color:var(--t2)">AI MOTIVATION SCORE</div>
+    <div style="display:flex;gap:5px;align-items:center">
+      <span class="badge" style="background:#1a0a0a;color:var(--red);border:1px solid var(--red)44">🔥 80–100 Fire</span>
+      <span class="badge" style="background:#0a1a0a;color:var(--green);border:1px solid var(--green)44">✅ 60–79 Solid</span>
+      <span class="badge" style="background:#1a1500;color:var(--amber);border:1px solid var(--amber)44">⚠️ 40–59 Warm</span>
+      <span class="badge" style="background:#111;color:var(--t3);border:1px solid var(--border)">❄️ &lt;40 Cold</span>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:5px;align-items:center">
+      <span style="font-size:10px;color:var(--t3)">Sort:</span>
+      <select id="sort-by" onchange="sortLeads()" style="width:160px;padding:5px 8px;font-size:11px">
+        <option value="score">AI Score (highest first)</option>
+        <option value="equity">Equity % (highest)</option>
+        <option value="dom">Days on Market (most)</option>
+        <option value="asking">Asking Price (lowest)</option>
+      </select>
+      <button onclick="exportTop()" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700">Export Top 10</button>
+    </div>
+  </div>
+
+  <div id="lead-grid" style="display:flex;flex-direction:column;gap:12px">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--t3);font-size:13px">
+      Click <b style="color:var(--blue)">"Load Sample Data"</b> to see the analyzer in action, or paste your own CSV list and click <b style="color:var(--green)">"Analyze List"</b>
+    </div>
+  </div>
+</div>
+
+<!-- CALCULATOR -->
+<div id="p-calc" class="panel" style="display:none">
+<div style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="card">
+      <span class="label">Property Info</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+    <span class="label" style="margin-bottom:0">ARV</span>
+    <span class="hdr" id="c-arv-lbl" style="font-size:18px;color:var(--blue)">$380,000</span>
+  </div>
+  <input type="range" min="50000" max="800000" step="5000" value="380000" id="c-arv"
+    oninput="document.getElementById('c-arv-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" />
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:3px"><span>$50K</span><span>$800K</span></div>
+</div>
+        <div><span class="label">Neighborhood</span>
+          <select id="c-hood" onchange="calcMAO()" style="font-size:11px">
+            <optgroup label="── PREMIUM ──">
+              <option>Summerlin</option>
+              <option>Summerlin South</option>
+              <option>The Lakes</option>
+              <option>Anthem (Henderson)</option>
+              <option>MacDonald Ranch</option>
+              <option>Green Valley</option>
+              <option>Seven Hills</option>
+            </optgroup>
+            <optgroup label="── SOLID ──">
+              <option>Henderson</option>
+              <option>Enterprise</option>
+              <option>Spring Valley</option>
+              <option>Southwest Las Vegas</option>
+              <option>Silverado Ranch</option>
+              <option>Rhodes Ranch</option>
+              <option>Mountains Edge</option>
+              <option>Inspirada</option>
+            </optgroup>
+            <optgroup label="── MID-MARKET ──">
+              <option>Paradise</option>
+              <option>Whitney</option>
+              <option>Sunrise Manor</option>
+              <option>Winchester</option>
+              <option>Boulder City</option>
+              <option>Aliante</option>
+              <option>Centennial Hills</option>
+              <option>Lone Mountain</option>
+            </optgroup>
+            <optgroup label="── VALUE ──">
+              <option selected>North Las Vegas</option>
+              <option>East Las Vegas</option>
+              <option>Downtown Las Vegas</option>
+              <option>Nellis / Sunrise</option>
+              <option>Craig Ranch</option>
+              <option>Cheyenne / Carey</option>
+              <option>Lamb / Pecos Corridor</option>
+              <option>Decatur / Carey</option>
+            </optgroup>
+            <optgroup label="── SURROUNDING ──">
+              <option>Pahrump</option>
+              <option>Mesquite</option>
+              <option>Boulder City</option>
+              <option>Jean / Sloan</option>
+            </optgroup>
+          </select>
+        </div>
+        <div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+    <span class="label" style="margin-bottom:0">Sq Footage</span>
+    <span class="hdr" id="c-sqft-lbl" style="font-size:18px;color:var(--t2)">1,600 sqft</span>
+  </div>
+  <input type="range" min="500" max="5000" step="50" value="1600" id="c-sqft"
+    oninput="document.getElementById('c-sqft-lbl').textContent=(+this.value).toLocaleString()+' sqft';calcMAO()" />
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:3px"><span>500</span><span>5,000</span></div>
+</div>
+        <div><span class="label">Distress Type</span>
+          <select id="c-distress" onchange="calcMAO()" style="font-size:11px">
+            <optgroup label="── HIGH URGENCY ──">
+              <option value="Pre-foreclosure">Pre-Foreclosure (NOD)</option>
+              <option value="Notice of Trustee Sale">Notice of Trustee Sale</option>
+              <option value="Lis Pendens">Lis Pendens / Foreclosure</option>
+              <option value="Tax Delinquent">Tax Delinquent (2+ yrs)</option>
+              <option value="Code Violations">Code Violations / City Liens</option>
+              <option value="Distressed (Landvoice)">Landvoice Distressed (Mixed)</option>
+            </optgroup>
+            <optgroup label="── LIFE EVENT ──">
+              <option value="Divorce">Divorce / Separation</option>
+              <option value="Probate/Estate">Probate / Estate Sale</option>
+              <option value="Inherited">Inherited Property</option>
+              <option value="Job Relocation">Job Relocation / Transfer</option>
+              <option value="Death in Family">Death in Family</option>
+              <option value="Medical Hardship">Medical / Health Hardship</option>
+              <option value="Bankruptcy">Bankruptcy / BK Filing</option>
+            </optgroup>
+            <optgroup label="── PROPERTY SITUATION ──">
+              <option value="Vacant">Vacant / Abandoned</option>
+              <option value="Tired Landlord">Tired Landlord</option>
+              <option value="Problem Tenants">Problem Tenants / Eviction</option>
+              <option value="Hoarder/Condition">Hoarder / Severe Condition</option>
+              <option value="Fire Damage">Fire / Water / Storm Damage</option>
+              <option value="Foundation Issues">Foundation / Structural Issues</option>
+              <option value="Failed Flip">Failed Flip / Over-Improved</option>
+            </optgroup>
+            <optgroup label="── FINANCIAL ──">
+              <option value="High Equity Absentee">High Equity Absentee Owner</option>
+              <option value="Underwater">Underwater / Negative Equity</option>
+              <option value="Behind on Payments">Behind on Mortgage Payments</option>
+              <option value="Debt Consolidation">Debt Consolidation</option>
+              <option value="HOA Delinquent">HOA Delinquent</option>
+              <option value="IRS Tax Lien">IRS / Federal Tax Lien</option>
+            </optgroup>
+            <optgroup label="── MLS RELATED ──">
+              <option value="FSBO/Expired">FSBO / For Sale By Owner</option>
+              <option value="Expired Listing">Expired MLS Listing</option>
+              <option value="Price Reduced">Price Reduced (Active MLS)</option>
+              <option value="Failed to Close">Failed to Close / Fell Out</option>
+              <option value="Short Sale">Short Sale / Pre-Short Sale</option>
+            </optgroup>
+            <optgroup label="── OTHER ──">
+              <option value="Downsizing">Downsizing / Empty Nester</option>
+              <option value="Upsizing">Upsizing / Growing Family</option>
+              <option value="Out of State Owner">Out of State Owner</option>
+              <option value="Builder/Developer">Builder / Developer Closeout</option>
+              <option value="Corporate REO">Corporate Owned / REO</option>
+              <option value="Other">Other / Unknown</option>
+            </optgroup>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <span class="label">Repairs</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <span class="label">$/sqft scope</span>
+          <input type="number" min="5" max="80" value="25" id="c-psf" oninput="syncSliderToOverride()" style="font-size:15px;font-weight:700;text-align:right"/>
+          <div style="font-size:11px;color:var(--t3);margin-top:3px">$5 light → $80 gut</div>
+        </div>
+        <div style="background:var(--card);border-radius:8px;padding:12px;display:flex;flex-direction:column;justify-content:center">
+          <div style="font-size:11px;color:var(--t3);margin-bottom:4px">Sqft estimate total</div>
+          <span class="hdr" id="c-rep-slider" style="font-size:20px;color:var(--amber)">$40,000</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div><span class="label">Kitchen <span style="color:var(--t3);font-weight:400">($18K–$35K)</span></span>
+          <input type="number" id="c-r1" placeholder="0" oninput="calcMAO()" style="font-size:14px;text-align:right"/></div>
+        <div><span class="label">Bathroom <span style="color:var(--t3);font-weight:400">($8K–$18K)</span></span>
+          <input type="number" id="c-r2" placeholder="0" oninput="calcMAO()" style="font-size:14px;text-align:right"/></div>
+        <div><span class="label">Roof <span style="color:var(--t3);font-weight:400">($8K–$18K)</span></span>
+          <input type="number" id="c-r3" placeholder="0" oninput="calcMAO()" style="font-size:14px;text-align:right"/></div>
+        <div><span class="label">HVAC <span style="color:var(--t3);font-weight:400">($6K–$12K)</span></span>
+          <input type="number" id="c-r4" placeholder="0" oninput="calcMAO()" style="font-size:14px;text-align:right"/></div>
+      </div>
+      <div style="padding-top:7px;border-top:1px solid var(--border)">
+        <div style="font-size:9px;color:var(--t3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em">Or type exact total (overrides above)</div>
+        <input type="number" id="c-rep-override" placeholder="e.g. 45000" oninput="syncOverrideToSlider()" style="font-size:13px;font-weight:700;color:var(--amber);border-color:var(--amber)44;padding:7px 10px;text-align:right"/>
+        <div style="display:flex;justify-content:space-between;margin-top:5px">
+          <span style="font-size:9px;color:var(--t3)">Active total used in MAO</span>
+          <span class="hdr" id="c-rep-total" style="font-size:14px;color:var(--amber)">$40,000</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <span class="label">Settings</span>
+      <div style="display:flex;gap:5px;margin-bottom:10px">
+        <button id="c-mq" onclick="setCalcMode('quick')" style="flex:1;padding:6px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue)">Quick</button>
+        <button id="c-mf" onclick="setCalcMode('full')" style="flex:1;padding:6px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3)">Full Analysis</button>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px;margin-bottom:12px">
+        <div>
+          <span class="label">Market %</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" min="50" max="100" value="80" id="c-pct" oninput="updateCalcPct(this.value)" style="font-size:18px;font-weight:700;width:80px;text-align:center;color:var(--blue);border-color:var(--blue)55"/>
+            <span style="font-size:13px;color:var(--t3)">%</span>
+          </div>
+        </div>
+        <div style="background:var(--card);border-radius:8px;padding:10px 14px">
+          <span id="c-pct-lbl" style="font-size:15px;font-weight:700;color:var(--blue)">80% Aggressive</span>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">50 conservative → 100 full price</div>
+        </div>
+      </div>
+      <div id="c-full-extra" style="display:none;flex-direction:column;gap:7px;margin-bottom:10px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+          <div><span class="label">Hold months</span><select id="c-hm" onchange="calcMAO()"><option value="2">2mo</option><option value="3" selected>3mo</option><option value="4">4mo</option><option value="6">6mo</option></select></div>
+          <div><span class="label">Agent comm.</span><select id="c-ac" onchange="calcMAO()"><option value="0">0%</option><option value="3">3%</option><option value="5">5%</option><option value="6" selected>6%</option></select></div>
+        </div>
+        <div>
+          <span class="label">Buyer profit %</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" min="10" max="40" value="20" id="c-bp" oninput="document.getElementById('c-bp-lbl').textContent=this.value+'%';calcMAO()" style="font-size:15px;font-weight:700;text-align:center;color:var(--t1)"/>
+            <span id="c-bp-lbl" style="font-size:13px;font-weight:700;color:var(--t1)">20%</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px;margin-top:4px">
+        <div>
+          <span class="label">Assignment Fee</span>
+          <input type="number" min="0" max="100000" step="500" value="13000" id="c-fee" oninput="document.getElementById('c-fee-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" style="font-size:18px;font-weight:700;color:var(--green);border-color:var(--green)55;text-align:right;width:140px"/>
+        </div>
+        <div style="background:var(--card);border-radius:8px;padding:10px 14px">
+          <span id="c-fee-lbl" style="font-size:18px;font-weight:900;color:var(--green)" class="hdr">$13,000</span>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">your wholesale profit</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card" style="text-align:center;padding:20px">
+        <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">Deal Score</div>
+        <div class="hdr" id="c-score-num" style="font-size:72px;color:var(--green);line-height:1">76</div>
+        <div id="c-score-lbl" style="font-size:12px;font-weight:700;color:var(--green);margin-top:2px">✅ SOLID DEAL</div>
+        <div style="background:var(--card);border-radius:3px;height:5px;margin-top:10px;overflow:hidden"><div id="c-score-bar" style="height:100%;width:76%;background:var(--green);border-radius:3px;transition:width .4s"></div></div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px">
+        <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">MAO</div>
+        <div class="hdr" id="c-mao" style="font-size:48px;color:var(--blue);line-height:1">$194,600</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:10px">
+          <div style="background:var(--card);border-radius:5px;padding:5px;text-align:center"><div style="font-size:8px;color:var(--t3)">Anchor</div><div class="hdr" id="c-mao-lo" style="font-size:13px;color:var(--t3)">$185K</div></div>
+          <div style="background:var(--bluedim);border:1px solid var(--blue)55;border-radius:5px;padding:5px;text-align:center"><div style="font-size:8px;color:var(--blue)">Target</div><div class="hdr" id="c-mao-mi" style="font-size:13px;color:var(--blue)">$195K</div></div>
+          <div style="background:var(--card);border-radius:5px;padding:5px;text-align:center"><div style="font-size:8px;color:var(--t3)">Stretch</div><div class="hdr" id="c-mao-hi" style="font-size:13px;color:var(--purple)">$200K</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="card" style="border:1px solid var(--green)33">
+        <div style="font-size:9px;color:var(--green);margin-bottom:2px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Disposition Price</div>
+        <div class="hdr" id="c-disposition" style="font-size:20px;color:var(--green)">$207K</div>
+        <div style="font-size:8px;color:var(--t3);margin-top:2px">MAO + your fee</div>
+      </div>
+      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Buyer All-In</div><div class="hdr" id="c-allin" style="font-size:20px;color:var(--t1)">$247K</div></div>
+      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Equity Spread</div><div class="hdr" id="c-equity" style="font-size:20px;color:var(--green)">$132K</div></div>
+      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Buyer ROI</div><div class="hdr" id="c-roi" style="font-size:20px;color:var(--amber)">53%</div></div>
+      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Your Fee</div><div class="hdr" id="c-myfee" style="font-size:20px;color:var(--green)">$13K</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card"><div style="font-size:12px;font-weight:700;color:var(--t3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.07em">Formula Breakdown</div><div id="c-formula" style="font-size:11px"></div></div>
+      <div class="card"><div style="font-size:12px;font-weight:700;color:var(--t3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.07em">Exit Strategy</div><div id="c-exits" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(80px, 1fr));gap:6px"></div></div>
+    </div>
+
+    <!-- VERBAL OFFER SCRIPT — always visible, live data -->
+    <div class="card" style="border:1px solid var(--blue)44;background:linear-gradient(135deg,#0a1628 0%,#0e1a30 100%)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.1em">📋 Verbal Offer Script</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">Live — updates as you change numbers above</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="copyVerbalOffer()" id="c-copy-btn" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">Copy Script</button>
+        <button onclick="exportDealEmail()" style="background:var(--greendim);color:var(--green);border:1px solid var(--green);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">✉️ Export Email</button>
+        <button onclick="exportDealPDF()" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">📄 Export PDF</button>
+      </div>
+      </div>
+
+      <!-- Seller / Property inputs -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px">
+        <div><span class="label">Seller Name</span><input id="c-seller-name" placeholder="e.g. John" oninput="calcMAO()" style="font-size:11px"/></div>
+        <div><span class="label">Property Address</span><input id="c-prop-addr" placeholder="e.g. 4287 Carey Ave" oninput="calcMAO()" style="font-size:11px"/></div>
+        <div><span class="label">Close in (days)</span>
+          <select id="c-close-days" onchange="calcMAO()" style="font-size:11px">
+            <option value="7">7 days</option><option value="10">10 days</option><option value="14" selected>14 days</option>
+            <option value="21">21 days</option><option value="30">30 days</option>
+          </select>
+        </div>
+        <div><span class="label">Script Tone</span>
+          <select id="c-tone" onchange="calcMAO()" style="font-size:11px">
+            <option value="direct">Direct / Confident</option>
+            <option value="empathy">Empathy First</option>
+            <option value="urgent">Create Urgency</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Live script display -->
+      <div id="c-verbal-script" style="background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:14px;font-size:12px;line-height:1.9;color:var(--t1);white-space:pre-wrap;font-family:'DM Sans',sans-serif;min-height:120px"></div>
+
+      <!-- Data summary bar -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px">
+        <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center;border:1px solid var(--border)">
+          <div style="font-size:8px;color:var(--t3)">OFFER (MAO)</div>
+          <div class="hdr" id="c-vs-mao" style="font-size:13px;color:var(--blue)">—</div>
+        </div>
+        <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center;border:1px solid var(--border)">
+          <div style="font-size:8px;color:var(--t3)">ARV</div>
+          <div class="hdr" id="c-vs-arv" style="font-size:13px;color:var(--t2)">—</div>
+        </div>
+        <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center;border:1px solid var(--border)">
+          <div style="font-size:8px;color:var(--t3)">REPAIRS</div>
+          <div class="hdr" id="c-vs-rep" style="font-size:13px;color:var(--amber)">—</div>
+        </div>
+        <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center;border:1px solid var(--border)">
+          <div style="font-size:8px;color:var(--t3)">YOUR FEE</div>
+          <div class="hdr" id="c-vs-fee" style="font-size:13px;color:var(--green)">—</div>
+        </div>
+        <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center;border:1px solid var(--border)">
+          <div style="font-size:8px;color:var(--t3)">CLOSE</div>
+          <div class="hdr" id="c-vs-days" style="font-size:13px;color:var(--purple)">14d</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- SCRIPTS -->
+<div id="p-scripts" class="panel" style="display:none">
+<div style="display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="card">
+      <span class="label">Who are you contacting?</span>
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        <button id="contact-seller" onclick="setContact('seller')" style="flex:1;padding:11px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--green);background:var(--greendim);color:var(--green)">🏠 Seller</button>
+        <button id="contact-agent" onclick="setContact('agent')" style="flex:1;padding:11px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3)">🤝 Agent</button>
+      </div>
+      <div id="contact-context" style="font-size:10px;color:var(--t2);padding:7px;background:var(--card);border-radius:6px;line-height:1.5;margin-bottom:10px"></div>
+      <span class="label">Lead Type</span>
+      <select id="sc-type" onchange="genScript()" style="margin-bottom:8px">
+        <optgroup label="— LANDVOICE —">
+          <option value="distressed_landvoice">🔥 Landvoice Distressed (Mixed)</option>
+        </optgroup>
+        <optgroup label="— OFF MARKET SELLER LEADS —">
+          <option value="preforeclosure">Pre-Foreclosure (NOD)</option>
+          <option value="taxdelinquent">Tax Delinquent</option>
+          <option value="probate">Probate / Estate</option>
+          <option value="divorce">Divorce / Lis Pendens</option>
+          <option value="tiredlandlord">Tired Landlord</option>
+          <option value="inherited">Inherited Property</option>
+          <option value="vacant">Vacant / Abandoned</option>
+          <option value="highequity">High Equity Absentee</option>
+          <option value="codeviolation">Code Violations</option>
+          <option value="relocation">Job Relocation</option>
+          <option value="damage">Water/Fire Damage</option>
+          <option value="senior">Senior Downsizing</option>
+          <option value="bankruptcy">Bankruptcy</option>
+          <option value="military">Military PCS</option>
+        </optgroup>
+        <optgroup label="— MLS LEADS —">
+          <option value="mls_expired">MLS — Expired Listing</option>
+          <option value="mls_active">MLS — Active / Cash Offer</option>
+          <option value="mls_pricecut">MLS — Price Reduced</option>
+          <option value="fsbo">FSBO</option>
+        </optgroup>
+      </select>
+      <span class="label">Name</span>
+      <input id="sc-name" value="Homeowner" oninput="genScript()" style="margin-bottom:7px"/>
+      <span class="label">Address</span>
+      <input id="sc-addr" value="the property" oninput="genScript()" style="margin-bottom:7px"/>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px">
+        <div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+    <span class="label" style="margin-bottom:0">Offer</span>
+    <span class="hdr" id="sc-offer-lbl" style="font-size:16px;color:var(--green)">$195,000</span>
+  </div>
+  <input type="range" min="50000" max="800000" step="1000" value="195000" id="sc-offer"
+    oninput="document.getElementById('sc-offer-lbl').textContent='$'+(+this.value).toLocaleString();genScript()" />
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:3px"><span>$50K</span><span>$800K</span></div>
+</div>
+        <div><span class="label">Close in</span>
+          <select id="sc-days" onchange="genScript()"><option value="7">7d</option><option value="10">10d</option><option value="14" selected>14d</option><option value="21">21d</option><option value="30">30d</option></select>
+        </div>
+      </div>
+      <div id="agent-extra" style="display:none;flex-direction:column;gap:7px;margin-bottom:7px">
+        <div><span class="label">Agent Name</span><input id="sc-agent" value="the listing agent" oninput="genScript()"/></div>
+        <div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+    <span class="label" style="margin-bottom:0">List Price</span>
+    <span class="hdr" id="sc-listprice-lbl" style="font-size:16px;color:var(--t2)">$420,000</span>
+  </div>
+  <input type="range" min="50000" max="1500000" step="5000" value="420000" id="sc-listprice"
+    oninput="document.getElementById('sc-listprice-lbl').textContent='$'+(+this.value).toLocaleString();genScript()" />
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:3px"><span>$50K</span><span>$1.5M</span></div>
+</div>
+        <div>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+    <span class="label" style="margin-bottom:0">Days Listed</span>
+    <span class="hdr" id="sc-dom-lbl" style="font-size:16px;color:var(--amber)">45 days</span>
+  </div>
+  <input type="range" min="1" max="365" step="1" value="45" id="sc-dom"
+    oninput="document.getElementById('sc-dom-lbl').textContent=this.value+' days';genScript()" />
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:3px"><span>1</span><span>365</span></div>
+</div>
+      </div>
+    </div>
+    <div class="card">
+      <span class="label">Seller Motivation Profile</span>
+      <div id="sc-mot-dims" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div style="margin-top:10px;padding-top:9px;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <span style="font-size:11px;color:var(--t2)">Motivation Score</span>
+          <span class="hdr" id="sc-mot-score" style="font-size:20px;color:var(--green)">65</span>
+        </div>
+        <div style="background:var(--card);border-radius:3px;height:5px;overflow:hidden"><div id="sc-mot-bar" style="height:100%;width:65%;background:var(--green);border-radius:3px;transition:width .3s"></div></div>
+        <div id="sc-strategy" style="margin-top:7px;font-size:11px;padding:7px 9px;border-radius:6px;border-left:2px solid var(--blue);color:var(--t2);line-height:1.5"></div>
+      </div>
+    </div>
+    <div class="card">
+      <span class="label">Active Pain Points</span>
+      <div id="sc-pains" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+    <div class="card">
+      <span class="label">Objection Handlers</span>
+      <div id="sc-objs" style="display:flex;flex-direction:column;gap:4px"></div>
+    </div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button onclick="setSTab('cold')" id="st-cold" style="padding:9px 16px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue)">Cold Call</button>
+      <button onclick="setSTab('vm')" id="st-vm" style="padding:9px 16px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3)">Voicemail</button>
+      <button onclick="setSTab('sms')" id="st-sms" style="padding:9px 16px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3)">SMS</button>
+      <button onclick="setSTab('letter')" id="st-letter" style="padding:9px 16px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3)">Letter</button>
+      <button onclick="setSTab('email')" id="st-email" style="padding:9px 16px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3)">Email</button>
+      <button onclick="setSTab('seq')" id="st-seq" style="padding:9px 16px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3)">Follow-Up Seq</button>
+    </div>
+    <div id="sc-banner" class="card" style="border-left:3px solid var(--blue)">
+      <div id="sc-banner-title" style="font-size:15px;font-weight:700"></div>
+      <div id="sc-banner-desc" style="font-size:13px;color:var(--t2);margin-top:4px;line-height:1.6"></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border)">
+        <div id="sc-tab-lbl" style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">Cold Call Script</div>
+        <button onclick="copyScript()" id="sc-copy-btn" style="background:var(--card);border:1px solid var(--border2);border-radius:5px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--t3)">Copy</button>
+      </div>
+      <pre id="sc-content" style="padding:14px;font-size:14px;color:var(--t1);white-space:pre-wrap;line-height:1.75;min-height:320px;max-height:600px;overflow-y:auto;font-family:'DM Sans',sans-serif;background:transparent"></pre>
+    </div>
+    <div id="sc-painlines" class="card" style="display:none">
+      <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Lines for Their Pain Points</div>
+      <div id="sc-painlines-content"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+</div>
+
+<script>
+const fm=(n)=>n||n===0?'$'+Math.round(n).toLocaleString():'—';
+const esc=(s)=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+function _csvSplitRow(row){const cols=[];let cur='',inQ=false;for(let i=0;i<row.length;i++){const ch=row[i];if(inQ){if(ch==='"'&&row[i+1]==='"'){cur+='"';i++;}else if(ch==='"'){inQ=false;}else{cur+=ch;}}else{if(ch==='"'){inQ=true;}else if(ch===','){cols.push(cur.trim());cur='';}else{cur+=ch;}}}cols.push(cur.trim());return cols;}
+let contactMode='seller',sTab='cold',calcMode='quick',route='seller',openObj=null;
+const motVals={timeline:3,financial:3,condition:3,attachment:3,competition:3};
+const activePains=new Set();
+let leads=[],filteredLeads=[];
+
+const LIST_TYPE_INFO={
+  preforeclosure:{desc:"NOD filed — countdown to foreclosure auction. Highest urgency leads. These sellers need a solution fast before the court date.",sellerBonus:25},
+  taxdelinquent:{desc:"2+ years delinquent on property taxes. Compounding fines create real urgency. Paying off taxes at close is your #1 value prop.",sellerBonus:20},
+  probate:{desc:"Estate sale — court-supervised. Timeline depends on authority level. Personal Representative controls the sale.",sellerBonus:10},
+  absentee:{desc:"Owner's mailing address differs from property. Often tired landlords or inherited properties. Management burden is the pain.",sellerBonus:15},
+  vacant:{desc:"Property shows no activity — USPS vacancy flag, no utilities, visual signs. Owner may be anywhere. Skip trace required.",sellerBonus:20},
+  mls_expired:{desc:"Listing expired — seller tried retail and failed. Maximum frustration = maximum openness to alternatives. Call within 24h.",sellerBonus:5},
+  mls_active:{desc:"Currently listed with an agent. Approach the agent with a cash offer. Be fast — other investors are watching the same list.",sellerBonus:0},
+  mls_pricecut:{desc:"Active listing with 1+ price reductions. Seller is softening. Multiple cuts = high motivation.",sellerBonus:10},
+  fsbo:{desc:"Selling without an agent — they want to save commission. Show your net offer beats their retail net after costs.",sellerBonus:5},
+  taxlien:{desc:"Active city/county code violations or tax liens. Compounding legal exposure. Seller wants it gone.",sellerBonus:22},
+  highequity:{desc:"Own free & clear or very low LTV. Not in pain financially but sitting on a large unlocked asset.",sellerBonus:8},
+  distressed_landvoice:{desc:"Landvoice Distressed — mixed bag: NOD, Lis Pendens, financial distress, absentee, vacant. Each record is scrubbed and phone-matched up to 95%. Treat every lead as an unknown distress type until you qualify them on the first call. High urgency across the board.",sellerBonus:22,agentNote:"Off-market only. Go direct to seller. No agent involved."},
+  divorce:{desc:"Lis Pendens filed — divorce proceedings include property. Both parties usually want it resolved fast and cleanly.",sellerBonus:18},
+  damage:{desc:"Insurance claim or uninsured damage — water, fire, mold. Owner overwhelmed by repair scope. Buy as-is = instant relief.",sellerBonus:22},
+  senior:{desc:"Elderly owner downsizing to assisted living or smaller home. Long-term owner, likely high equity. Empathy first — don't rush.",sellerBonus:8},
+  bankruptcy:{desc:"Chapter 7/13 filed. Trustee may control sale. Move fast once approved — court sets the deadline.",sellerBonus:20},
+  military:{desc:"PCS orders received — hard move date, no flexibility. Certainty and timing beat price every single time.",sellerBonus:18}
+};
+
+const ROUTE_INFO={
+  seller:"Go direct to the property owner. Skip the agent entirely. Best for off-market leads, NODs, tax records, and any lead where no agent is involved.",
+  agent:"Contact the listing agent first. Required for all active MLS listings. Build rapport — agents are gatekeepers AND potential deal partners."
+};
+
+const STACK_FILTERS=[
+  {id:'sf-vacant',label:'Vacant',key:'vacant',color:'#9b6ff7'},
+  {id:'sf-absentee',label:'Absentee Owner',key:'absentee',color:'#4f8ef7'},
+  {id:'sf-outofstate',label:'Out of State',key:'outofstate',color:'#00d4ff'},
+  {id:'sf-equity60',label:'60%+ Equity',key:'equity60',color:'#0ecf8a'},
+  {id:'sf-dom60',label:'60+ Days on Market',key:'dom60',color:'#f0a500'},
+  {id:'sf-pricecut',label:'Price Cut',key:'pricecut',color:'#f04060'},
+  {id:'sf-freeclear',label:'Free & Clear',key:'freeclear',color:'#0ecf8a'},
+  {id:'sf-preforeclosure',label:'Pre-Foreclosure',key:'preforeclosure',color:'#f04060'},
+  {id:'sf-taxdelinquent',label:'Tax Delinquent',key:'taxdelinquent',color:'#f0a500'},
+  {id:'sf-probate',label:'Probate',key:'probate',color:'#eab308'},
+  {id:'sf-multiflags',label:'3+ Flags (Stack)',key:'multiflags',color:'#ff6b35'},
+  {id:'sf-motivated',label:'Score 75+',key:'motivated',color:'#f04060'},
+];
+
+function nav(p){
+  ['analyzer','calc','scripts'].forEach(id=>{
+    document.getElementById('p-'+id).style.display=id===p?'block':'none';
+    const n=document.getElementById('n-'+id);
+    n.style.background=id===p?'var(--bluedim)':'transparent';
+    n.style.color=id===p?'var(--blue)':'var(--t3)';
+    n.style.borderColor=id===p?'var(--blue)':'var(--border)';
+  });
+}
+
+function initStackFilters(){
+  document.getElementById('stack-filters').innerHTML=STACK_FILTERS.map(f=>`
+    <label style="display:flex;align-items:center;gap:5px;cursor:pointer;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px" id="fwrap-${f.id}">
+      <input type="checkbox" id="${f.id}" style="accent-color:${f.color};width:12px;height:12px" onchange="highlightFilter('${f.id}','${f.color}')"/>
+      <span style="font-size:12px;font-weight:600;color:var(--t2)">${f.label}</span>
+    </label>`).join('');
+}
+
+function highlightFilter(id,color){
+  const wrap=document.getElementById('fwrap-'+id);
+  const checked=document.getElementById(id).checked;
+  wrap.style.borderColor=checked?color:'var(--border)';
+  wrap.style.background=checked?color+'18':'var(--card)';
+}
+
+function updateListType(){
+  const t=document.getElementById('list-type').value;
+  document.getElementById('list-type-desc').textContent=(LIST_TYPE_INFO[t]||{}).desc||'';
+}
+
+function setRoute(r){
+  route=r;
+  ['seller','agent'].forEach(x=>{
+    const btn=document.getElementById('route-'+x);
+    const active=x===r;
+    btn.style.background=active?(x==='seller'?'var(--greendim)':'var(--bluedim)'):'transparent';
+    btn.style.color=active?(x==='seller'?'var(--green)':'var(--blue)'):'var(--t3)';
+    btn.style.borderColor=active?(x==='seller'?'var(--green)':'var(--blue)'):'var(--border)';
+  });
+  document.getElementById('route-desc').style.borderLeftColor=r==='seller'?'var(--green)':'var(--blue)';
+  document.getElementById('route-desc').textContent=ROUTE_INFO[r];
+  saveState();
+}
+
+function scoreFlags(l){
+  const flags=[];
+  if(l.vacant||l.distress==='Vacant/Abandoned') flags.push('vacant');
+  if(l.absentee||l.outofstate) flags.push('absentee');
+  if(l.outofstate) flags.push('outofstate');
+  const eq=l.arv>0?((l.arv-(l.debt||0))/l.arv)*100:0;
+  if(eq>=60) flags.push('equity60');
+  if((l.dom||0)>=60) flags.push('dom60');
+  if(l.pricecuts>0) flags.push('pricecut');
+  if((l.debt||0)===0&&l.arv>0) flags.push('freeclear');
+  if(l.distress==='Pre-foreclosure') flags.push('preforeclosure');
+  if(l.distress==='Tax Delinquent') flags.push('taxdelinquent');
+  if(l.distress==='Probate/Estate') flags.push('probate');
+  return flags;
+}
+
+function aiScore(l){
+  let s=0;
+  const flags=scoreFlags(l);
+  // Distress type base points (max ~30)
+  const dp={'Pre-foreclosure':30,'Tax Delinquent':28,'Water/Fire Damage':25,'Bankruptcy':24,'Divorce':22,'Code Violations':20,'Probate/Estate':18,'Vacant/Abandoned':18,'Distressed (Landvoice)':25,'Military PCS':18,'Inherited':15,'Tired Landlord':16,'Job Relocation':14,'FSBO/Expired':10,'FSBO':8,'Senior Downsizing':8,'High Equity Absentee':10};
+  s+=(dp[l.distress]||8);
+  // Discount from ARV — bigger discount = hotter deal (max 25)
+  if(l.arv>0&&l.asking>0){const disc=(l.arv-l.asking)/l.arv;s+=Math.min(25,disc*100);}
+  // Days on market — stale = motivated (max 15)
+  const dom=l.dom||0;s+=dom>=120?18:dom>=90?15:dom>=60?10:dom>=30?5:0;
+  // Price cuts signal desperation (max ~15)
+  s+=Math.min(15,(l.pricecuts||0)*5);
+  // Multi-flag stacking — more signals = stronger lead (max 18)
+  if(flags.length>=4)s+=18;else if(flags.length>=3)s+=12;else if(flags.length===2)s+=6;
+  // Equity — free-and-clear is gold in Vegas (max 15)
+  if(l.arv>0){const eq=((l.arv-(l.debt||0))/l.arv)*100;s+=eq>=95?15:eq>80?12:eq>60?8:eq>40?4:0;}
+  // Vacant + absentee combo bonus
+  if(l.vacant&&(l.absentee||l.outofstate))s+=5;
+  return Math.min(100,Math.round(s));
+}
+
+const SAMPLE={
+  preforeclosure:[
+    {id:1,name:"Maria Gonzalez",address:"4287 Carey Ave, N. Las Vegas 89032",arv:318000,asking:258000,debt:210000,repairs:45000,distress:"Pre-foreclosure",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Clark County NOD",notes:"NOD filed 38 days ago. Owner called — stressed about timeline."},
+    {id:2,name:"Robert Hicks",address:"712 Lamb Blvd, Las Vegas 89110",arv:295000,asking:240000,debt:195000,repairs:38000,distress:"Pre-foreclosure",dom:0,pricecuts:0,vacant:true,absentee:true,outofstate:false,source:"Clark County NOD",notes:"Vacant 3 months. Owner in Arizona. Skip traced — has 2 phones."},
+    {id:3,name:"Chen Family Trust",address:"9843 Warm Springs Rd, Henderson 89002",arv:445000,asking:390000,debt:280000,repairs:22000,distress:"Pre-foreclosure",dom:0,pricecuts:0,vacant:false,absentee:true,outofstate:true,source:"Clark County NOD",notes:"Trust owns it. Out of state CA. Large equity cushion."},
+  ],
+  mls_active:[
+    {id:4,name:"Listed by: Sarah Johnson (Realty ONE)",address:"2291 Cameo Hills Dr, Henderson 89014",arv:512000,asking:498000,debt:0,repairs:18000,distress:"MLS Active",dom:62,pricecuts:2,vacant:false,absentee:false,outofstate:false,source:"MLS Active",agentName:"Sarah Johnson",agentPhone:"702-555-4421",notes:"2 price reductions. Cash offers preferred per remarks. AS-IS noted.",mlsRemarks:"Cash offers preferred. Seller motivated. AS-IS, priced to sell."},
+    {id:5,name:"Listed by: Mike Torres (BHHS Nevada)",address:"5518 Eldora Ave, Spring Valley 89146",arv:385000,asking:372000,debt:0,repairs:31000,distress:"MLS Active",dom:88,pricecuts:3,vacant:false,absentee:false,outofstate:false,source:"MLS Active",agentName:"Mike Torres",agentPhone:"702-555-7832",notes:"88 days on market, 3 price cuts. Agent says bring all offers.",mlsRemarks:"Bring all offers. Seller will consider all reasonable offers. Quick close possible."},
+    {id:6,name:"Listed by: Linda Park (Signature RE)",address:"3302 Torino Ave, N. Las Vegas 89030",arv:278000,asking:259000,debt:0,repairs:52000,distress:"MLS Active",dom:41,pricecuts:1,vacant:true,absentee:true,outofstate:true,source:"MLS Active",agentName:"Linda Park",agentPhone:"702-555-3310",notes:"Vacant. Out-of-state owner. AS-IS noted in remarks.",mlsRemarks:"Property sold AS-IS. Owner out of state. All offers considered."},
+  ],
+  taxdelinquent:[
+    {id:7,name:"James & Carol Patton",address:"5518 Lake Mead Blvd, Whitney 89115",arv:278000,asking:215000,debt:0,repairs:38000,distress:"Tax Delinquent",dom:0,pricecuts:0,vacant:false,absentee:true,outofstate:false,source:"Clark County Treasurer",notes:"$14,200 in back taxes. 3 years delinquent. Free & clear on mortgage."},
+    {id:8,name:"Marcus Webb",address:"412 Carey Ave, N. Las Vegas 89030",arv:305000,asking:240000,debt:45000,repairs:55000,distress:"Tax Delinquent",dom:0,pricecuts:0,vacant:true,absentee:true,outofstate:true,source:"Clark County Treasurer",notes:"Vacant. Out of state. $9,800 back taxes. Has code violations too."},
+  ],
+  distressed_landvoice:[
+    {id:20,name:"Patricia & Marco Delgado",address:"3892 Pecos Rd, N. Las Vegas 89115",arv:298000,asking:238000,debt:225000,repairs:42000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Landvoice Distressed",notes:"Landvoice temp gauge: orange. Missed 2 payments per records. No NOD filed yet. Owner still in home."},
+    {id:21,name:"Kevin Albright",address:"7741 Losee Rd, N. Las Vegas 89086",arv:315000,asking:255000,debt:0,repairs:35000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:true,absentee:true,outofstate:true,source:"Landvoice Distressed",notes:"Vacant. Out-of-state owner — Texas. Landvoice flagged financial distress. No mortgage. Free & clear."},
+    {id:22,name:"Sandra Moreno",address:"2218 Carey Ave, N. Las Vegas 89030",arv:278000,asking:215000,debt:195000,repairs:38000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Landvoice Distressed",notes:"Lis Pendens filed — divorce proceedings. Landvoice flagged. Husband moved out. Wife needs fast close."},
+    {id:23,name:"James Thorton",address:"5504 Lamb Blvd, Las Vegas 89110",arv:342000,asking:280000,debt:260000,repairs:28000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:true,outofstate:false,source:"Landvoice Distressed",notes:"Rental property. Landvoice temp gauge showing early financial stress. Tenant behind on rent. Owner local."},
+    {id:24,name:"Rosa & Ernesto Fuentes",address:"1109 Tonopah Ave, N. Las Vegas 89030",arv:265000,asking:208000,debt:220000,repairs:45000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Landvoice Distressed",notes:"Landvoice: Notice of Default filed 22 days ago. High urgency. Neighborhood: older stock, needs full rehab."},
+  ],
+  mls_expired:[
+    {id:9,name:"Gary & Susan Fletcher",address:"8847 Warm Springs Rd, Enterprise 89148",arv:419000,asking:355000,debt:180000,repairs:31000,distress:"FSBO/Expired",dom:97,pricecuts:4,vacant:false,absentee:false,outofstate:false,source:"MLS Expired",notes:"Listing expired yesterday. 4 price reductions. Was listed at $415K."},
+    {id:10,name:"Carla Mendez",address:"1442 Bruce St, Las Vegas 89119",arv:335000,asking:298000,debt:220000,repairs:24000,distress:"FSBO/Expired",dom:73,pricecuts:2,vacant:false,absentee:false,outofstate:false,source:"MLS Expired",notes:"Moving to Seattle for work. Listing just expired. Very motivated."},
+  ]
+};
+
+function loadSample(){
+  const lt=document.getElementById('list-type').value;
+  let key=lt;
+  if(!SAMPLE[key]){
+    if(lt.includes('mls_active'))key='mls_active';
+    else if(lt.includes('mls_expired')||lt.includes('mls_pricecut'))key='mls_expired';
+    else if(lt.includes('tax'))key='taxdelinquent';
+    else key='preforeclosure';
+  }
+  leads=(SAMPLE[key]||SAMPLE.preforeclosure).map(l=>({...l,score:aiScore(l),flags:scoreFlags(l)}));
+  filteredLeads=[...leads];
+  renderLeads();
+  document.getElementById('list-counter').textContent=leads.length+' leads loaded';
+  document.getElementById('list-counter').style.color='var(--green)';
+  saveState();
+}
+
+function parseCSV(){
+  const raw=document.getElementById('csv-input').value.trim();
+  if(!raw){loadSample();return;}
+  const rows=raw.split('\n').filter(r=>r.trim());
+  if(rows.length<2){loadSample();return;}
+  const header=_csvSplitRow(rows[0]).map(h=>h.toLowerCase().trim());
+
+  function sg(cols,fieldType){
+    const rules={
+      name:     {exact:['name','owner'],contains:['owner name','seller name','contact name','full name']},
+      firstname:{exact:['first name'],contains:['first name']},
+      lastname: {exact:['last name'],contains:['last name']},
+      address:  {exact:['address'],contains:['street address','property address','mailing address','addr','property street']},
+      arv:      {exact:['arv'],contains:['after repair value','estimated value','arv']},
+      asking:   {exact:['asking','price'],contains:['list price','asking price','sale price']},
+      repairs:  {exact:['rehab'],contains:['rehab cost','repair cost','est repair value','est repair','renovation cost','renovation'],startsWith:['repair'],excludes:['after repair value']},
+      debt:     {exact:['debt'],contains:['mortgage balance','loan balance','mortgage amount']},
+      dom:      {exact:['dom'],contains:['days on market','days listed']},
+      pricecuts:{exact:[],contains:['price reduction','price cut','reductions','cuts']},
+      distress: {exact:['distress'],contains:['lead type','seller type','status','distress']},
+      source:   {exact:['source'],contains:['lead source','source','channel']},
+      notes:    {exact:['notes'],contains:['notes','comments','remarks','description']},
+      agentname:{exact:[],contains:['agent name','listing agent','realtor','broker']},
+      agentphone:{exact:[],contains:['agent phone','agent #','realtor phone']},
+    };
+    const r=rules[fieldType]||{};
+    for(const t of (r.exact||[])){const idx=header.findIndex(h=>h===t);if(idx>=0)return cols[idx]||'';}
+    for(const t of (r.contains||[])){const idx=header.findIndex(h=>h.includes(t)&&!(r.excludes||[]).some(e=>h.includes(e)));if(idx>=0)return cols[idx]||'';}
+    if(r.startsWith){for(const t of r.startsWith){const idx=header.findIndex(h=>h.startsWith(t)&&!(r.excludes||[]).some(e=>h.includes(e)));if(idx>=0)return cols[idx]||'';}}
+    return '';
+  }
+
+  // Pre-compute indices for multi-column fields (Landvoice + other sources)
+  const cityIdx=header.findIndex(h=>h==='city'||h==='owner city'||h==='prop city');
+  const stateIdx=header.findIndex(h=>h==='state'||h==='owner state'||h==='prop state');
+  const zipIdx=header.findIndex(h=>h==='zipcode'||h==='zip'||h==='zip code'||h==='postal code');
+  const sqftIdx=header.findIndex(h=>h==='square footage'||h==='sq ft'||h==='sqft'||h==='living area'||h==='sq. ft.'||h==='building size');
+  const bedsIdx=header.findIndex(h=>h==='bedrooms'||h==='beds'||h==='bed count'||h==='# bedrooms');
+  const bathsIdx=header.findIndex(h=>h==='bathrooms'||h==='baths'||h==='bath count'||h==='# bathrooms');
+  const halfBathIdx=header.findIndex(h=>h.includes('1/2 bath')||h.includes('half bath'));
+
+  leads=rows.slice(1).map((row,i)=>{
+    const cols=_csvSplitRow(row);
+
+    // Name: handle first+last split or single owner column
+    const fn=sg(cols,'firstname'),ln=sg(cols,'lastname');
+    const name=fn&&ln?(fn+' '+ln).trim():fn||sg(cols,'name')||'Unknown Owner';
+
+    // Address: base street + append city/state/zip if present as separate columns
+    let addr=sg(cols,'address')||'';
+    const city=cityIdx>=0?cols[cityIdx]||'':'';
+    const state=stateIdx>=0?cols[stateIdx]||'':'';
+    const zip=zipIdx>=0?cols[zipIdx]||'':'';
+    if(addr&&city) addr+=', '+city;
+    if(addr&&state) addr+=', '+state;
+    if(addr&&zip) addr+=' '+zip;
+    if(!addr&&city) addr=[city,state,zip].filter(Boolean).join(', ');
+    addr=addr.trim()||'N/A';
+
+    // Square footage
+    const sqft=sqftIdx>=0?+(cols[sqftIdx]||0):0;
+
+    // ARV: use column if present, otherwise estimate from sqft (@$230/sqft LV median)
+    let arv=+(sg(cols,'arv')||0);
+    const arvEstimated=arv===0&&sqft>500;
+    if(arvEstimated) arv=Math.round(sqft*230);
+
+    // Beds/baths for notes
+    const beds=bedsIdx>=0?(cols[bedsIdx]||''):'';
+    const baths=bathsIdx>=0?(cols[bathsIdx]||''):'';
+    const halfBath=halfBathIdx>=0?(cols[halfBathIdx]||''):'';
+    const bathStr=baths&&halfBath&&+halfBath>0?baths+'.5ba':baths?baths+'ba':'';
+    const propDetails=[beds?beds+'bd':'',bathStr,sqft?sqft.toLocaleString()+' sqft':''].filter(Boolean).join(' · ');
+    const arvNote=arvEstimated?'⚠️ ARV est. @$230/sqft — enter actual ARV in Calc':'';
+    const existingNotes=sg(cols,'notes')||'';
+    const notes=[propDetails,arvNote,existingNotes].filter(Boolean).join(' | ');
+
+    return{
+      id:i+100, name, address:addr, arv, arvEstimated,
+      asking:+(sg(cols,'asking')||0),
+      debt:+(sg(cols,'debt')||0),
+      repairs:+(sg(cols,'repairs')||0),
+      dom:+(sg(cols,'dom')||0),
+      pricecuts:+(sg(cols,'pricecuts')||0),
+      distress:sg(cols,'distress')||'Distressed (Landvoice)',
+      source:sg(cols,'source')||'Imported',
+      notes, agentName:sg(cols,'agentname')||'',
+      agentPhone:sg(cols,'agentphone')||'',
+      sqft, beds, baths,
+    };
+  }).map(l=>({...l,score:aiScore(l),flags:scoreFlags(l)}));
+
+  filteredLeads=[...leads];renderLeads();
+  document.getElementById('list-counter').textContent=leads.length+' leads imported';
+  document.getElementById('list-counter').style.color='var(--green)';
+  saveState();
+}
+
+function applyFilters(){
+  const active=STACK_FILTERS.filter(f=>document.getElementById(f.id)?.checked).map(f=>f.key);
+  if(!active.length){filteredLeads=[...leads];renderLeads();return;}
+  filteredLeads=leads.filter(l=>active.every(fk=>{
+    if(fk==='motivated')return(l.score||0)>=75;
+    if(fk==='multiflags')return(l.flags||[]).length>=3;
+    return(l.flags||[]).includes(fk);
+  }));
+  renderLeads();
+  saveState();
+}
+
+function clearFilters(){
+  STACK_FILTERS.forEach(f=>{const el=document.getElementById(f.id);if(el)el.checked=false;highlightFilter(f.id,'var(--border)');});
+  filteredLeads=[...leads];renderLeads();
+}
+
+function sortLeads(){
+  const by=document.getElementById('sort-by').value;
+  filteredLeads.sort((a,b)=>{
+    if(by==='score')return(b.score||0)-(a.score||0);
+    if(by==='equity'){const ea=a.arv>0?((a.arv-(a.debt||0))/a.arv):0,eb=b.arv>0?((b.arv-(b.debt||0))/b.arv):0;return eb-ea;}
+    if(by==='dom')return(b.dom||0)-(a.dom||0);
+    if(by==='asking')return(a.asking||0)-(b.asking||0);
+    return 0;
+  });
+  renderLeads();
+}
+
+function exportTop(){
+  const top=filteredLeads.slice(0,10);
+  const lines=['Name,Address,AI Score,ARV,Asking,Equity%,DOM,Distress,Flags,Notes'];
+  const csvQ=(v)=>{const s=String(v==null?'':v);return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
+  top.forEach(l=>{const eq=l.arv>0?(((l.arv-(l.debt||0))/l.arv)*100).toFixed(0)+'%':'—';lines.push([l.name,l.address,l.score,fm(l.arv),fm(l.asking),eq,l.dom||0,l.distress,(l.flags||[]).join('|'),l.notes].map(csvQ).join(','));});
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cos-hub-top-leads.csv';a.click();
+}
+
+function renderLeads(){
+  if(!filteredLeads.length){document.getElementById('lead-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--t3)">No leads match the current filters.</div>';return;}
+  const isMLS=document.getElementById('list-type').value.includes('mls');
+  document.getElementById('lead-grid').innerHTML=filteredLeads.map((l,i)=>{
+    const score=l.score||0;
+    const sc=score>=80?'var(--red)':score>=60?'var(--green)':score>=40?'var(--amber)':'var(--t3)';
+    const sl=score>=80?'🔥 FIRE':score>=60?'✅ SOLID':score>=40?'⚠️ WARM':'❄️ COLD';
+    const eq=l.arv>0?Math.round(((l.arv-(l.debt||0))/l.arv)*100):0;
+    const mao=l.arv>0?Math.round(l.arv*0.70-l.repairs-13000):0;
+    const flags=l.flags||[];
+    const isAgent=isMLS&&l.agentName;
+    return`<div class="card" style="border:1px solid ${score>=80?'var(--red)44':score>=60?'var(--green)22':'var(--border)'}">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+    <div style="flex:1"><div style="font-size:15px;font-weight:700;color:var(--t1);line-height:1.3">${esc(l.name)}</div><div style="font-size:12px;color:var(--t3);margin-top:3px">${esc(l.address)}</div></div>
+    <div style="text-align:center;flex-shrink:0;margin-left:10px"><div class="hdr" style="font-size:32px;color:${sc};line-height:1">${score}</div><div style="font-size:9px;font-weight:700;color:${sc}">${sl}</div></div>
+  </div>
+  ${l.mlsRemarks?`<div style="font-size:10px;color:var(--cyan);background:var(--bluedim);border-left:2px solid var(--cyan);padding:5px 8px;border-radius:0 5px 5px 0;margin-bottom:8px;line-height:1.4">📋 MLS: "${esc(l.mlsRemarks)}"</div>`:''}
+  ${l.notes?`<div style="font-size:10px;color:var(--t2);background:var(--card);padding:5px 8px;border-radius:5px;margin-bottom:8px;line-height:1.4;border-left:2px solid var(--border2)">${esc(l.notes)}</div>`:''}
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px">
+    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">ARV${l.arvEstimated?' <span style=\"color:var(--amber)\">est.</span>':''}</div><div class="hdr" style="font-size:13px;color:${l.arvEstimated?'var(--amber)':'var(--t1)'}">${l.arv?'$'+Math.round(l.arv/1000)+'K':'—'}</div></div>
+    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">Asking</div><div class="hdr" style="font-size:13px;color:var(--amber)">${l.asking?'$'+Math.round(l.asking/1000)+'K':'—'}</div></div>
+    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">MAO</div><div class="hdr" style="font-size:13px;color:var(--blue)">${mao>0?'$'+Math.round(mao/1000)+'K':'—'}</div></div>
+    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">Equity</div><div class="hdr" style="font-size:13px;color:var(--green)">${eq}%</div></div>
+  </div>
+  <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
+    ${l.dom?`<span class="tag-pill" style="background:${l.dom>=60?'#200a00':'var(--card)'};color:${l.dom>=60?'var(--amber)':'var(--t3)'}">📅 ${l.dom}d</span>`:''}
+    ${l.pricecuts?`<span class="tag-pill" style="background:#200a0a;color:var(--red)">🔻 ${l.pricecuts} cut${l.pricecuts>1?'s':''}</span>`:''}
+    ${flags.map(f=>`<span class="tag-pill" style="background:var(--border);color:var(--t2)">${esc(f)}</span>`).join('')}
+    <span class="tag-pill" style="background:var(--card);color:var(--t3)">${esc(l.source)}</span>
+  </div>
+  <div style="display:flex;gap:5px">
+    ${isAgent?`<button onclick="launchAgentScript(${i})" style="flex:1;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px;font-size:11px;font-weight:700">🤝 Agent Script</button>`:`<button onclick="launchSellerScript(${i})" style="flex:1;background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:6px;padding:6px;font-size:11px;font-weight:700">📞 Seller Script</button>`}
+    <button onclick="launchCalc(${l.arv||0},${l.repairs||0})" style="flex:1;background:var(--card);color:var(--t2);border:1px solid var(--border);border-radius:6px;padding:6px;font-size:11px;font-weight:700">🧮 Calc</button>
+  </div>
+</div>`;
+  }).join('');
+}
+
+function launchSellerScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('seller');document.getElementById('sc-name').value=l.name||'Homeowner';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-offer').value=l.asking||Math.round((l.arv||0)*0.65);const lt=document.getElementById('list-type').value;const tm={preforeclosure:'preforeclosure',taxdelinquent:'taxdelinquent',probate:'probate',mls_expired:'mls_expired',mls_active:'mls_active',mls_pricecut:'mls_active',fsbo:'fsbo',vacant:'vacant',divorce:'divorce',highequity:'highequity',taxlien:'codeviolation',absentee:'tiredlandlord',distressed_landvoice:'distressed_landvoice',damage:'damage',senior:'senior',bankruptcy:'bankruptcy',military:'military'};document.getElementById('sc-type').value=tm[lt]||'preforeclosure';genScript();}
+function launchAgentScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('agent');document.getElementById('sc-agent').value=l.agentName||'the listing agent';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-listprice').value=l.asking||0;document.getElementById('sc-dom').value=l.dom||0;const lt=document.getElementById('list-type').value;document.getElementById('sc-type').value=lt.includes('expired')?'mls_expired':'mls_active';genScript();}
+function launchCalc(arv,repairs){nav('calc');document.getElementById('c-arv').value=arv||380000;if(repairs>0){const sqft=+(document.getElementById('c-sqft').value)||1600;const psf=Math.round(repairs/sqft);const clamped=Math.min(80,Math.max(5,psf));document.getElementById('c-psf').value=clamped;const psfLbl=document.getElementById('c-psf-lbl');if(psfLbl)psfLbl.textContent='$'+clamped;['c-r1','c-r2','c-r3','c-r4'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}calcMAO();}
+
+function setCalcMode(m){
+  calcMode=m;
+  ['quick','full'].forEach(x=>{const b=document.getElementById('c-m'+x[0]);b.style.background=x===m?'var(--bluedim)':'transparent';b.style.color=x===m?'var(--blue)':'var(--t3)';b.style.borderColor=x===m?'var(--blue)':'var(--border)';});
+  document.getElementById('c-full-extra').style.display=m==='full'?'flex':'none';
+  calcMAO();
+}
+
+function updateCalcPct(v){const p=+v;const lbl=document.getElementById('c-pct-lbl');if(lbl)lbl.textContent=p+'% '+(p<=59?'Very Conservative':p<=65?'Conservative':p<=72?'Standard':p<=79?'Competitive':p<=89?'Aggressive':p<=94?'Very Aggressive':'Retail / Full Price');calcMAO();}
+
+function calcMAO(){
+  const arv=+(document.getElementById('c-arv')||{value:0}).value||0;
+  const sqft=+(document.getElementById('c-sqft')||{value:1600}).value||1600;
+  const psf=+(document.getElementById('c-psf')||{value:25}).value||25;
+  const flat=['c-r1','c-r2','c-r3','c-r4'].reduce((s,id)=>s+(+(document.getElementById(id)||{value:0}).value||0),0);
+  const repOverride=+(document.getElementById('c-rep-override')||{value:''}).value||0;
+  const repairs=repOverride>0?repOverride:sqft*psf+flat;
+  const pct=(+(document.getElementById('c-pct')||{value:70}).value||70)/100;
+  const fee=+(document.getElementById('c-fee')||{value:13000}).value||13000;
+  const hood=(document.getElementById('c-hood')||{value:'Enterprise'}).value;
+  let mao;
+  if(calcMode==='quick'){mao=arv*pct-repairs-fee;}
+  else{const bp=(+(document.getElementById('c-bp')||{value:20}).value||20)/100;const hm=+(document.getElementById('c-hm')||{value:3}).value||3;const ac=(+(document.getElementById('c-ac')||{value:6}).value||6)/100;const fc=arv*0.03+arv*ac+800*hm+1800+(arv/500)*1.95;mao=arv-repairs-fc-arv*bp-fee;}
+  const dd=arv>0?Math.min(25,(arv-mao)/arv*25):0;
+  const rs=Math.max(0,15-(repairs/Math.max(arv,1))*60);
+  const premiumHoods=['Summerlin','Summerlin South','The Lakes','Anthem (Henderson)','MacDonald Ranch','Green Valley','Seven Hills'];
+  const solidHoods=['Henderson','Enterprise','Spring Valley','Southwest Las Vegas','Silverado Ranch','Rhodes Ranch','Mountains Edge','Inspirada'];
+  const midHoods=['Paradise','Whitney','Sunrise Manor','Winchester','Boulder City','Aliante','Centennial Hills','Lone Mountain'];
+  const ls=premiumHoods.includes(hood)?15:solidHoods.includes(hood)?12:midHoods.includes(hood)?9:7;
+  const distressVal=(document.getElementById('c-distress')||{value:''}).value;
+  const distressBonus={
+    'Pre-foreclosure':12,'Notice of Trustee Sale':14,'Lis Pendens':11,'Tax Delinquent':11,
+    'Code Violations':9,'Distressed (Landvoice)':10,'Divorce':9,'Probate/Estate':7,
+    'Inherited':6,'Job Relocation':5,'Death in Family':7,'Medical Hardship':6,
+    'Bankruptcy':10,'Vacant':8,'Tired Landlord':6,'Problem Tenants':5,
+    'Hoarder/Condition':4,'Fire Damage':5,'Foundation Issues':3,'Failed Flip':4,
+    'High Equity Absentee':4,'Underwater':3,'Behind on Payments':9,'Debt Consolidation':8,'HOA Delinquent':6,
+    'IRS Tax Lien':8,'FSBO/Expired':3,'Expired Listing':4,'Price Reduced':4,
+    'Failed to Close':5,'Short Sale':7,'Other':2
+  }[distressVal]||4;
+  const score=Math.min(100,Math.round(dd+rs+ls+distressBonus+(pct>=0.7?10:pct>=0.65?7:5)+(mao>0?10:0)));
+  const sc=score>=80?'var(--red)':score>=60?'var(--green)':score>=40?'var(--amber)':'var(--t3)';
+  const sl=score>=80?'🔥 FIRE DEAL':score>=60?'✅ SOLID DEAL':score>=40?'⚠️ MARGINAL':'❌ PASS';
+  document.getElementById('c-score-num').textContent=score;document.getElementById('c-score-num').style.color=sc;
+  document.getElementById('c-score-lbl').textContent=sl;document.getElementById('c-score-lbl').style.color=sc;
+  document.getElementById('c-score-bar').style.width=score+'%';document.getElementById('c-score-bar').style.background=sc;
+  document.getElementById('c-mao').textContent=fm(mao);
+  document.getElementById('c-mao-lo').textContent=fm(mao*.95);document.getElementById('c-mao-mi').textContent=fm(mao);document.getElementById('c-mao-hi').textContent=fm(mao*1.03);
+  const calcRepairs=sqft*psf+flat;
+  // Show slider estimate live
+  const sliderEl=document.getElementById('c-rep-slider');
+  if(sliderEl) sliderEl.textContent=fm(calcRepairs);
+  // Active total = override if set, else calculated
+  const activeRepairs=repOverride>0?repOverride:calcRepairs;
+  const repTotalEl=document.getElementById('c-rep-total');
+  if(repTotalEl){repTotalEl.textContent=fm(activeRepairs);repTotalEl.style.color=repOverride>0?'var(--blue)':'var(--amber)';}
+  // Tint override box when active
+  const roEl=document.getElementById('c-rep-override');
+  if(roEl){roEl.style.borderColor=repOverride>0?'var(--blue)':'var(--border2)';roEl.style.color=repOverride>0?'var(--blue)':'var(--amber)';}
+  const allin=mao+fee+repairs,eq=arv-allin,roi=mao+fee>0?(eq/(mao+fee)*100):0;
+  document.getElementById('c-allin').textContent=fm(allin);document.getElementById('c-equity').textContent=fm(eq);document.getElementById('c-equity').style.color=eq>0?'var(--green)':'var(--red)';document.getElementById('c-roi').textContent=roi.toFixed(1)+'%';document.getElementById('c-myfee').textContent=fm(fee);
+  // Disposition = what you sell to your buyer (MAO + your fee)
+  const disposition=mao+fee;
+  const dispEl=document.getElementById('c-disposition');
+  if(dispEl){dispEl.textContent=disposition>0?fm(disposition):'—';dispEl.style.color=disposition>0?'var(--green)':'var(--red)';}
+  document.getElementById('c-formula').innerHTML=(calcMode==='quick'?[[`ARV × ${Math.round(pct*100)}%`,fm(arv*pct),'var(--t1)'],['− Repairs','−'+fm(repairs),'var(--red)'],['− Assignment Fee','−'+fm(fee),'var(--red)'],['= MAO',fm(mao),'var(--blue)']]:[['ARV',fm(arv),'var(--t1)'],['− Repairs','−'+fm(repairs),'var(--red)'],['− Closings/Fees','−'+fm(arv*0.03),'var(--red)'],['− Buyer Profit','−'+fm(arv*(+(document.getElementById('c-bp')||{value:20}).value/100)),'var(--red)'],['− Assignment Fee','−'+fm(fee),'var(--red)'],['= MAO',fm(mao),'var(--blue)']]).map(([l,v,c])=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:${l==='= MAO'?'12':'10'}px"><span style="color:var(--t3)">${l}</span><span style="font-weight:${l==='= MAO'?800:600};color:${c}">${v}</span></div>`).join('');
+  const exits=[{l:'Fix & Flip',s:repairs>25000&&roi>25?88:55,c:'#4f8ef7',n:'Heavy rehab'},{l:'Wholetail',s:repairs<20000&&eq>60000?85:52,c:'#0ecf8a',n:'Light work'},{l:'Buy & Hold',s:arv<400000?72:45,c:'#9b6ff7',n:'Cash flow check'},{l:'Double Close',s:fee>18000?78:48,c:'#f0a500',n:'Large fee'},{l:'Subject-To',s:debt>arv*0.7&&eq>30000?82:50,c:'#ff6b6b',n:'Assume mortgage'},{l:'Seller Finance',s:arv<250000&&debt<120000?80:48,c:'#a8e6cf',n:'Owner financed'},{l:'Novation',s:repairs>30000&&eq>50000?81:52,c:'#ffd93d',n:'Assign mortgage'}].sort((a,b)=>b.s-a.s);
+  document.getElementById('c-exits').innerHTML=exits.map((e,i)=>`<div style="background:${i===0?e.c+'22':'var(--card)'};border:1px solid ${i===0?e.c+'55':'var(--border)'};border-radius:7px;padding:8px;text-align:center"><div style="font-size:10px;font-weight:700;color:${i===0?e.c:'var(--t3)'}">${e.l}</div><div style="font-size:9px;color:var(--t3)">${e.n}</div>${i===0?`<div style="font-size:9px;color:${e.c};font-weight:700;margin-top:2px">★ BEST</div>`:''}</div>`).join('');
+  window._c_mao=mao;window._c_fee=fee;window._c_repairs=repairs;window._c_arv=arv;
+
+  // Update verbal offer script — live
+  const sellerName=(document.getElementById('c-seller-name')||{value:''}).value.trim()||'[Seller Name]';
+  const propAddr=(document.getElementById('c-prop-addr')||{value:''}).value.trim()||'[Property Address]';
+  const closeDays=+(document.getElementById('c-close-days')||{value:14}).value||14;
+  const tone=(document.getElementById('c-tone')||{value:'direct'}).value;
+  const distressType=distressVal||'Pre-foreclosure';
+
+  // Pick distress-aware opener
+  const distressOpener={
+    'Pre-foreclosure':`I know about the Notice of Default and I'm calling because I can stop that clock — fast, private, no listing required.`,
+    'Notice of Trustee Sale':`I see there's a Trustee Sale date coming up. I can close before that date and keep this completely off the public record.`,
+    'Tax Delinquent':`I pay off ALL the back taxes at closing as part of the deal — you walk away with cash in hand and zero tax debt.`,
+    'Divorce':`I can do one transaction where both parties sign once, close in ${closeDays} days, and you're both completely free and clear.`,
+    'Probate/Estate':`I specialize in estate properties — I buy as-is, handle all logistics, and close on whatever timeline the estate needs.`,
+    'Vacant':`I know the property has been sitting vacant — I take it completely off your hands, contents and all, and close fast.`,
+    'Tired Landlord':`I can take this property off your plate entirely — tenants and all. You don't have to deal with a single thing after we sign.`,
+    'Inherited':`I work with families in your situation all the time — we handle all the logistics, cleanout, everything. You just sign once.`,
+    'Bankruptcy':`A fast cash sale before your filing date can dramatically simplify your case. I can close in ${closeDays} days.`,
+    'Code Violations':`All code violations and city citations transfer with the property — they become my problem at closing, not yours.`,
+    'Job Relocation':`Tell me your move date and I'll close the sale on that exact day — cash, no bank delays, no surprises.`,
+    'Medical Hardship':`The last thing you need right now is the stress of a traditional sale. I can make this one phone call and take it off your plate.`,
+    'Distressed (Landvoice)':`I work with homeowners in all kinds of tough situations. Whatever's going on with the property, I can make this simple and fast.`,
+    'Behind on Payments':`We can close before your next payment is due — stopping the damage to your credit and putting cash in your pocket today.`,
+    'IRS Tax Lien':`Federal liens get resolved at the closing table. One transaction clears everything — you walk away clean.`,
+    'HOA Delinquent':`HOA arrears come out of the proceeds at closing. You won't need to pay a cent out of pocket.`,
+    'FSBO/Expired':`You've already tried the traditional route. I'm offering you a guaranteed close — no listing, no showings, no more waiting.`,
+    'Expired Listing':`Your listing just came off the market. Before you relist, let me show you what you'd actually net from a direct cash sale.`,
+    'Failed to Close':`I know what it feels like when a deal falls through at the last minute. Mine won't. Cash is ready, no contingencies.`,
+    'Short Sale':`I can work with your lender directly as part of the process — no out-of-pocket costs for you.`,
+  }[distressType]||`I buy homes directly for cash — fast, as-is, no agents, no fees.`;
+
+  const toneScripts={
+    direct:`${sellerName}, I'll be straight with you.
+
+${distressOpener}
+
+Here's my offer:
+
+→  Cash offer:    ${fm(mao)}
+→  Close in:      ${closeDays} days
+→  Condition:     As-is — zero repairs required
+→  Fees:          None. I pay all closing costs.
+→  Certainty:     No financing, no inspection outs
+
+That ${fm(mao)} is in your hands in ${closeDays} days. No agents skimming 6%, no repair demands, no waiting.
+
+Does that number work for you, or is there a number that would make this a done deal today?`,
+    empathy:`${sellerName}, I really appreciate you taking a moment to hear me out.
+
+${distressOpener}
+
+I want to make this as easy as possible for you:
+
+→  My cash offer:   ${fm(mao)}
+→  Close on your schedule — as little as ${closeDays} days
+→  We buy it exactly as-is
+→  You pay zero fees or closing costs
+
+There's no pressure here. I just want to put a real number in front of you so you have options. Whatever you decide, I want it to be the right choice for you and your family.
+
+Would it help to talk through what this would look like step by step?`,
+    urgent:`${sellerName}, I need to be upfront — my schedule fills up fast and I can only hold this offer for a limited time.
+
+${distressOpener}
+
+Here's where I'm at right now:
+
+→  Cash offer:    ${fm(mao)} — firm
+→  Close:         ${closeDays} days from today
+→  As-is:         Not a single repair needed
+→  My fee:        Zero — I cover everything
+
+I have paperwork ready to go today. If we can agree on the number, I can have a contract in your hands within the hour.
+
+What would it take to make this a yes right now?`
+  };
+
+  const scriptText=toneScripts[tone]||toneScripts.direct;
+  const scriptEl=document.getElementById('c-verbal-script');
+  if(scriptEl) scriptEl.textContent=scriptText;
+
+  // Update data summary bar
+  const setEl=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  setEl('c-vs-mao', mao>0?fm(mao):'—');
+  setEl('c-vs-arv', arv>0?fm(arv):'—');
+  setEl('c-vs-rep', repairs>0?fm(repairs):'—');
+  setEl('c-vs-fee', fm(fee));
+  setEl('c-vs-disp', disposition>0?fm(disposition):'—');
+  setEl('c-vs-days', closeDays+'d');
+}
+
+function copyVerbalOffer(){const scriptEl=document.getElementById('c-verbal-script');const txt=scriptEl?scriptEl.textContent:`Cash offer: ${fm(window._c_mao||0)}, close in 14 days, as-is, no repairs, no agents.`;navigator.clipboard.writeText(txt).catch(()=>{});const btn=document.getElementById('c-copy-btn');if(!btn)return;const orig=btn.textContent;btn.textContent='✓ Copied!';btn.style.background='var(--greendim)';btn.style.color='var(--green)';btn.style.borderColor='var(--green)';setTimeout(()=>{btn.textContent=orig;btn.style.background='var(--bluedim)';btn.style.color='var(--blue)';btn.style.borderColor='var(--blue)';},2500);}
+
+const CONTACT_CONTEXT={seller:"Direct to seller — you own the conversation. Focus on their pain, build trust fast, and make an offer on the first call if motivation is high enough.",agent:"Through the listing agent — be respectful, fast, and professional. Agents are gatekeepers AND deal partners. Bring clean offers."};
+
+const SCRIPTS={
+  preforeclosure:{title:"Pre-Foreclosure",desc:"NOD filed — deadline creates urgency. Lead with stopping the foreclosure from hitting their credit.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}?\n\n${n}, I'm [Your Name] — a local Las Vegas investor. I'm calling about ${a}.\n\nI'll be straight with you — I know about the Notice of Default and I'm not here to judge. I work with homeowners in your situation who need a fast, private solution before this goes further.\n\nI can pay cash for the property — close in ${d} days — and the foreclosure stops before it ever shows on your record. You keep your equity, walk away clean.\n\nI could offer around ${fm(o)} as-is. Can we set up a quick walk-through this week?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name] here, LV investor. Calling about ${a}. Cash close in ${d} days — stops the NOD before it hits your record. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — cash offer for ${a}? Close in ${d}d, stops foreclosure process. No agents. Reply YES or call [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nI'm a local Las Vegas investor reaching out about ${a}.\n\n• Cash offer: ${fm(o)}\n• Close in ${d} days — the NOD stops\n• As-is, no repairs, no showings\n• Your credit record stays clean\n\n[Your Name] | Las Vegas | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Private Cash Offer — ${a}\n\nHi ${n},\n\nI'm a local investor specializing in pre-foreclosure situations. I can offer ${fm(o)} cash, close in ${d} days, completely as-is and confidential.\n\nIf timing is a concern, let's talk today.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`PRE-FORECLOSURE FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call + text 30 min later if no answer\nDAY 1: "The NOD clock is ticking. I can stop this today. Ready the moment you say go. [#]"\nDAY 3: Call #2 — reference NOD deadline\nDAY 5: Yellow letter — handwritten envelope\nDAY 10: Final urgency call — "I've held this offer. Can't hold past this week."\nDAY 14: Last text — "${fm(o)} for 48 more hours. After that I move on."\nDAY 30+: Monthly nurture until resolved`
+  },
+  mls_active:{title:"Active MLS Listing — Agent Contact",desc:"Contact the LISTING AGENT — not the seller directly. Be fast, professional, and make it easy to say yes.",
+    cold:(n,a,o,d)=>`Hi, is this [Agent Name]?\n\n[Agent Name], I'm [Your Name] — local Las Vegas cash buyer. I came across your listing at ${a} and want to move fast.\n\nI can offer ${fm(o)} cash, close in ${d} days, no financing, no inspection contingency. As-is.\n\nCash is cash — this one won't fall through. Can we set up a showing this week? If it checks out I'll have an LOI to you within 24 hours.`,
+    vm:(n,a,o,d)=>`Hi [Agent Name], [Name] here — cash buyer. Your listing at ${a} — ${fm(o)}, close ${d} days, no contingencies. I move fast. Call [#].`,
+    sms:(n,a,o,d)=>`Hi [Agent Name], [Name] — cash buyer for ${a}. ${fm(o)}, close ${d}d, no contingencies. Ready to move. Call [#]`,
+    letter:(n,a,o,d)=>`Dear [Agent Name],\n\nCash offer for your listing at ${a}:\n• Price: ${fm(o)}\n• Close in ${d} days\n• No financing or inspection contingency\n• As-is purchase\n\nProof of funds available. Ready to schedule a showing immediately.\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer — ${a} — ${fm(o)} — ${d}-Day Close\n\nHi [Agent Name],\n\nI'd like to submit an offer on your listing at ${a}.\n\n• Price: ${fm(o)} cash\n• Close: ${d} days from acceptance\n• No financing contingency\n• No inspection contingency — as-is\n\nProof of funds available on request.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`AGENT FOLLOW-UP — [Agent Name] | ${a}\n\nDAY 0: Call + Email same day. Goal: get showing.\nDAY 2: "Any feedback on my offer? I can adjust terms. Ready to move fast."\nDAY 7: Call #2 — "Any new offers? I can sharpen my number if there's a gap."\nDAY 14: If still listed — resubmit with adjusted terms\nDAY 30: If expired — switch to expired listing sequence immediately`
+  },
+  mls_expired:{title:"Expired MLS Listing",desc:"Call within 24 HOURS of expiration. They're maximally frustrated and open to a new approach right now.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}?\n\n${n}, I'm [Your Name] — local Las Vegas cash buyer. I saw the listing on ${a} just came off the market and wanted to reach out right away — not as an agent, but as a direct buyer.\n\nHere's what I can offer: certainty. Cash, close in ${d} days, no more showings, no financing fallthrough.\n\nI could offer around ${fm(o)}. Would 10 minutes make sense?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name] here, LV cash buyer. Listing on ${a} just expired — direct cash offer, no relisting needed. ${d}-day close. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, listing on ${a} just expired. Cash offer ${fm(o)}, close ${d}d, no agents. Worth a call? [#] -[Name]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nBefore you relist — consider this alternative:\n• Cash: ${fm(o)}\n• Close in ${d} days — guaranteed\n• As-is, no repairs, no commissions\n\nNo more uncertainty. One call to get started.\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Your Listing Expired — Direct Cash Offer Ready\n\nHi ${n},\n\nBefore you decide to relist, I'd like to present a cash offer for ${a}.\n\n• ${fm(o)} cash | Close in ${d} days | As-is | Zero commissions\n\nI'd love 10 minutes to compare what relisting will net vs. this offer.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`EXPIRED LISTING FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call immediately (within 24h) + text 20 min later\nDAY 1: Email with net proceeds comparison\nDAY 3: Letter to property address\nDAY 7: "Before you sign a new listing agreement — have you run the numbers?"\nDAY 14: "My offer stays open until you relist. ${fm(o)}, close when ready."\nDAY 30+: If relisted, monitor and approach agent`
+  },
+  mls_pricecut:{title:"Price Reduced — Active MLS",desc:"Multiple price cuts = seller softening fast. Go through the listing agent. Reference the price history.",
+    cold:(n,a,o,d)=>`Hi, [Agent Name]? I'm [Your Name] — LV cash buyer. I've been watching ${a} — the price adjustments caught my eye. I'm ready to move with a clean cash offer: ${fm(o)}, close ${d} days, no contingencies, no inspection renegotiation. Can we get a showing this week?`,
+    vm:(n,a,o,d)=>`Hi [Agent Name], [Name] — cash buyer. Noticed the price reductions on ${a}. ${fm(o)}, close ${d}d, no contingencies. Ready this week. [#]`,
+    sms:(n,a,o,d)=>`Hi [Agent Name], [Name] — cash buyer for ${a}. Price cuts caught my eye. ${fm(o)}, close ${d}d, no contingencies. Call [#]`,
+    letter:(n,a,o,d)=>`Dear [Agent Name],\n\nThe price adjustments on ${a} tell me there's an opportunity here.\n\nCash offer: ${fm(o)} | Close: ${d} days | No contingencies | As-is\n\nReady to move this week.\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer — ${a} (Price History Noted)\n\nHi [Agent Name],\n\nI've been following ${a} and I'm ready to make a clean cash offer.\n\n• ${fm(o)} cash | ${d}-day close | No contingencies | As-is\n\nCan we schedule a showing?\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`PRICE-REDUCED LISTING FOLLOW-UP\nAgent: [Agent Name] | ${a}\n\nDAY 0: Call agent + email offer summary\nDAY 3: "Any movement? Still ready — cash, ${d}-day close."\nDAY 7: "If seller would consider ${fm(o*.97)}, I can close even faster."\nDAY 14: Monitor — if more cuts, call immediately\nDAY 30: If expired, switch to expired script`
+  },
+  taxdelinquent:{title:"Tax Delinquent",desc:"'We pay ALL back taxes at closing' is your single most powerful line on this lead type.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — local LV investor. I pay off ALL the back taxes and penalties at closing, then give you cash for the property. You walk away completely clean — no tax debt, no liens.\n\nI could offer around ${fm(o)} for ${a}. That wipes the taxes and puts cash in your pocket in ${d} days. Worth a quick call?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name] here, LV investor. I pay off ALL back taxes on ${a} at closing + give you cash for the property. Close in ${d} days. 5-min call to hear the numbers — [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — I pay off all back taxes + cash offer for ${a}. Close in ${d}d. Worth a call? [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\n• I pay ALL outstanding taxes and penalties at closing\n• Cash offer: ${fm(o)}\n• Close in ${d} days\n• As-is, zero repairs required\n\nYou walk away with cash and zero tax debt.\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer — We Clear All Back Taxes at Closing\n\nHi ${n},\n\nI pay off all outstanding property taxes at closing as part of the transaction — plus a cash offer of ${fm(o)} for ${a}, closing in ${d} days.\n\nOne transaction. You walk away clean.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`TAX DELINQUENT FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call + same-day letter. Hook: "I pay off ALL back taxes."\nDAY 2: "If someone paid your back taxes AND bought the house for cash, does that solve everything? That's my offer."\nDAY 5: Call #2 — be specific about the amount owed\nDAY 10: Overnight packet with proof of funds\nDAY 14: Final call — "Holding this open one more week."\nDAY 30: Monthly nurture`
+  },
+  probate:{title:"Probate / Estate",desc:"Court-supervised sale. Lead with ease and empathy. Handle all logistics so they don't have to.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — local LV investor who specializes in estate properties. I buy as-is for cash, handle all logistics including cleanout, and work around whatever timeline the estate requires. I could offer around ${fm(o)} for ${a}. Quick walkthrough this week?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name] here — estate properties are my specialty. Cash offer for ${a}, we handle all logistics. Close on your timeline. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — I buy estate properties for cash in LV. ${a}, as-is, close on your timeline, cleanout handled. Worth a call? [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nPlease accept my sincere condolences.\n\n• Cash offer: ${fm(o)}\n• Close on the estate's timeline\n• We handle all cleanout and logistics\n• No agent commissions\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Estate Property Cash Offer — ${a}\n\nDear ${n},\n\nI specialize in Las Vegas estate properties — cash purchase, close when the estate is ready, completely as-is, no cleanout required from you.\n\nOffer: ${fm(o)} | [Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`PROBATE FOLLOW-UP — ${n} | ${a}\n\nNOTE: Patience is key. Clark County probate can take 60–120+ days.\n\nDAY 0: Call Personal Representative directly. Empathy first.\nDAY 3: Handwritten sympathy + offer letter\nDAY 10: "Has the family had a chance to discuss the property?"\nDAY 21: Simple one-page offer summary for multiple heirs\nDAY 30+: Monthly nurture until resolution`
+  },
+  divorce:{title:"Divorce / Lis Pendens",desc:"Be completely neutral. You're solving a logistics problem. One transaction, both parties sign once, done.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — local LV investor. One transaction, both parties sign once, close in ${d} days. ${fm(o)}, cash, as-is. Would that be worth 10 minutes?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name] — LV investor. Fast, clean cash sale for ${a} — both parties sign once, close ${d} days. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — cash offer for ${a}? Close ${d}d, one transaction, both sign once. Private, fast. Call [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\n• Cash offer: ${fm(o)}\n• Close in ${d} days\n• One transaction — both parties sign once\n• Proceeds distributed as directed\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Fast, Private Cash Sale — ${a}\n\nDear ${n},\n\nI offer a clean, fast cash purchase of ${a} — one transaction, both parties sign simultaneously, close in ${d} days.\n\nOffer: ${fm(o)} | [Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`DIVORCE FOLLOW-UP — ${n} | ${a}\n\nKEY: Stay completely neutral. Never reference divorce details.\n\nDAY 0: Call — "One transaction. Clean. Done in ${d} days."\nDAY 2: "My offer is ready the moment you're both aligned. Cash, ${d} days."\nDAY 7: Letter to property address\nDAY 14: "Has anything changed on timing?"\nDAY 30: If attorneys involved, ask for their contact`
+  },
+  tiredlandlord:{title:"Tired Landlord",desc:"Lead with freedom — not price. The pain is tenants, calls, repairs. Your offer is a life change.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? One quick question: if you could wake up tomorrow and ${a} was completely off your plate — no tenants, no calls, no repairs — would that be something you'd want? [Listen] Cash, ${d} days, I take it with tenants in place. ${fm(o)}. Want to hear how this works?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name], LV investor. Ready to stop being a landlord at ${a}? Cash, ${d}-day close, tenants stay in place. You do nothing. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name]. Ready to get out of ${a}? Cash offer, close ${d}d, I handle tenants. No agents. Call [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\n• Cash offer: ${fm(o)}\n• Close in ${d} days\n• Tenants stay in place — you do nothing\n• As-is, no repairs\n\nNo more midnight calls. Cash in hand. Done.\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Ready to Stop Being a Landlord? Cash Offer for ${a}\n\nHi ${n},\n\nI buy LV rental properties from owners ready to move on. ${fm(o)}, close ${d} days, tenants handled, as-is.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`TIRED LANDLORD FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call — "If this was gone tomorrow, would you be relieved?" Let them vent.\nDAY 2: "Still thinking about getting out? I'm ready when you are."\nDAY 5: Email — "Ready when you are"\nDAY 14: "Any new issues with the property or tenants since we talked?"\nDAY 30+: Quarterly nurture — motivation spikes after bad tenant incidents`
+  },
+  inherited:{title:"Inherited Property",desc:"May be out of state, emotionally conflicted. Simplicity and empathy close these deals.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — LV investor who works with families who've inherited properties. Managing it from a distance is overwhelming. I buy as-is, handle all logistics, close on your timeline. ${fm(o)} for ${a}. Quick call?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name] — I work with families who've inherited LV properties. Cash offer for ${a}, close on your timeline, we handle everything. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — cash offer for your inherited property at ${a}. Close on your timeline, we handle logistics. Worth a call? [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\n• Cash offer: ${fm(o)}\n• Close on your timeline\n• We handle all cleanout and logistics\n• No repairs, no agents\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer for Inherited Property — ${a}\n\nDear ${n},\n\nI help Las Vegas families sell inherited properties quickly and without hassle. ${fm(o)}, close when you're ready, as-is.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`INHERITED PROPERTY FOLLOW-UP — ${n} | ${a}\n\nNOTE: May involve multiple heirs — ask early.\n\nDAY 0: Call — "Is it just you making this decision?"\nDAY 3: Handwritten letter. Empathy-first.\nDAY 7: "Has the family discussed the property?"\nDAY 14: Simple one-page offer summary\nDAY 30+: Monthly nurture — 60–120 day timelines are normal`
+  },
+  vacant:{title:"Vacant / Abandoned",desc:"Owner wants the liability gone. They may be hard to reach — keep trying. When you connect, they usually want out fast.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — LV investor. I noticed ${a} has been vacant. Managing a vacant property is a real headache — insurance, taxes, vandalism risk. I eliminate all of it. Cash, close ${d} days, we handle everything inside and out. ${fm(o)}. Worth 5 minutes?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name], LV investor. Cash offer for your vacant property at ${a}. Close ${d} days, we handle everything including contents. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — cash offer for vacant ${a}. Close ${d}d, we handle cleanout. No agents. Call [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nVacant properties create real risk: taxes, insurance, vandalism, code violations. I eliminate all of it.\n\n• Cash offer: ${fm(o)}\n• Close in ${d} days\n• We handle all cleanout and contents\n• As-is, whatever condition\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer for Vacant Property — ${a}\n\nHi ${n},\n\nCash offer for ${a}: ${fm(o)}, close ${d} days, we handle cleanout, as-is.\n\nOne call, one transaction, property off your hands.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`VACANT PROPERTY FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call all known numbers + send letter\nDAY 3: Door knock — leave handwritten note on door\nDAY 5: Text — "I left a note at ${a}. Cash offer, close ${d} days."\nDAY 10: Certified letter to owner's mailing address\nDAY 21: Final attempt — "Offer stands at ${fm(o)}."\nEVERY 90 DAYS: Re-attempt skip trace. Situations change.`
+  },
+  highequity:{title:"High Equity Absentee",desc:"Not in pain — give them a financial reason. Lead with the wealth unlock angle.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — LV investor. I believe there's significant equity in ${a} that could be liquid cash in your hands in ${d} days. ${fm(o)} cash, no agents, no listing. Worth 10 minutes to walk through the numbers?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name], LV investor. Significant equity in ${a} — cash offer, close ${d} days, no agents. Worth a quick call? [#]`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — cash offer to unlock equity in ${a}. ${fm(o)}, close ${d}d, no agents. Worth a call? [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nThere's meaningful equity in ${a} — I'd like to offer a direct way to access it.\n\n• Cash offer: ${fm(o)}\n• Close in ${d} days\n• No agents, no commissions\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer — Unlock Equity in ${a}\n\nHi ${n},\n\nDirect cash offer for ${a}: ${fm(o)}, close ${d} days, no agents or commissions.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`HIGH EQUITY ABSENTEE FOLLOW-UP — ${n} | ${a}\n\nNOTE: Not in pain — give them a financial reason.\n\nDAY 0: Call — equity unlock angle. Data-driven.\nDAY 3: "The equity in ${a} is sitting idle. ${fm(o)} converts that to liquid in ${d} days."\nDAY 7: Letter with LV market context\nDAY 14: Try a different angle — "Any headaches with the property?"\nEVERY 90 DAYS: Quarterly nurture. These often sell in 6–18 months.`
+  },
+  codeviolation:{title:"Code Violations",desc:"'We handle all code violations at closing' is your value prop. They want the city off their back.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — LV investor. I specialize in properties with active code violations. I buy as-is including all active violations — fines, citations, whatever the city has pending becomes my problem after closing. ${fm(o)}, close ${d} days. Quick walkthrough?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name], LV investor. I buy properties with code violations as-is. Cash, close ${d} days, we handle the city. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — I buy properties with code violations as-is. ${a}, cash, close ${d}d. Call [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nCode violations compound. Fines increase. I stop all of it.\n\n• Cash offer: ${fm(o)}\n• Close in ${d} days\n• All violations become my responsibility\n• City is off your back permanently\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer — We Handle All Code Violations\n\nHi ${n},\n\nI buy LV properties with active code violations as-is. ${fm(o)}, close ${d} days — all citations transfer with the purchase.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`CODE VIOLATION FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call — reference specific violation if known\nDAY 3: "Has the city set a deadline for the repairs? Cash sale before that is your cleanest exit."\nDAY 7: Letter with fines timeline context\nDAY 14: "The longer violations sit, the harder this gets. I close in ${d} days."\nDAY 30: Final offer call`
+  },
+  relocation:{title:"Job Relocation",desc:"Match your close date to their deadline. Certainty and timing beat price on this lead type.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — LV investor. You tell me your start date or move date — I make the closing happen on that exact day. Cash, no bank delays. ${fm(o)} for ${a}. Want to make sure the house is handled before you leave?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name], LV investor. Relocating? I close on ${a} on your exact move date — cash, no delays. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — relocating? I close on ${a} on your exact move date. Cash, no bank delays. Worth a call? [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\n• Cash offer: ${fm(o)}\n• Close on YOUR date\n• As-is — no repairs to schedule\n• No agents, no delays\n\nYou focus on the new city. I handle the property.\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer — Close on Your Move Date\n\nHi ${n},\n\nI can close on ${a} on whatever date works for your relocation. ${fm(o)} cash, as-is, no delays.\n\nFirst question when we talk: when do you need to be gone?\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`RELOCATION FOLLOW-UP — ${n} | ${a}\n\nKEY: Find their start/move date immediately.\n\nDAY 0: Call — "When do you need to be in [city]?"\nDAY 2: "I can have a contract to you this week and close on whatever date you need."\nDAY 5: Letter/email with close date timeline visual\nDAY 10: "Your move date is getting close. Let's lock in a date now."\nDAY 21: Final push before departure`
+  },
+  distressed_landvoice:{title:"Landvoice Distressed — Mixed",desc:"These leads could be pre-foreclosure, divorce, financial distress, absentee, or early-stage NOD. Your first call is a QUALIFICATION call — identify the real situation fast, then pivot to the right script.",
+    cold:(n,a,o,d)=>`Hi, may I speak with ${n}?\n\n${n}, my name is [Your Name] — I'm a local real estate investor here in Las Vegas. I'm calling because I came across your property at ${a} and I have a quick question for you.\n\nI work with homeowners who are going through tough situations — whether that's a financial crunch, a life change, or just needing to sell fast without all the hassle of a traditional listing. I buy homes directly for cash and I close in as little as ${d} days.\n\nWithout prying — is there anything going on with the property or your situation that's making a fast cash sale worth exploring?\n\n[LISTEN — their answer tells you which full script to pivot to]\n\nIf YES or any hint of distress:\n"That's exactly the kind of situation I help with. I could offer you around ${fm(o)} for the property, cash, as-is. Zero repairs, zero agents, close in ${d} days. Would it be worth a quick walk-through this week so I can firm up that number?"`,
+    vm:(n,a,o,d)=>`Hi ${n}, this is [Your Name] — local Las Vegas real estate investor. Calling about your property at ${a}. I buy homes directly for cash — fast close, any condition, no agents. If you're open to a no-obligation offer, give me a call at [your number]. Hope to talk soon.`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] here — local investor. I'd like to make a cash offer on ${a}. Close in ${d}d, as-is, no agents. Worth a 5-min call? [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nMy name is [Your Name] and I'm a local Las Vegas real estate investor. I'm reaching out about your property at ${a} because I'd like to make you a straightforward cash offer.\n\nI work with homeowners in all kinds of situations — financial pressure, life transitions, properties that need work, or simply wanting a fast, private sale without the stress of listings and showings.\n\nHere's what I can offer:\n• Cash purchase: ${fm(o)}\n• Close in as little as ${d} days\n• Buy it exactly as-is — zero repairs required\n• No agents, no commissions, no fees\n\nIf any part of your situation makes a fast, certain close appealing, I'd love a 5-minute conversation.\n\n[Your Name] | Las Vegas, NV | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer for ${a} — Quick Close, No Agents\n\nHi ${n},\n\nI'm a local Las Vegas investor and I'd like to make a direct cash offer on your property at ${a}.\n\n• Offer: ${fm(o)}\n• Close: ${d} days\n• As-is — no repairs or inspections\n• No agents or commissions\n\nI work with homeowners in all kinds of situations. If a fast, private sale interests you, I'd love a 5-minute call.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`30-DAY FOLLOW-UP — LANDVOICE DISTRESSED\n${n} | ${a}\n\nSTRATEGY: First call is QUALIFICATION. Identify the real situation. Then pivot to the specific script for that distress type.\n\nDAY 0 — Call (use cold call script above)\nKey qualification questions:\n  "Is the property your primary residence?"\n  "Are there any financial pressures or timelines I should know about?"\n  "Is the property currently listed or have you tried selling?"\nAfter qualifying → switch to the right specialized script\n\nDAY 1 — Text (if no answer)\n"Hi ${n}, [Name] here — I'm a local investor interested in making a cash offer on ${a}. No pressure — just wanted to put a number on the table. Call or text [#]"\n\nDAY 3 — Second call\nReference your first attempt. If you qualified them → use the specific distress script.\nIf still unknown: "I know life gets busy — just want to make sure you have the option if it's ever useful."\n\nDAY 7 — Letter\nUse the letter template above. Personal, non-threatening tone.\n\nDAY 14 — Follow-up text\n"${n}, offer is still on the table — ${fm(o)}, close in ${d} days, as-is. Just let me know if timing ever works. [#]"\n\nDAY 30 — Final check-in call\n"Hi ${n}, last check-in from my end. If anything's changed in your situation and a cash sale makes sense, I'm a call away."\n\nMONTHLY NURTURE: Add to drip. Landvoice distressed leads often aren't ready day 1 — but a financial event or life change can flip motivation overnight.`
+  },
+  fsbo:{title:"FSBO",desc:"Show them your net beats their retail net after costs. Respect their independence.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — local LV cash buyer. I saw ${a} listed FSBO and wanted to reach out as a direct buyer — not an agent. No commissions, no repair demands, no financing fallthrough. ${fm(o)}, close ${d} days. Want to run the net comparison together?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name], LV cash buyer. Saw ${a} FSBO — ${fm(o)}, close ${d}d, no agents, no inspections. 5-min call? [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, saw ${a} FSBO. Cash ${fm(o)}, close ${d}d, no agents. Worth comparing nets? [#] -[Name]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\n• Cash offer: ${fm(o)}\n• Close in ${d} days\n• No inspection demands\n• No agent commissions\n• No financing fallthrough\n\nLet me show you the net comparison.\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Direct Cash Offer — ${a} — No Agents\n\nHi ${n},\n\n${fm(o)} cash, close ${d} days, no agents or commissions. Would love 10 min to compare what you'd actually net vs the retail path.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`FSBO FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call — run the retail net math WITH them\nDAY 3: "Any solid offers yet? I want to make sure you have something real to compare."\nDAY 7: Letter with two-column net comparison\nDAY 14: "Still interested — anything changed?"\nDAY 21: Adjusted offer call if still unsold\nDAY 30: Final check-in`
+  },
+  damage:{title:"Water/Fire Damage",desc:"Insurance claim or uninsured loss. Owner is overwhelmed. 'We buy it exactly as it is' is your entire pitch.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — local LV investor. I specialize in buying properties with damage — fire, water, mold, whatever happened. I buy it exactly as-is. No cleanup, no contractor bids, no insurance fight. Cash, close in ${d} days. ${fm(o)} for ${a}. Can we take a quick look this week?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name] here, LV investor. I buy damaged properties as-is for cash. ${a} — close in ${d} days, you don't touch a thing. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — I buy damaged properties as-is. Cash offer for ${a}, close ${d}d. No cleanup needed. Call [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nDealing with property damage is exhausting. I eliminate all of it.\n\n• Cash offer: ${fm(o)}\n• Close in ${d} days\n• Buy completely as-is — no repairs, no cleanup\n• We handle everything after close\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer for Damaged Property — ${a}\n\nHi ${n},\n\nI buy damaged properties in Las Vegas for cash, completely as-is. ${fm(o)}, close ${d} days. No contractors, no insurance battles.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`DAMAGE PROPERTY FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call + text. Lead with "I buy it exactly as it sits."\nDAY 2: "Still dealing with the damage at ${a}? My offer stands — ${fm(o)}, close ${d} days, as-is."\nDAY 5: Letter with cash offer summary\nDAY 10: Call #2 — ask about insurance status\nDAY 21: "Has anything changed? Ready to close when you are."\nDAY 30+: Monthly nurture`
+  },
+  senior:{title:"Senior Downsizing",desc:"Empathy-first. Long-term homeowner with memories in the walls. Never rush. Offer to handle everything.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — local LV buyer. I work with homeowners who are ready to downsize and want a simple, stress-free sale. I buy as-is, handle the entire cleanout, and close on whatever timeline works for you. ${fm(o)} for ${a}. Would a quick conversation make sense?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name] here. I help homeowners in Las Vegas downsize without the hassle. Cash offer for ${a}, we handle everything. Call [#] when it's convenient.`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — I help LV homeowners downsize stress-free. Cash for ${a}, close on your timeline, we handle cleanout. Worth a call? [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nWhen you're ready, I'd love to make downsizing simple.\n\n• Cash offer: ${fm(o)}\n• Close on YOUR timeline — no rush\n• We handle all cleanout and moving logistics\n• No agents, no showings, no strangers in your home\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Simple, Stress-Free Home Sale — ${a}\n\nDear ${n},\n\nI help Las Vegas homeowners downsize without the hassle of listing. ${fm(o)} cash, close when you're ready, we handle cleanout.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`SENIOR DOWNSIZING FOLLOW-UP — ${n} | ${a}\n\nNOTE: Be patient and respectful. These are 20-40 year homeowners.\n\nDAY 0: Call — listen more than you talk. Ask about their plans.\nDAY 5: Handwritten note — NOT a form letter\nDAY 14: "Has the family had a chance to discuss?"\nDAY 30: Gentle check-in — "No rush at all. Just want you to know the offer stands."\nEVERY 60 DAYS: Warm nurture. These close in 3-6 months typically.`
+  },
+  bankruptcy:{title:"Bankruptcy",desc:"Chapter 7/13 filed — trustee may control the sale. Move fast once court approves. Be direct about process.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — LV investor. I work with homeowners going through bankruptcy who need to liquidate property quickly. I buy for cash, close in ${d} days once the court approves, and I'm experienced working with trustees. ${fm(o)} for ${a}. Can we talk through the timeline?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name], LV investor. I buy properties in bankruptcy situations for cash. ${a} — I work with trustees, close fast once approved. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — cash buyer for ${a}. Experienced with bankruptcy property sales. Close fast once court approves. Call [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nBankruptcy doesn't have to mean losing everything.\n\n• Cash offer: ${fm(o)}\n• Close quickly once court approves\n• Experienced working with trustees\n• Clean, simple transaction\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer — Bankruptcy Property Sale — ${a}\n\nHi ${n},\n\nI specialize in purchasing properties during bankruptcy proceedings. ${fm(o)} cash, close quickly post-approval, experienced with trustees.\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`BANKRUPTCY FOLLOW-UP — ${n} | ${a}\n\nNOTE: Court timeline controls everything. Get attorney/trustee contact early.\n\nDAY 0: Call owner — "Has the trustee approved property sales yet?"\nDAY 3: Request trustee contact info\nDAY 7: Follow up with trustee directly if possible\nDAY 14: Check on court hearing schedule\nDAY 30: Monthly check-in until resolution\nKEY: These can take 60-180 days. Stay patient.`
+  },
+  military:{title:"Military PCS",desc:"PCS orders = hard deadline. Match your close date to their report date. Certainty wins every time.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — LV investor. I work with military families who've received PCS orders and need a guaranteed close before their report date. You tell me the date — I make it happen. Cash, no contingencies. ${fm(o)} for ${a}. When do you need to be gone?`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name], LV investor. Got PCS orders? I close on ${a} by your report date — cash, guaranteed. Call [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — PCS orders? Cash offer for ${a}, close by your report date. Guaranteed. Call [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nThank you for your service. When you're ready to sell before PCS:\n\n• Cash offer: ${fm(o)}\n• Close on YOUR report date — guaranteed\n• As-is, no repairs\n• No agent commissions\n\nYou focus on the move. I handle the property.\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer — Close Before Your PCS Date — ${a}\n\nHi ${n},\n\nI help military families sell before PCS deadlines. ${fm(o)} cash, close on your report date, completely as-is.\n\nFirst question: when do you need to be at your new duty station?\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`MILITARY PCS FOLLOW-UP — ${n} | ${a}\n\nKEY: Find their report date immediately. Everything works backward from there.\n\nDAY 0: Call — "When are your orders for?"\nDAY 2: "I can have a contract to you this week. Close date = your timeline."\nDAY 5: Email with close date timeline\nDAY 10: "Your report date is approaching. Let's lock this in."\nDAY 14: Final push before they list with a military relocation agent`
+  },
+};
+
+const PAIN_LINES={
+  mortgage:["We close before your next payment — no more late hits on your record.","One more missed payment triggers the next stage. Let's get ahead of it today."],
+  taxes:["We pay off ALL back taxes at closing — you walk away completely clean.","Your debt to Clark County disappears at the closing table."],
+  repairs:["We buy it exactly as-is. Not a single repair required.","No inspections, no repair lists. What you see is what we buy."],
+  tenants:["You don't touch the tenants — we handle that after close.","No eviction process on your end. We take it over."],
+  inherited:["One signature. We handle the cleanout, the paperwork, all of it.","Estates are our specialty. We've closed dozens in Clark County."],
+  divorce:["One transaction. Both sign once. Done and moving forward.","We move fast so both parties can close this chapter."],
+  relocation:["We match your close date to your start date and your move truck.","You tell us when you need to be gone — we make it happen."],
+  hoa:["We handle the HOA balance at closing. You walk with clean hands.","HOA arrears come out of our side, not yours."],
+  lien:["Full title search — all liens resolved at closing.","Whatever is owed, we account for it so you're protected."],
+  codeviolation:["All code violations transfer with the property. City becomes my problem.","Buy as-is with all active citations — done."],
+};
+
+const OBJECTIONS_LIST=[
+  ["I want full price","After 6% commissions, 2-3% closing costs, repair requests, and carrying costs — most sellers net 10-12% less anyway. Can I walk you through what both scenarios actually net?"],
+  ["I'm working with an agent","Has the agent brought you a cash offer yet? I buy direct — no listing, no showings. Let's at least get you a number to compare."],
+  ["I need to think about it","Of course. Just so you know, this offer is time-sensitive — 48 hours. What specifically do you need to think through? Maybe I can answer it now."],
+  ["I already have other offers","Are those cash with a guaranteed close date? A lot fall through at financing. Mine is cash, no contingencies, close in [X] days. That's certainty."],
+  ["Is this a scam?","Completely understand. I'm a local Las Vegas investor — references available, proof of funds, everything closes through a licensed title company. No money moves until you're 100% comfortable."],
+  ["My neighbor got more","Their situation was different — condition, timing, upgrades all vary. Let me walk you through exactly how I got to my number so it's completely transparent."],
+  ["I'll just list it","Valid option. Want to run the numbers? Commission, closing costs, repair demands, carrying costs — most sellers are surprised how close the nets actually are, with zero uncertainty on my side."],
+  ["The agent said I can get more","Agents are optimists — it's their job. Ask them: what's the GUARANTEED net if we go to market? I can give you a guaranteed net today."],
+  ["How do I know you're legit?","Completely fair question. I'm a licensed investor in Las Vegas with references from past deals, proof of funds, and we close through an established title company. Zero money moves until you're comfortable. Want to speak with a past seller?"],
+  ["I owe more than it's worth","That's actually a common situation — and a reason to consider your options. Let's run the numbers. Even if you're underwater, a quick sale might beat carrying costs, listing fees, and a long market timeline. Can we at least look at it together?"],
+  ["My family says I should keep it","Family cares, which is good. But are they prepared to help with mortgage payments, repairs, or carrying costs? I focus on your math, not emotions. What's the actual financial impact if you hold vs. sell now?"],
+  ["Can you pay more if I wait?","Market reality — property values fluctuate, carrying costs grow, repairs compound. If you wait and market softens, I'd likely offer less. If you need certainty, faster is usually better financially. What's your timeline?"],
+  ["I want to sell but my spouse doesn't","That's the real conversation, then. What's his/her concern — timing, price, or something else? Once I understand both perspectives, we might find common ground on numbers."],
+];
+
+function setContact(c){
+  contactMode=c;
+  ['seller','agent'].forEach(x=>{const b=document.getElementById('contact-'+x);const active=x===c;b.style.background=active?(x==='seller'?'var(--greendim)':'var(--bluedim)'):'transparent';b.style.color=active?(x==='seller'?'var(--green)':'var(--blue)'):'var(--t3)';b.style.borderColor=active?(x==='seller'?'var(--green)':'var(--blue)'):'var(--border)';});
+  document.getElementById('contact-context').textContent=CONTACT_CONTEXT[c];
+  document.getElementById('agent-extra').style.display=c==='agent'?'flex':'none';
+  genScript();
+}
+
+const motDims=[['timeline','Timeline Pressure','1=flexible 5=ASAP'],['financial','Financial Distress','1=stable 5=foreclosure'],['condition','Property Condition','1=turnkey 5=condemned'],['attachment','Attachment','1=loves it 5=wants gone'],['competition','Competition','1=has agent 5=only us']];
+
+function renderMotDims(){
+  document.getElementById('sc-mot-dims').innerHTML=motDims.map(([k,l,d])=>`
+    <div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+        <div><div style="font-size:11px;font-weight:600;color:var(--t1)">${l}</div><div style="font-size:9px;color:var(--t3)">${d}</div></div>
+        <span style="font-size:15px;font-weight:900;color:${motVals[k]>=4?'var(--red)':motVals[k]>=3?'var(--amber)':'var(--blue)'}">${motVals[k]}</span>
+      </div>
+      <input type="range" min="1" max="5" value="${motVals[k]}" oninput="motVals['${k}']=+this.value;updateMot()" style="width:100%" />
+    </div>`).join('');
+}
+
+function updateMot(){
+  const total=Object.values(motVals).reduce((a,v)=>a+v,0);
+  const p=Math.round((total/25)*100);
+  const sc=p>=75?'var(--red)':p>=50?'var(--blue)':p>=25?'var(--amber)':'var(--t3)';
+  const strat=p>=75?{l:'AGGRESSIVE — Same Day Offer',d:'Lead with anchor offer. Urgency language. Paperwork today.'}:p>=50?{l:'STANDARD — Present MAO',d:'Lead with MAO. Emphasize speed, certainty, as-is.'}:p>=25?{l:'PATIENT — Build Rapport',d:'2–3 touchpoints first. Listen more than you talk.'}:{l:'LOW — Nurture Only',d:'30-day drip. Call when circumstances change.'};
+  document.getElementById('sc-mot-score').textContent=p;document.getElementById('sc-mot-score').style.color=sc;
+  document.getElementById('sc-mot-bar').style.width=p+'%';document.getElementById('sc-mot-bar').style.background=sc;
+  document.getElementById('sc-strategy').style.borderLeftColor=sc;document.getElementById('sc-strategy').style.color=sc;
+  document.getElementById('sc-strategy').innerHTML=`<b>${strat.l}</b><br><span style="color:var(--t2)">${strat.d}</span>`;
+  renderMotDims();
+}
+
+function renderPains(){
+  const pains=[['mortgage','Behind on mortgage'],['taxes','Back taxes'],['repairs','Deferred maintenance'],['tenants','Tenant issues'],['inherited','Estate/inherited'],['divorce','Divorce'],['relocation','Relocation deadline'],['hoa','HOA arrears'],['lien','Liens/judgments'],['codeviolation','Code violations']];
+  document.getElementById('sc-pains').innerHTML=pains.map(([k,l])=>`<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:11px;color:var(--t1)"><input type="checkbox" ${activePains.has(k)?'checked':''} onchange="togglePain2('${k}')" style="accent-color:var(--blue)"/>${l}</label>`).join('');
+}
+
+function togglePain2(k){if(activePains.has(k))activePains.delete(k);else activePains.add(k);genScript();renderPains();}
+
+function renderObjs(){
+  document.getElementById('sc-objs').innerHTML=OBJECTIONS_LIST.map(([q,a],i)=>`<div><button onclick="toggleObjItem(${i})" style="width:100%;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:8px 10px;color:var(--t3);font-size:12px;cursor:pointer;text-align:left">${openObj===i?'▼':'▶'} "${q}"</button>${openObj===i?`<div style="background:var(--bluedim);border:1px solid var(--border2);border-radius:0 0 5px 5px;padding:8px 10px;font-size:10px;color:#93c5fd;line-height:1.6">${a}</div>`:''}</div>`).join('');
+}
+function toggleObjItem(i){openObj=openObj===i?null:i;renderObjs();}
+
+function setSTab(t){
+  sTab=t;
+  const tabs={cold:'Cold Call Script',vm:'Voicemail Script',sms:'SMS Template',letter:'Handwritten Letter',email:'Email Template',seq:'30-Day Follow-Up Sequence'};
+  ['cold','vm','sms','letter','email','seq'].forEach(k=>{const b=document.getElementById('st-'+k);if(!b)return;b.style.background=k===t?'var(--bluedim)':'transparent';b.style.color=k===t?'var(--blue)':'var(--t3)';b.style.borderColor=k===t?'var(--blue)':'var(--border)';});
+  document.getElementById('sc-tab-lbl').textContent=tabs[t]||t;
+  if(window._scripts)document.getElementById('sc-content').textContent=window._scripts[t]||'(Not available for this type)';
+}
+
+function genScript(){
+  const type=document.getElementById('sc-type').value;
+  const n=document.getElementById('sc-name').value||'Homeowner';
+  const a=document.getElementById('sc-addr').value||'the property';
+  const o=+(document.getElementById('sc-offer').value)||195000;
+  const d=+(document.getElementById('sc-days').value)||14;
+  const agentName=document.getElementById('sc-agent')?.value||'[Agent Name]';
+  const listprice=+(document.getElementById('sc-listprice')?.value)||420000;
+  const dom=+(document.getElementById('sc-dom')?.value)||0;
+  // Map analyzer list types to script types
+  const typeMap={absentee:'tiredlandlord',taxlien:'codeviolation',highequity:'highequity',mls_pricecut:'mls_pricecut',distressed_landvoice:'distressed_landvoice'};
+  const scriptType=typeMap[type]||type;
+  const def=SCRIPTS[scriptType];
+  if(!def){document.getElementById('sc-content').textContent='Select a lead type to generate scripts.';return;}
+  document.getElementById('sc-banner-title').textContent=def.title;
+  document.getElementById('sc-banner-desc').textContent=def.desc;
+  let scripts={};
+  if(contactMode==='agent'){
+    const at=scriptType==='mls_active'?'mls_active':scriptType==='mls_expired'?'mls_expired':scriptType==='mls_pricecut'?'mls_pricecut':'mls_active';
+    const ad=SCRIPTS[at]||SCRIPTS.mls_active;
+    scripts={cold:ad.cold(agentName,a,o,d),vm:ad.vm(agentName,a,o,d),sms:ad.sms(agentName,a,o,d),letter:ad.letter(agentName,a,o,d),email:ad.email(agentName,a,o,d),seq:ad.seq(agentName,a,listprice,dom)};
+    document.getElementById('sc-banner-title').textContent='Agent Contact: '+def.title;
+  } else {
+    scripts={cold:def.cold(n,a,o,d),vm:def.vm(n,a,o,d),sms:def.sms(n,a,o,d),letter:def.letter(n,a,o,d),email:def.email(n,a,o,d),seq:def.seq(n,a,o,d)};
+  }
+  window._scripts=scripts;
+  document.getElementById('sc-content').textContent=scripts[sTab]||'';
+  const al=[...activePains];
+  if(al.length>0){document.getElementById('sc-painlines').style.display='block';document.getElementById('sc-painlines-content').innerHTML=al.flatMap(k=>(PAIN_LINES[k]||[]).map(l=>`<div style="padding:10px 12px;background:var(--card);border-left:2px solid var(--blue);border-radius:0 5px 5px 0;margin-bottom:6px;font-size:13px;color:var(--t1);line-height:1.5">💬 "${l}"</div>`)).join('');}
+  else{document.getElementById('sc-painlines').style.display='none';}
+  updateMot();
+}
+
+function copyScript(){const txt=document.getElementById('sc-content').textContent;navigator.clipboard.writeText(txt).catch(()=>{});const btn=document.getElementById('sc-copy-btn');btn.textContent='✓ Copied!';btn.style.color='var(--green)';btn.style.borderColor='var(--green)';setTimeout(()=>{btn.textContent='Copy';btn.style.color='var(--t3)';btn.style.borderColor='var(--border2)';},2000);}
+
+// FILE UPLOAD HANDLERS
+function handleFileUpload(input){
+  const file=input.files[0];
+  if(!file) return;
+  if(!file.name.match(/\.(csv|txt)$/i)){
+    showFileStatus('❌ Please upload a .csv or .txt file','var(--red)');
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=e.target.result;
+    document.getElementById('csv-input').value=text;
+    showFileStatus('✓ '+file.name+' loaded ('+text.split('\n').filter(r=>r.trim()).length+' rows)','var(--green)');
+    parseCSV();
+  };
+  reader.onerror=function(){showFileStatus('❌ Error reading file','var(--red)');};
+  reader.readAsText(file);
+  input.value='';
+}
+
+function handleFileDrop(event){
+  event.preventDefault();
+  const dz=document.getElementById('drop-zone');
+  dz.style.borderColor='var(--border2)';
+  dz.style.background='transparent';
+  const file=event.dataTransfer.files[0];
+  if(!file) return;
+  if(!file.name.match(/\.(csv|txt)$/i)){
+    showFileStatus('❌ Please drop a .csv or .txt file','var(--red)');
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=e.target.result;
+    document.getElementById('csv-input').value=text;
+    showFileStatus('✓ '+file.name+' loaded ('+text.split('\n').filter(r=>r.trim()).length+' rows)','var(--green)');
+    parseCSV();
+  };
+  reader.readAsText(file);
+}
+
+function showFileStatus(msg,color){
+  const el=document.getElementById('file-name-display');
+  if(!el) return;
+  el.textContent=msg;
+  el.style.color=color;
+  el.style.display='block';
+}
+
+
+// ── EXPORT FUNCTIONS ──────────────────────────────────────────────────────
+function getDealSummaryData(){
+  const mao=window._c_mao||0;
+  const fee=+(document.getElementById('c-fee')||{value:13000}).value||13000;
+  const arv=+(document.getElementById('c-arv')||{value:0}).value||0;
+  const repairs=window._c_repairs||0;
+  const disposition=mao+fee;
+  const allin=mao+fee+repairs;
+  const eq=arv-allin;
+  const roi=allin>0?(eq/allin*100):0;
+  const sellerName=(document.getElementById('c-seller-name')||{value:''}).value.trim()||'[Seller Name]';
+  const propAddr=(document.getElementById('c-prop-addr')||{value:''}).value.trim()||'[Property Address]';
+  const closeDays=+(document.getElementById('c-close-days')||{value:14}).value||14;
+  const distress=(document.getElementById('c-distress')||{value:''}).value||'';
+  const hood=(document.getElementById('c-hood')||{value:''}).value||'';
+  const pct=+(document.getElementById('c-pct')||{value:80}).value||80;
+  const scoreEl=document.getElementById('c-score-num');
+  const score=scoreEl?scoreEl.textContent:'—';
+  const scriptEl=document.getElementById('c-verbal-script');
+  const script=scriptEl?scriptEl.textContent:'';
+  return{mao,fee,arv,repairs,disposition,allin,eq,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,script};
+}
+
+function exportDealEmail(){
+  const d=getDealSummaryData();
+  const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const subject=encodeURIComponent('Cash Offer — '+d.propAddr+' — '+fm(d.mao));
+  const body=encodeURIComponent(
+'CASH OFFER SUMMARY\n'+
+'Generated by COS Hub · Cash Offer Specialist\n'+
+'Date: '+today+'\n\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'PROPERTY:        '+d.propAddr+'\n'+
+'SELLER:          '+d.sellerName+'\n'+
+'DISTRESS TYPE:   '+d.distress+'\n'+
+'NEIGHBORHOOD:    '+d.hood+'\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'+
+'DEAL NUMBERS\n'+
+'ARV:             '+fm(d.arv)+'\n'+
+'Repairs:         '+fm(d.repairs)+'\n'+
+'MAO (our offer): '+fm(d.mao)+'\n'+
+'Assignment Fee:  '+fm(d.fee)+'\n'+
+'Disposition:     '+fm(d.disposition)+'\n'+
+'Buyer All-In:    '+fm(d.allin)+'\n'+
+'Equity Spread:   '+fm(d.eq)+'\n'+
+'Buyer ROI:       '+d.roi.toFixed(1)+'%\n'+
+'Market %:        '+d.pct+'%\n'+
+'Deal Score:      '+d.score+'/100\n\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'VERBAL OFFER SCRIPT\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+d.script+'\n\n'+
+'━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
+'Cash Offer Specialist\n'+
+'(725) 226-1303 · www.cashofferspecialist.com\n'+
+'Las Vegas, NV'
+  );
+  window.location.href='mailto:?subject='+subject+'&body='+body;
+}
+
+function exportDealPDF(){
+  const d=getDealSummaryData();
+  const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const win=window.open('','_blank','width=800,height=900');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Deal Summary — ${d.propAddr}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#111;padding:40px;font-size:14px;line-height:1.6}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #111;padding-bottom:16px;margin-bottom:24px}
+  .logo{font-size:28px;font-weight:900;letter-spacing:.04em}
+  .logo span{color:#4f8ef7}
+  .meta{text-align:right;font-size:12px;color:#666}
+  .section{margin-bottom:24px}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#888;border-bottom:1px solid #e5e7eb;padding-bottom:6px;margin-bottom:12px}
+  .prop-address{font-size:22px;font-weight:700;margin-bottom:4px}
+  .prop-sub{font-size:14px;color:#666}
+  .numbers-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:24px}
+  .num-cell{border:1px solid #e5e7eb;border-radius:8px;padding:14px}
+  .num-cell.highlight{background:#f0f9ff;border-color:#4f8ef7}
+  .num-cell.green{background:#f0fdf4;border-color:#0ecf8a}
+  .num-label{font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+  .num-value{font-size:20px;font-weight:800}
+  .num-value.blue{color:#4f8ef7}
+  .num-value.green{color:#059669}
+  .num-value.amber{color:#d97706}
+  .num-value.purple{color:#7c3aed}
+  .script-box{background:#f8f9fa;border-left:4px solid #4f8ef7;border-radius:0 8px 8px 0;padding:18px 20px;font-size:13px;line-height:1.9;white-space:pre-wrap;font-family:'Segoe UI',Arial,sans-serif}
+  .footer{margin-top:32px;padding-top:16px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:12px;color:#888}
+  .score-badge{display:inline-flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #0ecf8a;border-radius:20px;padding:6px 14px;font-weight:700;color:#059669}
+  @media print{body{padding:20px}button{display:none}}
+</style>
+</head><body>
+<div class="header">
+  <div>
+    <div class="logo">COS <span>HUB</span></div>
+    <div style="font-size:12px;color:#888;margin-top:2px">CASH OFFER SPECIALIST · LAS VEGAS, NV</div>
+  </div>
+  <div class="meta">
+    <div style="font-weight:700">DEAL ANALYSIS SUMMARY</div>
+    <div>${today}</div>
+    <div style="margin-top:6px"><span class="score-badge">Deal Score: ${d.score}/100</span></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Property</div>
+  <div class="prop-address">${d.propAddr}</div>
+  <div class="prop-sub">Seller: ${d.sellerName} &nbsp;·&nbsp; Distress: ${d.distress||'—'} &nbsp;·&nbsp; Neighborhood: ${d.hood||'—'}</div>
+</div>
+
+<div class="section">
+  <div class="section-title">Deal Numbers</div>
+  <div class="numbers-grid">
+    <div class="num-cell"><div class="num-label">ARV</div><div class="num-value">${fm(d.arv)}</div></div>
+    <div class="num-cell"><div class="num-label">Est. Repairs</div><div class="num-value amber">${fm(d.repairs)}</div></div>
+    <div class="num-cell highlight"><div class="num-label">MAO (Our Offer)</div><div class="num-value blue">${fm(d.mao)}</div></div>
+    <div class="num-cell green"><div class="num-label">Disposition Price</div><div class="num-value green">${fm(d.disposition)}</div><div style="font-size:11px;color:#888;margin-top:2px">MAO + ${fm(d.fee)} fee</div></div>
+    <div class="num-cell"><div class="num-label">Buyer All-In</div><div class="num-value">${fm(d.allin)}</div></div>
+    <div class="num-cell"><div class="num-label">Equity Spread</div><div class="num-value ${d.eq>0?'green':''}">  ${fm(d.eq)}</div></div>
+    <div class="num-cell"><div class="num-label">Buyer ROI</div><div class="num-value amber">${d.roi.toFixed(1)}%</div></div>
+    <div class="num-cell"><div class="num-label">Your Fee</div><div class="num-value green">${fm(d.fee)}</div></div>
+    <div class="num-cell"><div class="num-label">Market %</div><div class="num-value">${d.pct}%</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Verbal Offer Script</div>
+  <div class="script-box">${d.script.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+</div>
+
+<div class="footer">
+  <div>Cash Offer Specialist &nbsp;·&nbsp; (725) 226-1303 &nbsp;·&nbsp; www.cashofferspecialist.com</div>
+  <div>Generated by COS Hub</div>
+</div>
+<br>
+<button onclick="window.print()" style="background:#4f8ef7;color:#fff;border:none;border-radius:6px;padding:10px 24px;font-size:14px;font-weight:700;cursor:pointer;display:block;margin:0 auto">🖨️ Print / Save as PDF</button>
+</body></html>`);
+  win.document.close();
+}
+
+// REPAIR SYNC — two-way between slider and override input
+function syncOverrideToSlider(){
+  const overrideEl=document.getElementById('c-rep-override');
+  const val=+(overrideEl?.value||0);
+  if(val>0){
+    // Back-calculate $/sqft from total, accounting for itemized flat repairs
+    const sqft=+(document.getElementById('c-sqft')||{value:1600}).value||1600;
+    const flat=['c-r1','c-r2','c-r3','c-r4'].reduce((s,id)=>s+(+(document.getElementById(id)||{value:0}).value||0),0);
+    const remainder=val-flat;
+    if(sqft>0&&remainder>=0){
+      const psf=Math.min(80,Math.max(5,Math.round(remainder/sqft)));
+      const sliderEl=document.getElementById('c-psf');
+      if(sliderEl) sliderEl.value=psf;
+      const psfLbl=document.getElementById('c-psf-lbl');
+      if(psfLbl) psfLbl.textContent='$'+psf;
+    }
+  }
+  calcMAO();
+}
+
+function syncSliderToOverride(){
+  // $/sqft input changed — clear override so $/sqft is in control
+  const overrideEl=document.getElementById('c-rep-override');
+  if(overrideEl&&overrideEl.value) overrideEl.value='';
+  // Update psf label (now an input so no separate label needed)
+  calcMAO();
+}
+
+// PERSISTENCE FUNCTIONS
+function saveState(){
+  const state={
+    leads,
+    calculator:{arv:+(document.getElementById('c-arv')||{value:0}).value||0,sqft:+(document.getElementById('c-sqft')||{value:1600}).value||1600,repairs:+(document.getElementById('c-rep-override')||{value:0}).value||(+(document.getElementById('c-psf')||{value:30}).value||30)*(+(document.getElementById('c-sqft')||{value:1600}).value||1600),mode:document.querySelector('input[name="c-mode"]:checked')?.value||'default',marketPct:+(document.getElementById('c-market')||{value:65}).value||65,assignmentFee:+(document.getElementById('c-fee')||{value:0}).value||0},
+    filters:{prop:document.getElementById('f-prop')?.value||'',stats:document.getElementById('f-stats')?.value||'',condition:document.getElementById('f-cond')?.value||''},
+    contactMode,
+    route,
+    activeTab:document.querySelector('[data-nav-tab].active')?.getAttribute('data-nav-tab')||'analyzer'
+  };
+  localStorage.setItem('cosHubState',JSON.stringify(state));
+}
+
+function loadState(){
+  try{
+    const state=JSON.parse(localStorage.getItem('cosHubState'))||{};
+    if(state.leads&&Array.isArray(state.leads)){leads=state.leads;}
+    if(state.calculator){
+      const c=state.calculator;
+      const arvEl=document.getElementById('c-arv');if(arvEl)arvEl.value=c.arv;
+      const sqftEl=document.getElementById('c-sqft');if(sqftEl)sqftEl.value=c.sqft;
+      const repEl=document.getElementById('c-rep-override');if(repEl)repEl.value=c.repairs;
+      const modeEl=document.querySelector('input[name="c-mode"][value="'+c.mode+'"]');if(modeEl)modeEl.checked=true;
+      const marketEl=document.getElementById('c-market');if(marketEl)marketEl.value=c.marketPct;
+      const feeEl=document.getElementById('c-fee');if(feeEl)feeEl.value=c.assignmentFee;
+    }
+    if(state.filters){
+      const f=state.filters;
+      const propEl=document.getElementById('f-prop');if(propEl)propEl.value=f.prop;
+      const statsEl=document.getElementById('f-stats');if(statsEl)statsEl.value=f.stats;
+      const condEl=document.getElementById('f-cond');if(condEl)condEl.value=f.condition;
+    }
+    if(state.contactMode)contactMode=state.contactMode;
+    if(state.route)route=state.route;
+    if(state.activeTab)sessionStorage.setItem('activeTab',state.activeTab);
+  }catch(e){}
+}
+
+function clearSavedData(){
+  if(confirm('Clear all saved data and reload?')){
+    localStorage.removeItem('cosHubState');
+    localStorage.removeItem('cosHubKPI');
+    location.reload();
+  }
+}
+
+// KPI TRACKER
+function saveKPI(){
+  const today=new Date().toISOString().split('T')[0];
+  localStorage.setItem('cosHubKPI_'+today,JSON.stringify({dials:kpiDials,sms:kpiSMS,leadsAdded:kpiLeadsAdded,appointments:kpiAppointments,offersMade:kpiOffersMade,dealsClosed:kpiDealsClosed}));
+}
+
+function loadKPI(){
+  const today=new Date().toISOString().split('T')[0];
+  const lastDate=localStorage.getItem('cosHubKPI_lastDate');
+  if(lastDate!==today){
+    kpiDials=0;kpiSMS=0;kpiLeadsAdded=0;kpiAppointments=0;kpiOffersMade=0;kpiDealsClosed=0;
+    localStorage.setItem('cosHubKPI_lastDate',today);
+  }else{
+    const kpi=JSON.parse(localStorage.getItem('cosHubKPI_'+today))||{};
+    kpiDials=kpi.dials||0;kpiSMS=kpi.sms||0;kpiLeadsAdded=kpi.leadsAdded||0;
+    kpiAppointments=kpi.appointments||0;kpiOffersMade=kpi.offersMade||0;kpiDealsClosed=kpi.dealsClosed||0;
+  }
+  updateKPIDisplay();
+}
+
+function updateKPIDisplay(){
+  const update=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+  update('kpi-dials',kpiDials);update('kpi-sms',kpiSMS);update('kpi-leads',kpiLeadsAdded);
+  update('kpi-appt',kpiAppointments);update('kpi-offer',kpiOffersMade);update('kpi-deal',kpiDealsClosed);
+}
+
+function incKPI(key){
+  if(key==='dials')kpiDials++;else if(key==='sms')kpiSMS++;else if(key==='leads')kpiLeadsAdded++;
+  else if(key==='appt')kpiAppointments++;else if(key==='offer')kpiOffersMade++;else if(key==='deal')kpiDealsClosed++;
+  saveKPI();updateKPIDisplay();
+}
+
+function decKPI(key){
+  if(key==='dials'&&kpiDials>0)kpiDials--;else if(key==='sms'&&kpiSMS>0)kpiSMS--;else if(key==='leads'&&kpiLeadsAdded>0)kpiLeadsAdded--;
+  else if(key==='appt'&&kpiAppointments>0)kpiAppointments--;else if(key==='offer'&&kpiOffersMade>0)kpiOffersMade--;else if(key==='deal'&&kpiDealsClosed>0)kpiDealsClosed--;
+  saveKPI();updateKPIDisplay();
+}
+
+// KPI COUNTERS
+let kpiDials=0,kpiSMS=0,kpiLeadsAdded=0,kpiAppointments=0,kpiOffersMade=0,kpiDealsClosed=0;
+
+// INIT
+document.addEventListener('keydown', function(e) {
+  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+  const key = e.key.toLowerCase();
+  if(key === '1' || (e.altKey && key === '1')) { e.preventDefault(); nav('analyzer'); }
+  else if(key === '2' || (e.altKey && key === '2')) { e.preventDefault(); nav('calc'); }
+  else if(key === '3' || (e.altKey && key === '3')) { e.preventDefault(); nav('scripts'); }
+  else if((e.ctrlKey || e.metaKey) && key === 'e') { e.preventDefault(); document.querySelector('[onclick*="exportData"]')?.click(); }
+  else if((e.ctrlKey || e.metaKey) && key === 'k') { e.preventDefault(); document.querySelector('[onclick*="copyScript"]')?.click(); }
+  else if(key === 'escape') { e.preventDefault(); document.querySelectorAll('[onclick*="toggleSection"]').forEach(el => el.click()); }
+});
+loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();
+</script>
+</body>
+</html>
