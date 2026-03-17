@@ -164,13 +164,14 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       <span class="label">Property Info</span>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div>
-  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-    <span class="label" style="margin-bottom:0">ARV</span>
-    <span class="hdr" id="c-arv-lbl" style="font-size:18px;color:var(--blue)">$380,000</span>
+  <span class="label" style="margin-bottom:4px">ARV</span>
+  <div style="display:flex;align-items:center;gap:6px">
+    <span style="font-size:18px;font-weight:700;color:var(--blue)">$</span>
+    <input type="number" min="50000" max="5000000" step="5000" value="380000" id="c-arv"
+      oninput="document.getElementById('c-arv-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()"
+      style="font-size:18px;font-weight:700;color:var(--blue);width:100%;text-align:right" />
   </div>
-  <input type="range" min="50000" max="5000000" step="5000" value="380000" id="c-arv"
-    oninput="document.getElementById('c-arv-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" />
-  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:3px"><span>$50K</span><span>$5M</span></div>
+  <span class="hdr" id="c-arv-lbl" style="font-size:0;height:0;overflow:hidden">$380,000</span>
 </div>
         <div><span class="label">Neighborhood</span>
           <select id="c-hood" onchange="calcMAO()" style="font-size:11px">
@@ -222,13 +223,14 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
           </select>
         </div>
         <div>
-  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
-    <span class="label" style="margin-bottom:0">Sq Footage</span>
-    <span class="hdr" id="c-sqft-lbl" style="font-size:18px;color:var(--t2)">1,600 sqft</span>
+  <span class="label" style="margin-bottom:4px">Sq Footage</span>
+  <div style="display:flex;align-items:center;gap:6px">
+    <input type="number" min="500" max="10000" step="50" value="1600" id="c-sqft"
+      oninput="document.getElementById('c-sqft-lbl').textContent=(+this.value).toLocaleString()+' sqft';calcMAO()"
+      style="font-size:18px;font-weight:700;color:var(--t2);width:100%;text-align:right" />
+    <span style="font-size:14px;font-weight:700;color:var(--t3)">sqft</span>
   </div>
-  <input type="range" min="500" max="5000" step="50" value="1600" id="c-sqft"
-    oninput="document.getElementById('c-sqft-lbl').textContent=(+this.value).toLocaleString()+' sqft';calcMAO()" />
-  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:3px"><span>500</span><span>5,000</span></div>
+  <span class="hdr" id="c-sqft-lbl" style="font-size:0;height:0;overflow:hidden">1,600 sqft</span>
 </div>
         <div><span class="label">Distress Type</span>
           <select id="c-distress" onchange="calcMAO()" style="font-size:11px">
