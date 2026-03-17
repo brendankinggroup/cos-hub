@@ -68,6 +68,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
         <option value="taxlien">Tax Lien / Code Violation</option>
         <option value="highequity">High Equity Absentee</option>
         <option value="divorce">Divorce / Lis Pendens</option>
+        <option value="distressed">🚨 General Distressed</option>
         <option value="distressed_landvoice">🔥 Landvoice Distressed (Mixed)</option>
         <option value="damage">Water/Fire Damage</option>
         <option value="senior">Senior Downsizing</option>
@@ -127,6 +128,10 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="stack-filters"></div>
+  </div>
+
+  <div style="margin-bottom:10px">
+    <input id="lead-search" type="text" placeholder="🔍 Search leads by name, address, city, zip..." oninput="searchLeads()" style="width:100%;padding:10px 14px;font-size:13px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--t1)" />
   </div>
 
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -241,6 +246,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
               <option value="Tax Delinquent">Tax Delinquent (2+ yrs)</option>
               <option value="Code Violations">Code Violations / City Liens</option>
               <option value="Distressed (Landvoice)">Landvoice Distressed (Mixed)</option>
+              <option value="Distressed">General Distressed</option>
             </optgroup>
             <optgroup label="── LIFE EVENT ──">
               <option value="Divorce">Divorce / Separation</option>
@@ -478,6 +484,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
           <option value="distressed_landvoice">🔥 Landvoice Distressed (Mixed)</option>
         </optgroup>
         <optgroup label="— OFF MARKET SELLER LEADS —">
+          <option value="distressed">🚨 General Distressed</option>
           <option value="preforeclosure">Pre-Foreclosure (NOD)</option>
           <option value="taxdelinquent">Tax Delinquent</option>
           <option value="probate">Probate / Estate</option>
@@ -612,6 +619,7 @@ const LIST_TYPE_INFO={
   fsbo:{desc:"Selling without an agent — they want to save commission. Show your net offer beats their retail net after costs.",sellerBonus:5},
   taxlien:{desc:"Active city/county code violations or tax liens. Compounding legal exposure. Seller wants it gone.",sellerBonus:22},
   highequity:{desc:"Own free & clear or very low LTV. Not in pain financially but sitting on a large unlocked asset.",sellerBonus:8},
+  distressed:{desc:"General distressed lead — could be financial hardship, life crisis, deferred maintenance, or unknown motivation. Qualify their real situation on the first call, then pivot to the right approach.",sellerBonus:20},
   distressed_landvoice:{desc:"Landvoice Distressed — mixed bag: NOD, Lis Pendens, financial distress, absentee, vacant. Each record is scrubbed and phone-matched up to 95%. Treat every lead as an unknown distress type until you qualify them on the first call. High urgency across the board.",sellerBonus:22,agentNote:"Off-market only. Go direct to seller. No agent involved."},
   divorce:{desc:"Lis Pendens filed — divorce proceedings include property. Both parties usually want it resolved fast and cleanly.",sellerBonus:18},
   damage:{desc:"Insurance claim or uninsured damage — water, fire, mold. Owner overwhelmed by repair scope. Buy as-is = instant relief.",sellerBonus:22},
@@ -704,7 +712,7 @@ function aiScore(l){
   let s=0;
   const flags=scoreFlags(l);
   // Distress type base points (max ~30)
-  const dp={'Pre-foreclosure':30,'Tax Delinquent':28,'Water/Fire Damage':25,'Bankruptcy':24,'Divorce':22,'Code Violations':20,'Probate/Estate':18,'Vacant/Abandoned':18,'Distressed (Landvoice)':25,'Military PCS':18,'Inherited':15,'Tired Landlord':16,'Job Relocation':14,'FSBO/Expired':10,'FSBO':8,'Senior Downsizing':8,'High Equity Absentee':10};
+  const dp={'Pre-foreclosure':30,'Tax Delinquent':28,'Water/Fire Damage':25,'Bankruptcy':24,'Divorce':22,'Code Violations':20,'Probate/Estate':18,'Vacant/Abandoned':18,'Distressed':22,'Distressed (Landvoice)':25,'Military PCS':18,'Inherited':15,'Tired Landlord':16,'Job Relocation':14,'FSBO/Expired':10,'FSBO':8,'Senior Downsizing':8,'High Equity Absentee':10};
   s+=(dp[l.distress]||8);
   // Discount from ARV — bigger discount = hotter deal (max 25)
   if(l.arv>0&&l.asking>0){const disc=(l.arv-l.asking)/l.arv;s+=Math.min(25,disc*100);}
@@ -723,29 +731,29 @@ function aiScore(l){
 
 const SAMPLE={
   preforeclosure:[
-    {id:1,name:"Maria Gonzalez",address:"4287 Carey Ave, N. Las Vegas 89032",arv:318000,asking:258000,debt:210000,repairs:45000,distress:"Pre-foreclosure",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Clark County NOD",notes:"NOD filed 38 days ago. Owner called — stressed about timeline."},
-    {id:2,name:"Robert Hicks",address:"712 Lamb Blvd, Las Vegas 89110",arv:295000,asking:240000,debt:195000,repairs:38000,distress:"Pre-foreclosure",dom:0,pricecuts:0,vacant:true,absentee:true,outofstate:false,source:"Clark County NOD",notes:"Vacant 3 months. Owner in Arizona. Skip traced — has 2 phones."},
-    {id:3,name:"Chen Family Trust",address:"9843 Warm Springs Rd, Henderson 89002",arv:445000,asking:390000,debt:280000,repairs:22000,distress:"Pre-foreclosure",dom:0,pricecuts:0,vacant:false,absentee:true,outofstate:true,source:"Clark County NOD",notes:"Trust owns it. Out of state CA. Large equity cushion."},
+    {id:1,name:"Maria Gonzalez",address:"4287 Carey Ave, N. Las Vegas 89032",city:"N. Las Vegas",zip:"89032",beds:3,baths:2,sqft:1480,arv:318000,asking:258000,debt:210000,repairs:45000,distress:"Pre-foreclosure",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Clark County NOD",notes:"NOD filed 38 days ago. Owner called — stressed about timeline."},
+    {id:2,name:"Robert Hicks",address:"712 Lamb Blvd, Las Vegas 89110",city:"Las Vegas",zip:"89110",beds:4,baths:2,sqft:1820,arv:295000,asking:240000,debt:195000,repairs:38000,distress:"Pre-foreclosure",dom:0,pricecuts:0,vacant:true,absentee:true,outofstate:false,source:"Clark County NOD",notes:"Vacant 3 months. Owner in Arizona. Skip traced — has 2 phones."},
+    {id:3,name:"Chen Family Trust",address:"9843 Warm Springs Rd, Henderson 89002",city:"Henderson",zip:"89002",beds:4,baths:3,sqft:2450,arv:445000,asking:390000,debt:280000,repairs:22000,distress:"Pre-foreclosure",dom:0,pricecuts:0,vacant:false,absentee:true,outofstate:true,source:"Clark County NOD",notes:"Trust owns it. Out of state CA. Large equity cushion."},
   ],
   mls_active:[
-    {id:4,name:"Listed by: Sarah Johnson (Realty ONE)",address:"2291 Cameo Hills Dr, Henderson 89014",arv:512000,asking:498000,debt:0,repairs:18000,distress:"MLS Active",dom:62,pricecuts:2,vacant:false,absentee:false,outofstate:false,source:"MLS Active",agentName:"Sarah Johnson",agentPhone:"702-555-4421",notes:"2 price reductions. Cash offers preferred per remarks. AS-IS noted.",mlsRemarks:"Cash offers preferred. Seller motivated. AS-IS, priced to sell."},
-    {id:5,name:"Listed by: Mike Torres (BHHS Nevada)",address:"5518 Eldora Ave, Spring Valley 89146",arv:385000,asking:372000,debt:0,repairs:31000,distress:"MLS Active",dom:88,pricecuts:3,vacant:false,absentee:false,outofstate:false,source:"MLS Active",agentName:"Mike Torres",agentPhone:"702-555-7832",notes:"88 days on market, 3 price cuts. Agent says bring all offers.",mlsRemarks:"Bring all offers. Seller will consider all reasonable offers. Quick close possible."},
-    {id:6,name:"Listed by: Linda Park (Signature RE)",address:"3302 Torino Ave, N. Las Vegas 89030",arv:278000,asking:259000,debt:0,repairs:52000,distress:"MLS Active",dom:41,pricecuts:1,vacant:true,absentee:true,outofstate:true,source:"MLS Active",agentName:"Linda Park",agentPhone:"702-555-3310",notes:"Vacant. Out-of-state owner. AS-IS noted in remarks.",mlsRemarks:"Property sold AS-IS. Owner out of state. All offers considered."},
+    {id:4,name:"Listed by: Sarah Johnson (Realty ONE)",address:"2291 Cameo Hills Dr, Henderson 89014",city:"Henderson",zip:"89014",beds:4,baths:3,sqft:2680,arv:512000,asking:498000,debt:0,repairs:18000,distress:"MLS Active",dom:62,pricecuts:2,vacant:false,absentee:false,outofstate:false,source:"MLS Active",agentName:"Sarah Johnson",agentPhone:"702-555-4421",notes:"2 price reductions. Cash offers preferred per remarks. AS-IS noted.",mlsRemarks:"Cash offers preferred. Seller motivated. AS-IS, priced to sell."},
+    {id:5,name:"Listed by: Mike Torres (BHHS Nevada)",address:"5518 Eldora Ave, Spring Valley 89146",city:"Spring Valley",zip:"89146",beds:3,baths:2,sqft:1650,arv:385000,asking:372000,debt:0,repairs:31000,distress:"MLS Active",dom:88,pricecuts:3,vacant:false,absentee:false,outofstate:false,source:"MLS Active",agentName:"Mike Torres",agentPhone:"702-555-7832",notes:"88 days on market, 3 price cuts. Agent says bring all offers.",mlsRemarks:"Bring all offers. Seller will consider all reasonable offers. Quick close possible."},
+    {id:6,name:"Listed by: Linda Park (Signature RE)",address:"3302 Torino Ave, N. Las Vegas 89030",city:"N. Las Vegas",zip:"89030",beds:3,baths:1,sqft:1280,arv:278000,asking:259000,debt:0,repairs:52000,distress:"MLS Active",dom:41,pricecuts:1,vacant:true,absentee:true,outofstate:true,source:"MLS Active",agentName:"Linda Park",agentPhone:"702-555-3310",notes:"Vacant. Out-of-state owner. AS-IS noted in remarks.",mlsRemarks:"Property sold AS-IS. Owner out of state. All offers considered."},
   ],
   taxdelinquent:[
-    {id:7,name:"James & Carol Patton",address:"5518 Lake Mead Blvd, Whitney 89115",arv:278000,asking:215000,debt:0,repairs:38000,distress:"Tax Delinquent",dom:0,pricecuts:0,vacant:false,absentee:true,outofstate:false,source:"Clark County Treasurer",notes:"$14,200 in back taxes. 3 years delinquent. Free & clear on mortgage."},
-    {id:8,name:"Marcus Webb",address:"412 Carey Ave, N. Las Vegas 89030",arv:305000,asking:240000,debt:45000,repairs:55000,distress:"Tax Delinquent",dom:0,pricecuts:0,vacant:true,absentee:true,outofstate:true,source:"Clark County Treasurer",notes:"Vacant. Out of state. $9,800 back taxes. Has code violations too."},
+    {id:7,name:"James & Carol Patton",address:"5518 Lake Mead Blvd, Whitney 89115",city:"Whitney",zip:"89115",beds:3,baths:2,sqft:1560,arv:278000,asking:215000,debt:0,repairs:38000,distress:"Tax Delinquent",dom:0,pricecuts:0,vacant:false,absentee:true,outofstate:false,source:"Clark County Treasurer",notes:"$14,200 in back taxes. 3 years delinquent. Free & clear on mortgage."},
+    {id:8,name:"Marcus Webb",address:"412 Carey Ave, N. Las Vegas 89030",city:"N. Las Vegas",zip:"89030",beds:4,baths:2,sqft:1740,arv:305000,asking:240000,debt:45000,repairs:55000,distress:"Tax Delinquent",dom:0,pricecuts:0,vacant:true,absentee:true,outofstate:true,source:"Clark County Treasurer",notes:"Vacant. Out of state. $9,800 back taxes. Has code violations too."},
   ],
   distressed_landvoice:[
-    {id:20,name:"Patricia & Marco Delgado",address:"3892 Pecos Rd, N. Las Vegas 89115",arv:298000,asking:238000,debt:225000,repairs:42000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Landvoice Distressed",notes:"Landvoice temp gauge: orange. Missed 2 payments per records. No NOD filed yet. Owner still in home."},
-    {id:21,name:"Kevin Albright",address:"7741 Losee Rd, N. Las Vegas 89086",arv:315000,asking:255000,debt:0,repairs:35000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:true,absentee:true,outofstate:true,source:"Landvoice Distressed",notes:"Vacant. Out-of-state owner — Texas. Landvoice flagged financial distress. No mortgage. Free & clear."},
-    {id:22,name:"Sandra Moreno",address:"2218 Carey Ave, N. Las Vegas 89030",arv:278000,asking:215000,debt:195000,repairs:38000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Landvoice Distressed",notes:"Lis Pendens filed — divorce proceedings. Landvoice flagged. Husband moved out. Wife needs fast close."},
-    {id:23,name:"James Thorton",address:"5504 Lamb Blvd, Las Vegas 89110",arv:342000,asking:280000,debt:260000,repairs:28000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:true,outofstate:false,source:"Landvoice Distressed",notes:"Rental property. Landvoice temp gauge showing early financial stress. Tenant behind on rent. Owner local."},
-    {id:24,name:"Rosa & Ernesto Fuentes",address:"1109 Tonopah Ave, N. Las Vegas 89030",arv:265000,asking:208000,debt:220000,repairs:45000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Landvoice Distressed",notes:"Landvoice: Notice of Default filed 22 days ago. High urgency. Neighborhood: older stock, needs full rehab."},
+    {id:20,name:"Patricia & Marco Delgado",address:"3892 Pecos Rd, N. Las Vegas 89115",city:"N. Las Vegas",zip:"89115",beds:3,baths:2,sqft:1420,arv:298000,asking:238000,debt:225000,repairs:42000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Landvoice Distressed",notes:"Landvoice temp gauge: orange. Missed 2 payments per records. No NOD filed yet. Owner still in home."},
+    {id:21,name:"Kevin Albright",address:"7741 Losee Rd, N. Las Vegas 89086",city:"N. Las Vegas",zip:"89086",beds:4,baths:2,sqft:1890,arv:315000,asking:255000,debt:0,repairs:35000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:true,absentee:true,outofstate:true,source:"Landvoice Distressed",notes:"Vacant. Out-of-state owner — Texas. Landvoice flagged financial distress. No mortgage. Free & clear."},
+    {id:22,name:"Sandra Moreno",address:"2218 Carey Ave, N. Las Vegas 89030",city:"N. Las Vegas",zip:"89030",beds:3,baths:1,sqft:1180,arv:278000,asking:215000,debt:195000,repairs:38000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Landvoice Distressed",notes:"Lis Pendens filed — divorce proceedings. Landvoice flagged. Husband moved out. Wife needs fast close."},
+    {id:23,name:"James Thorton",address:"5504 Lamb Blvd, Las Vegas 89110",city:"Las Vegas",zip:"89110",beds:3,baths:2,sqft:1540,arv:342000,asking:280000,debt:260000,repairs:28000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:true,outofstate:false,source:"Landvoice Distressed",notes:"Rental property. Landvoice temp gauge showing early financial stress. Tenant behind on rent. Owner local."},
+    {id:24,name:"Rosa & Ernesto Fuentes",address:"1109 Tonopah Ave, N. Las Vegas 89030",city:"N. Las Vegas",zip:"89030",beds:3,baths:2,sqft:1350,arv:265000,asking:208000,debt:220000,repairs:45000,distress:"Distressed (Landvoice)",dom:0,pricecuts:0,vacant:false,absentee:false,outofstate:false,source:"Landvoice Distressed",notes:"Landvoice: Notice of Default filed 22 days ago. High urgency. Neighborhood: older stock, needs full rehab."},
   ],
   mls_expired:[
-    {id:9,name:"Gary & Susan Fletcher",address:"8847 Warm Springs Rd, Enterprise 89148",arv:419000,asking:355000,debt:180000,repairs:31000,distress:"FSBO/Expired",dom:97,pricecuts:4,vacant:false,absentee:false,outofstate:false,source:"MLS Expired",notes:"Listing expired yesterday. 4 price reductions. Was listed at $415K."},
-    {id:10,name:"Carla Mendez",address:"1442 Bruce St, Las Vegas 89119",arv:335000,asking:298000,debt:220000,repairs:24000,distress:"FSBO/Expired",dom:73,pricecuts:2,vacant:false,absentee:false,outofstate:false,source:"MLS Expired",notes:"Moving to Seattle for work. Listing just expired. Very motivated."},
+    {id:9,name:"Gary & Susan Fletcher",address:"8847 Warm Springs Rd, Enterprise 89148",city:"Enterprise",zip:"89148",beds:4,baths:3,sqft:2320,arv:419000,asking:355000,debt:180000,repairs:31000,distress:"FSBO/Expired",dom:97,pricecuts:4,vacant:false,absentee:false,outofstate:false,source:"MLS Expired",notes:"Listing expired yesterday. 4 price reductions. Was listed at $415K."},
+    {id:10,name:"Carla Mendez",address:"1442 Bruce St, Las Vegas 89119",city:"Las Vegas",zip:"89119",beds:3,baths:2,sqft:1580,arv:335000,asking:298000,debt:220000,repairs:24000,distress:"FSBO/Expired",dom:73,pricecuts:2,vacant:false,absentee:false,outofstate:false,source:"MLS Expired",notes:"Moving to Seattle for work. Listing just expired. Very motivated."},
   ]
 };
 
@@ -756,6 +764,7 @@ function loadSample(){
     if(lt.includes('mls_active'))key='mls_active';
     else if(lt.includes('mls_expired')||lt.includes('mls_pricecut'))key='mls_expired';
     else if(lt.includes('tax'))key='taxdelinquent';
+    else if(lt==='distressed')key='distressed_landvoice';
     else key='preforeclosure';
   }
   leads=(SAMPLE[key]||SAMPLE.preforeclosure).map(l=>({...l,score:aiScore(l),flags:scoreFlags(l)}));
@@ -844,7 +853,7 @@ function parseCSV(){
     const notes=[propDetails,arvNote,existingNotes].filter(Boolean).join(' | ');
 
     return{
-      id:i+100, name, address:addr, arv, arvEstimated,
+      id:i+100, name, address:addr, city:cityIdx>=0?cols[cityIdx]||'':'', zip:zipIdx>=0?cols[zipIdx]||'':'', arv, arvEstimated,
       asking:+(sg(cols,'asking')||0),
       debt:+(sg(cols,'debt')||0),
       repairs:+(sg(cols,'repairs')||0),
@@ -902,6 +911,15 @@ function exportTop(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cos-hub-top-leads.csv';a.click();
 }
 
+function searchLeads(){
+  const q=(document.getElementById('lead-search').value||'').toLowerCase().trim();
+  if(!q){filteredLeads=[...leads];applyFilters();return;}
+  filteredLeads=leads.filter(l=>{
+    return (l.name||'').toLowerCase().includes(q)||(l.address||'').toLowerCase().includes(q)||(l.city||'').toLowerCase().includes(q)||(l.zip||'').toLowerCase().includes(q)||(l.notes||'').toLowerCase().includes(q);
+  });
+  renderLeads();
+}
+
 function renderLeads(){
   if(!filteredLeads.length){document.getElementById('lead-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--t3)">No leads match the current filters.</div>';return;}
   const isMLS=document.getElementById('list-type').value.includes('mls');
@@ -918,6 +936,7 @@ function renderLeads(){
     <div style="flex:1"><div style="font-size:15px;font-weight:700;color:var(--t1);line-height:1.3">${esc(l.name)}</div><div style="font-size:12px;color:var(--t3);margin-top:3px">${esc(l.address)}</div></div>
     <div style="text-align:center;flex-shrink:0;margin-left:10px"><div class="hdr" style="font-size:32px;color:${sc};line-height:1">${score}</div><div style="font-size:9px;font-weight:700;color:${sc}">${sl}</div></div>
   </div>
+  ${(l.beds||l.baths||l.sqft)?`<div style="display:flex;gap:12px;margin-bottom:8px;font-size:11px;color:var(--t2)">${l.beds?`<span>🛏 <b>${l.beds}</b> bed${l.beds!=1?'s':''}</span>`:''}${l.baths?`<span>🚿 <b>${l.baths}</b> bath${l.baths!=1?'s':''}</span>`:''}${l.sqft?`<span>📐 <b>${(+l.sqft).toLocaleString()}</b> sqft</span>`:''}${l.city?`<span style="margin-left:auto;color:var(--t3)">📍 ${esc(l.city)}${l.zip?', '+l.zip:''}</span>`:''}</div>`:''}
   ${l.mlsRemarks?`<div style="font-size:10px;color:var(--cyan);background:var(--bluedim);border-left:2px solid var(--cyan);padding:5px 8px;border-radius:0 5px 5px 0;margin-bottom:8px;line-height:1.4">📋 MLS: "${esc(l.mlsRemarks)}"</div>`:''}
   ${l.notes?`<div style="font-size:10px;color:var(--t2);background:var(--card);padding:5px 8px;border-radius:5px;margin-bottom:8px;line-height:1.4;border-left:2px solid var(--border2)">${esc(l.notes)}</div>`:''}
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px">
@@ -940,7 +959,7 @@ function renderLeads(){
   }).join('');
 }
 
-function launchSellerScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('seller');document.getElementById('sc-name').value=l.name||'Homeowner';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-offer').value=l.asking||Math.round((l.arv||0)*0.65);const lt=document.getElementById('list-type').value;const tm={preforeclosure:'preforeclosure',taxdelinquent:'taxdelinquent',probate:'probate',mls_expired:'mls_expired',mls_active:'mls_active',mls_pricecut:'mls_active',fsbo:'fsbo',vacant:'vacant',divorce:'divorce',highequity:'highequity',taxlien:'codeviolation',absentee:'tiredlandlord',distressed_landvoice:'distressed_landvoice',damage:'damage',senior:'senior',bankruptcy:'bankruptcy',military:'military'};document.getElementById('sc-type').value=tm[lt]||'preforeclosure';genScript();}
+function launchSellerScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('seller');document.getElementById('sc-name').value=l.name||'Homeowner';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-offer').value=l.asking||Math.round((l.arv||0)*0.65);const lt=document.getElementById('list-type').value;const tm={preforeclosure:'preforeclosure',taxdelinquent:'taxdelinquent',probate:'probate',mls_expired:'mls_expired',mls_active:'mls_active',mls_pricecut:'mls_active',fsbo:'fsbo',vacant:'vacant',divorce:'divorce',highequity:'highequity',taxlien:'codeviolation',absentee:'tiredlandlord',distressed:'distressed',distressed_landvoice:'distressed_landvoice',damage:'damage',senior:'senior',bankruptcy:'bankruptcy',military:'military'};document.getElementById('sc-type').value=tm[lt]||'preforeclosure';genScript();}
 function launchAgentScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('agent');document.getElementById('sc-agent').value=l.agentName||'the listing agent';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-listprice').value=l.asking||0;document.getElementById('sc-dom').value=l.dom||0;const lt=document.getElementById('list-type').value;document.getElementById('sc-type').value=lt.includes('expired')?'mls_expired':'mls_active';genScript();}
 function launchCalc(arv,repairs){nav('calc');document.getElementById('c-arv').value=arv||380000;if(repairs>0){const sqft=+(document.getElementById('c-sqft').value)||1600;const psf=Math.round(repairs/sqft);const clamped=Math.min(80,Math.max(5,psf));document.getElementById('c-psf').value=clamped;const psfLbl=document.getElementById('c-psf-lbl');if(psfLbl)psfLbl.textContent='$'+clamped;['c-r1','c-r2','c-r3','c-r4'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}calcMAO();}
 
@@ -975,7 +994,7 @@ function calcMAO(){
   const distressVal=(document.getElementById('c-distress')||{value:''}).value;
   const distressBonus={
     'Pre-foreclosure':12,'Notice of Trustee Sale':14,'Lis Pendens':11,'Tax Delinquent':11,
-    'Code Violations':9,'Distressed (Landvoice)':10,'Divorce':9,'Probate/Estate':7,
+    'Code Violations':9,'Distressed':9,'Distressed (Landvoice)':10,'Divorce':9,'Probate/Estate':7,
     'Inherited':6,'Job Relocation':5,'Death in Family':7,'Medical Hardship':6,
     'Bankruptcy':10,'Vacant':8,'Tired Landlord':6,'Problem Tenants':5,
     'Hoarder/Condition':4,'Fire Damage':5,'Foundation Issues':3,'Failed Flip':4,
@@ -1034,6 +1053,7 @@ function calcMAO(){
     'Code Violations':`All code violations and city citations transfer with the property — they become my problem at closing, not yours.`,
     'Job Relocation':`Tell me your move date and I'll close the sale on that exact day — cash, no bank delays, no surprises.`,
     'Medical Hardship':`The last thing you need right now is the stress of a traditional sale. I can make this one phone call and take it off your plate.`,
+    'Distressed':`I work with homeowners going through all kinds of situations. Whatever's happening, I can make the sale simple and stress-free.`,
     'Distressed (Landvoice)':`I work with homeowners in all kinds of tough situations. Whatever's going on with the property, I can make this simple and fast.`,
     'Behind on Payments':`We can close before your next payment is due — stopping the damage to your credit and putting cash in your pocket today.`,
     'IRS Tax Lien':`Federal liens get resolved at the closing table. One transaction clears everything — you walk away clean.`,
@@ -1212,6 +1232,14 @@ const SCRIPTS={
     letter:(n,a,o,d)=>`Dear ${n},\n\n• Cash offer: ${fm(o)}\n• Close on YOUR date\n• As-is — no repairs to schedule\n• No agents, no delays\n\nYou focus on the new city. I handle the property.\n\n[Your Name] | [Phone]`,
     email:(n,a,o,d)=>`Subject: Cash Offer — Close on Your Move Date\n\nHi ${n},\n\nI can close on ${a} on whatever date works for your relocation. ${fm(o)} cash, as-is, no delays.\n\nFirst question when we talk: when do you need to be gone?\n\n[Your Name] | [Phone]`,
     seq:(n,a,o,d)=>`RELOCATION FOLLOW-UP — ${n} | ${a}\n\nKEY: Find their start/move date immediately.\n\nDAY 0: Call — "When do you need to be in [city]?"\nDAY 2: "I can have a contract to you this week and close on whatever date you need."\nDAY 5: Letter/email with close date timeline visual\nDAY 10: "Your move date is getting close. Let's lock in a date now."\nDAY 21: Final push before departure`
+  },
+  distressed:{title:"General Distressed",desc:"Unknown or mixed distress — could be financial hardship, life change, deferred maintenance, or personal crisis. Qualify the real situation on the first call, then pivot to the specific script.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — local Las Vegas investor. I'm reaching out about your property at ${a}.\n\nI work with homeowners going through all kinds of situations — financial pressure, life changes, properties that need work. I buy homes for cash, as-is, and close in as little as ${d} days.\n\nWithout getting too personal — is there anything going on with the property or your situation where a fast, no-hassle cash sale might help?\n\n[LISTEN — qualify their real situation, then pivot to the right script]\n\nIf they share distress: "That's exactly what I help with. I could offer around ${fm(o)} — cash, as-is, close in ${d} days. Want to set up a quick walkthrough?"`,
+    vm:(n,a,o,d)=>`Hi ${n}, [Name] here — local Las Vegas investor. Calling about ${a}. I buy homes for cash, any condition, close fast. If you're open to hearing a no-obligation offer, call me at [#].`,
+    sms:(n,a,o,d)=>`Hi ${n}, [Name] — local LV investor. Cash offer for ${a}, close ${d}d, as-is. Worth a quick call? [#]`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nI'm a local Las Vegas investor reaching out about your property at ${a}.\n\nWhatever your situation — I can help:\n\n• Cash offer: ${fm(o)}\n• Close in as little as ${d} days\n• Buy completely as-is — no repairs\n• No agents, no commissions, no fees\n\nIf a fast, private sale ever makes sense, I'd love a 5-minute conversation.\n\n[Your Name] | [Phone]`,
+    email:(n,a,o,d)=>`Subject: Cash Offer for ${a} — Fast Close, No Hassle\n\nHi ${n},\n\nI'm a local Las Vegas investor. I'd like to make a direct cash offer on ${a}.\n\n• Offer: ${fm(o)}\n• Close: ${d} days\n• As-is — no repairs\n• No agents or commissions\n\nWhatever your situation, I can make this simple. 5-minute call?\n\n[Your Name] | [Phone]`,
+    seq:(n,a,o,d)=>`GENERAL DISTRESSED FOLLOW-UP — ${n} | ${a}\n\nSTRATEGY: First call = QUALIFY. Find the real pain point. Then pivot to the specific script.\n\nDAY 0 — Call (qualification script)\nKey questions:\n  "Is there anything going on with the property or your situation?"\n  "Are there any financial pressures or deadlines?"\n  "Is the property currently listed?"\nOnce qualified → switch to specialized script\n\nDAY 1 — Text if no answer\n"Hi ${n}, [Name] here — local investor. Cash offer for ${a}, no pressure. Call or text [#]"\n\nDAY 3 — Second call attempt\nDAY 7 — Letter\nDAY 14 — Text: "${n}, offer still stands — ${fm(o)}, close ${d}d, as-is. [#]"\nDAY 30 — Final check-in\nMONTHLY: Add to drip nurture.`
   },
   distressed_landvoice:{title:"Landvoice Distressed — Mixed",desc:"These leads could be pre-foreclosure, divorce, financial distress, absentee, or early-stage NOD. Your first call is a QUALIFICATION call — identify the real situation fast, then pivot to the right script.",
     cold:(n,a,o,d)=>`Hi, may I speak with ${n}?\n\n${n}, my name is [Your Name] — I'm a local real estate investor here in Las Vegas. I'm calling because I came across your property at ${a} and I have a quick question for you.\n\nI work with homeowners who are going through tough situations — whether that's a financial crunch, a life change, or just needing to sell fast without all the hassle of a traditional listing. I buy homes directly for cash and I close in as little as ${d} days.\n\nWithout prying — is there anything going on with the property or your situation that's making a fast cash sale worth exploring?\n\n[LISTEN — their answer tells you which full script to pivot to]\n\nIf YES or any hint of distress:\n"That's exactly the kind of situation I help with. I could offer you around ${fm(o)} for the property, cash, as-is. Zero repairs, zero agents, close in ${d} days. Would it be worth a quick walk-through this week so I can firm up that number?"`,
