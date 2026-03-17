@@ -340,8 +340,8 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       </div>
       <div id="c-full-extra" style="display:none;flex-direction:column;gap:7px;margin-bottom:10px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-          <div><span class="label">Hold months</span><select id="c-hm" onchange="calcMAO()"><option value="2">2mo</option><option value="3" selected>3mo</option><option value="4">4mo</option><option value="6">6mo</option></select></div>
-          <div><span class="label">Agent comm.</span><select id="c-ac" onchange="calcMAO()"><option value="0">0%</option><option value="3">3%</option><option value="5">5%</option><option value="6" selected>6%</option></select></div>
+          <div><span class="label">Hold months</span><input type="number" min="0" max="36" step="1" value="3" id="c-hm" oninput="calcMAO()" style="font-size:15px;font-weight:700;text-align:center;width:100%"/></div>
+          <div><span class="label">Agent comm. %</span><input type="number" min="0" max="10" step="0.5" value="6" id="c-ac" oninput="calcMAO()" style="font-size:15px;font-weight:700;text-align:center;width:100%"/></div>
         </div>
         <div>
           <span class="label">Buyer profit %</span>
