@@ -184,6 +184,15 @@
         .autosave{position:fixed;bottom:16px;right:16px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:11px;color:var(--green);opacity:0;transition:opacity 0.3s;z-index:100}
         .autosave.show{opacity:1}
 
+        /* === GOOGLE AUTOCOMPLETE DARK THEME === */
+        .pac-container{background:var(--bg2)!important;border:1px solid var(--border)!important;border-radius:8px!important;margin-top:4px!important;font-family:'DM Sans',sans-serif!important;box-shadow:0 8px 24px rgba(0,0,0,0.4)!important}
+        .pac-item{padding:10px 14px!important;border-bottom:1px solid var(--border)!important;color:var(--text)!important;cursor:pointer!important;font-size:14px!important}
+        .pac-item:hover,.pac-item-selected{background:var(--bg3)!important}
+        .pac-item-query{color:var(--heading)!important;font-weight:600!important}
+        .pac-matched{color:var(--green)!important}
+        .pac-icon{display:none!important}
+        .pac-logo::after{display:none!important}
+
         /* === RESPONSIVE === */
         @media(max-width:480px){
             .photo-grid{grid-template-columns:repeat(2,1fr)}
@@ -1045,6 +1054,62 @@ document.addEventListener('input', (e) => {
         if (err) err.classList.remove('show');
     }
 });
+// ============================================
+// GOOGLE PLACES ADDRESS AUTOCOMPLETE
+// ============================================
+// HOW TO ACTIVATE:
+// 1. Go to https://console.cloud.google.com
+// 2. Create a project (or use existing)
+// 3. Enable "Places API" and "Maps JavaScript API"
+// 4. Create an API key (restrict to your domains)
+// 5. Paste it below replacing YOUR_GOOGLE_API_KEY
+const GOOGLE_API_KEY = 'YOUR_GOOGLE_API_KEY';
+
+function initAutocomplete() {
+    const input = document.getElementById('f-address');
+    if (!input || typeof google === 'undefined') return;
+
+    const autocomplete = new google.maps.places.Autocomplete(input, {
+        types: ['address'],
+        componentRestrictions: { country: 'us' },
+        fields: ['address_components', 'formatted_address']
+    });
+
+    autocomplete.addListener('place_changed', () => {
+        const place = autocomplete.getPlace();
+        if (!place.address_components) return;
+
+        let street = '', city = '', zip = '';
+        place.address_components.forEach(c => {
+            if (c.types.includes('street_number')) street = c.long_name + ' ';
+            if (c.types.includes('route')) street += c.long_name;
+            if (c.types.includes('locality')) city = c.long_name;
+            if (c.types.includes('postal_code')) zip = c.long_name;
+        });
+
+        input.value = street.trim();
+        input.classList.remove('err');
+        const addrErr = document.getElementById('e-address');
+        if (addrErr) addrErr.classList.remove('show');
+
+        if (city) document.getElementById('f-city').value = city;
+        if (zip) {
+            document.getElementById('f-zip').value = zip;
+            document.getElementById('f-zip').classList.remove('err');
+            const zipErr = document.getElementById('e-zip');
+            if (zipErr) zipErr.classList.remove('show');
+        }
+        autoSave();
+    });
+}
+
+// Load Google Maps script dynamically (only if key is set)
+if (GOOGLE_API_KEY !== 'YOUR_GOOGLE_API_KEY') {
+    const s = document.createElement('script');
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&libraries=places&callback=initAutocomplete`;
+    s.async = true; s.defer = true;
+    document.head.appendChild(s);
+}
 </script>
 </body>
 </html>
