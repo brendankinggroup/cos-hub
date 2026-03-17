@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Your Las Vegas Home Fast for Cash — Cash Offer Specialist</title>
+    <meta name="description" content="Get a fair cash offer on your Las Vegas home in minutes. No repairs, no agents, no fees. Close in as little as 7 days.">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'DM Sans', sans-serif; background: #06080f; color: #e0e0e0; line-height: 1.6; }
+
+        :root {
+            --bg: #06080f; --bg2: #0b0e18; --bg3: #141826; --border: #1a2030;
+            --blue: #4f8ef7; --green: #0ecf8a; --red: #f04060; --orange: #f7a84f;
+            --text: #e0e0e0; --muted: #a0a0a0; --heading: #ffffff;
+        }
+
+        /* STICKY NAV */
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(6,8,15,0.92); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 30px; display: flex; align-items: center; justify-content: space-between;
+            transform: translateY(-100%); transition: transform 0.3s ease;
+        }
+        .nav.visible { transform: translateY(0); }
+        .nav-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--blue); }
+        .nav-cta {
+            background: var(--green); color: var(--bg); border: none; border-radius: 6px;
+            padding: 8px 22px; font-weight: 700; font-size: 13px; cursor: pointer;
+            letter-spacing: 0.5px; text-decoration: none; text-transform: uppercase;
+        }
+        .nav-cta:hover { filter: brightness(1.1); }
+
+        /* SECTIONS */
+        .section { padding: 80px 20px; max-width: 1100px; margin: 0 auto; }
+        .section-label { font-size: 13px; font-weight: 600; color: var(--green); letter-spacing: 2px; text-transform: uppercase; text-align: center; margin-bottom: 12px; }
+        .section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 700; color: var(--heading); text-align: center; margin-bottom: 15px; line-height: 1.2; }
+        .section-sub { font-size: 16px; color: var(--muted); text-align: center; max-width: 600px; margin: 0 auto 50px; }
+        .divider { height: 1px; background: var(--border); max-width: 1100px; margin: 0 auto; }
+
+        /* HERO */
+        .hero {
+            min-height: 100vh; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center; padding: 60px 20px 80px;
+        }
+        .hero-tagline { font-size: 14px; color: var(--green); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
+        .hero-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 38px; font-weight: 700; color: var(--blue); margin-bottom: 30px; }
+        .hero-headline { font-family: 'Barlow Condensed', sans-serif; font-size: 52px; font-weight: 700; color: var(--heading); line-height: 1.15; max-width: 700px; margin-bottom: 20px; }
+        .hero-sub { font-size: 18px; color: var(--muted); max-width: 550px; margin-bottom: 40px; }
+        .hero-cta {
+            display: inline-block; background: var(--green); color: var(--bg);
+            font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700;
+            padding: 18px 50px; border-radius: 8px; text-decoration: none;
+            letter-spacing: 0.5px; text-transform: uppercase; transition: all 0.3s;
+        }
+        .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(14,207,138,0.3); }
+        .hero-micro { font-size: 13px; color: #606060; margin-top: 14px; }
+        .hero-trust { display: flex; gap: 40px; margin-top: 60px; flex-wrap: wrap; justify-content: center; }
+        .hero-trust-item { text-align: center; }
+        .hero-trust-val { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--green); }
+        .hero-trust-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        /* HOW IT WORKS */
+        .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .step { text-align: center; padding: 30px 20px; }
+        .step-num {
+            width: 56px; height: 56px; border-radius: 50%; background: var(--green);
+            color: var(--bg); font-family: 'Barlow Condensed', sans-serif; font-size: 24px;
+            font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+        }
+        .step-title { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; color: var(--heading); margin-bottom: 10px; }
+        .step-desc { font-size: 14px; color: var(--muted); }
+
+        /* BENEFITS */
+        .benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .benefit-card {
+            background: linear-gradient(135deg, var(--bg2), var(--bg3));
+            border: 1px solid var(--border); border-radius: 10px; padding: 30px; transition: all 0.3s;
+        }
+        .benefit-card:hover { border-color: var(--blue); transform: translateY(-3px); }
+        .benefit-icon-wrap {
+            width: 44px; height: 44px; border-radius: 10px; background: rgba(79,142,247,0.1);
+            display: flex; align-items: center; justify-content: center; margin-bottom: 16px; font-size: 22px;
+        }
+        .benefit-title { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--heading); margin-bottom: 8px; }
+        .benefit-desc { font-size: 14px; color: var(--muted); }
+
+        /* SITUATIONS */
+        .situations-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .situation {
+            background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+            padding: 24px 20px; text-align: center; transition: all 0.3s;
+        }
+        .situation:hover { border-color: var(--green); }
+        .situation-icon { font-size: 28px; margin-bottom: 10px; }
+        .situation-title { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; color: var(--heading); margin-bottom: 6px; }
+        .situation-desc { font-size: 12px; color: var(--muted); }
+
+        /* TESTIMONIALS */
+        .testimonials { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .testimonial {
+            background: linear-gradient(135deg, var(--bg2), var(--bg3));
+            border: 1px solid var(--border); border-radius: 10px; padding: 30px;
+        }
+        .testimonial-stars { color: var(--orange); font-size: 18px; margin-bottom: 14px; letter-spacing: 2px; }
+        .testimonial-text { font-size: 14px; color: var(--text); font-style: italic; margin-bottom: 18px; line-height: 1.7; }
+        .testimonial-author { font-weight: 700; color: var(--heading); font-size: 14px; }
+        .testimonial-loc { font-size: 12px; color: var(--muted); }
+
+        /* FORM SECTION */
+        .form-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 80px 20px; }
+        .form-wrap { max-width: 700px; margin: 0 auto; }
+        .form-container {
+            background: linear-gradient(135deg, var(--bg2), var(--bg3));
+            border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-top: 40px;
+        }
+        .step-nav { display: flex; align-items: center; justify-content: center; margin-bottom: 35px; }
+        .step-nav-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .step-circle {
+            width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 16px;
+            color: var(--muted); transition: all 0.3s;
+        }
+        .step-nav-item.active .step-circle, .step-nav-item.completed .step-circle { border-color: var(--green); background: var(--green); color: var(--bg); }
+        .step-label { font-size: 12px; color: var(--muted); font-weight: 600; }
+        .step-divider { width: 120px; height: 2px; background: var(--border); margin: 0 15px; margin-bottom: 20px; transition: background 0.3s; }
+        .step-divider.active { background: var(--green); }
+        .form-step { display: none; }
+        .form-step.active { display: block; animation: fadeIn 0.4s ease; }
+        .form-title { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--heading); margin-bottom: 25px; display: flex; align-items: center; gap: 12px; }
+        .form-title .si { width: 28px; height: 28px; border-radius: 50%; background: var(--blue); color: #fff; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-row.full { grid-template-columns: 1fr; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+        .form-group .required { color: var(--red); }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border);
+            background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; transition: border 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--blue); outline: none; box-shadow: 0 0 0 3px rgba(79,142,247,0.15); }
+        .form-group input.error, .form-group select.error { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(240,64,96,0.1) !important; }
+        .error-message { color: var(--red); font-size: 12px; margin-top: 4px; display: none; }
+        .error-message.show { display: block; }
+        .button-group { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
+        .btn-primary {
+            background: var(--green); color: var(--bg); border: none; border-radius: 8px;
+            padding: 14px 32px; font-family: 'Barlow Condensed', sans-serif; font-size: 16px;
+            font-weight: 700; cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase; transition: all 0.3s;
+        }
+        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        .btn-secondary {
+            background: transparent; color: var(--muted); border: 1px solid var(--border);
+            border-radius: 8px; padding: 14px 24px; font-family: 'Barlow Condensed', sans-serif;
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s;
+        }
+        .btn-secondary:hover { border-color: var(--blue); color: var(--blue); }
+
+        /* RESULTS */
+        .results-container { display: none; max-width: 700px; margin: 0 auto; }
+        .results-container.show { display: block; animation: fadeIn 0.5s ease; }
+        .results-header { text-align: center; margin-bottom: 30px; }
+        .results-header h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 32px; color: var(--heading); margin-bottom: 10px; }
+        .property-summary {
+            background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+            padding: 12px 20px; display: inline-block; color: var(--green); font-size: 14px; font-weight: 600;
+        }
+        .offer-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 30px 0; }
+        .offer-card {
+            background: linear-gradient(135deg, var(--bg2), var(--bg3));
+            border: 1px solid var(--border); border-radius: 10px; padding: 25px;
+            text-align: center; position: relative; overflow: hidden; transition: all 0.3s;
+        }
+        .offer-card:hover { border-color: var(--blue); transform: translateY(-3px); }
+        .offer-card.target { border: 2px solid var(--green); padding-top: 50px; }
+        .offer-card.target::before {
+            content: "BEST OFFER"; position: absolute; top: 0; left: 0; right: 0;
+            background: var(--green); color: var(--bg); padding: 8px 0; font-size: 12px;
+            font-weight: 700; letter-spacing: 1.5px; text-align: center; border-radius: 8px 8px 0 0; z-index: 2;
+        }
+        .offer-label { font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #808080; margin-bottom: 12px; }
+        .offer-card.low .offer-label { color: var(--red); }
+        .offer-card.target .offer-label { color: var(--green); }
+        .offer-card.high .offer-label { color: var(--blue); }
+        .offer-amount { font-family: 'Barlow Condensed', sans-serif; font-size: 38px; font-weight: 700; animation: countUp 1s ease; }
+        .offer-card.low .offer-amount { color: var(--red); }
+        .offer-card.target .offer-amount { color: var(--green); }
+        .offer-card.high .offer-amount { color: var(--blue); }
+        .cta-section {
+            background: linear-gradient(135deg, var(--bg2), var(--bg3));
+            border: 1px solid var(--border); border-radius: 10px; padding: 40px; text-align: center; margin-bottom: 20px;
+        }
+        .close-timeline { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 600; color: var(--green); text-transform: uppercase; margin-bottom: 20px; }
+        .cta-benefits { display: flex; justify-content: center; gap: 30px; margin: 20px 0 30px; flex-wrap: wrap; font-size: 14px; font-weight: 500; }
+        .cta-benefit { display: flex; align-items: center; gap: 8px; }
+        .cta-benefit-icon { color: var(--green); font-weight: 700; }
+        .btn-call {
+            display: inline-block; background: linear-gradient(135deg, var(--red), var(--orange));
+            color: #fff; padding: 16px 40px; border-radius: 8px; font-family: 'Barlow Condensed', sans-serif;
+            font-size: 18px; font-weight: 700; text-decoration: none; text-transform: uppercase; transition: all 0.3s;
+        }
+        .btn-call:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(240,64,96,0.3); }
+        .call-subtext { font-size: 13px; color: #808080; margin-top: 12px; }
+
+        /* FAQ */
+        .faq-list { max-width: 700px; margin: 0 auto; }
+        .faq-item { border-bottom: 1px solid var(--border); }
+        .faq-q {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; cursor: pointer; font-weight: 600; font-size: 16px; color: var(--heading); transition: color 0.3s;
+        }
+        .faq-q:hover { color: var(--green); }
+        .faq-arrow { font-size: 20px; color: var(--muted); transition: transform 0.3s; }
+        .faq-item.open .faq-arrow { transform: rotate(45deg); color: var(--green); }
+        .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s; }
+        .faq-item.open .faq-a { max-height: 300px; padding-bottom: 20px; }
+        .faq-a p { font-size: 14px; color: var(--muted); line-height: 1.8; }
+
+        /* FINAL CTA */
+        .final-cta {
+            text-align: center; padding: 80px 20px;
+            background: linear-gradient(135deg, var(--bg2), var(--bg3)); border-top: 1px solid var(--border);
+        }
+        .final-cta .section-title { margin-bottom: 20px; }
+        .final-cta-sub { font-size: 16px; color: var(--muted); margin-bottom: 30px; }
+        .final-phone { font-family: 'Barlow Condensed', sans-serif; font-size: 20px; color: var(--muted); margin-top: 20px; }
+        .final-phone a { color: var(--blue); text-decoration: none; }
+
+        /* FOOTER */
+        .footer { text-align: center; padding: 30px 20px; border-top: 1px solid var(--border); font-size: 13px; color: #606060; }
+        .footer a { color: var(--blue); text-decoration: none; }
+        .footer a:hover { color: var(--green); }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes countUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+        .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .hero-headline { font-size: 36px; }
+            .hero-logo { font-size: 28px; }
+            .steps { grid-template-columns: 1fr; gap: 10px; }
+            .benefits-grid { grid-template-columns: 1fr 1fr; }
+            .situations-grid { grid-template-columns: 1fr 1fr; }
+            .testimonials { grid-template-columns: 1fr; }
+            .offer-cards { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .form-container { padding: 25px; }
+            .section-title { font-size: 28px; }
+            .section { padding: 60px 20px; }
+        }
+        @media (max-width: 480px) {
+            .hero-headline { font-size: 30px; }
+            .hero-trust { flex-direction: column; gap: 16px; }
+            .benefits-grid { grid-template-columns: 1fr; }
+            .step-divider { width: 60px; }
+            .nav { padding: 10px 16px; }
+            .nav-logo { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- STICKY NAV -->
+<nav class="nav" id="stickyNav">
+    <div class="nav-logo">CASH OFFER SPECIALIST</div>
+    <a href="#get-offer" class="nav-cta">Get Your Offer</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-tagline">Las Vegas Cash Buyer</div>
+    <div class="hero-logo">CASH OFFER SPECIALIST</div>
+    <h1 class="hero-headline">Sell Your Las Vegas Home Fast — For Cash</h1>
+    <p class="hero-sub">No repairs. No agents. No fees. Close in as little as 7 days.</p>
+    <a href="#get-offer" class="hero-cta">Get Your Free Cash Offer</a>
+    <div class="hero-micro">Takes less than 2 minutes</div>
+    <div class="hero-trust">
+        <div class="hero-trust-item"><div class="hero-trust-val">100+</div><div class="hero-trust-label">Homes Purchased</div></div>
+        <div class="hero-trust-item"><div class="hero-trust-val">7–14 Days</div><div class="hero-trust-label">Average Close</div></div>
+        <div class="hero-trust-item"><div class="hero-trust-val">A+ BBB</div><div class="hero-trust-label">Rated</div></div>
+        <div class="hero-trust-item"><div class="hero-trust-val">$0</div><div class="hero-trust-label">Fees to You</div></div>
+    </div>
+</section>
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section class="section fade-in">
+    <div class="section-label">How It Works</div>
+    <div class="section-title">Three Simple Steps to Selling Your Home</div>
+    <div class="section-sub">No showings. No open houses. No waiting months for a buyer.</div>
+    <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-title">Tell Us About Your Property</div><div class="step-desc">Fill out our quick form with basic details about your home. It takes less than 2 minutes.</div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-title">Get Your Cash Offer</div><div class="step-desc">We review your property and present a fair, no-obligation cash offer within 24 hours.</div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-title">Close on Your Timeline</div><div class="step-desc">Pick your closing date. We handle all the paperwork. You get paid — it's that simple.</div></div>
+    </div>
+</section>
+<div class="divider"></div>
+
+<!-- WHY CHOOSE US -->
+<section class="section fade-in">
+    <div class="section-label">Why Cash Offer Specialist</div>
+    <div class="section-title">Selling Your Home Should Be Simple</div>
+    <div class="section-sub">We remove the stress, the delays, and the hidden costs.</div>
+    <div class="benefits-grid">
+        <div class="benefit-card"><div class="benefit-icon-wrap">🔧</div><div class="benefit-title">No Repairs Needed</div><div class="benefit-desc">Sell as-is. We buy homes in any condition — no cleaning, no fixing, no staging.</div></div>
+        <div class="benefit-card"><div class="benefit-icon-wrap">💰</div><div class="benefit-title">Zero Fees or Commissions</div><div class="benefit-desc">No agent fees, no closing costs, no hidden charges. The offer is what you get.</div></div>
+        <div class="benefit-card"><div class="benefit-icon-wrap">⚡</div><div class="benefit-title">Close in 7–14 Days</div><div class="benefit-desc">Or on your schedule. You pick the closing date that works for you.</div></div>
+        <div class="benefit-card"><div class="benefit-icon-wrap">🏦</div><div class="benefit-title">Cash Offer, Guaranteed</div><div class="benefit-desc">No financing contingencies. No deals falling through at the last minute.</div></div>
+        <div class="benefit-card"><div class="benefit-icon-wrap">📍</div><div class="benefit-title">Local Las Vegas Experts</div><div class="benefit-desc">We know the Vegas market inside and out. Your home is priced fairly.</div></div>
+        <div class="benefit-card"><div class="benefit-icon-wrap">🤝</div><div class="benefit-title">No Obligation</div><div class="benefit-desc">Get your offer. No pressure. Take your time to decide — we're here when you're ready.</div></div>
+    </div>
+</section>
+<div class="divider"></div>
+
+<!-- SITUATIONS -->
+<section class="section fade-in">
+    <div class="section-label">We Can Help</div>
+    <div class="section-title">Whatever Your Situation, We Have a Solution</div>
+    <div class="section-sub">Life happens. We help homeowners move forward — fast and stress-free.</div>
+    <div class="situations-grid">
+        <div class="situation"><div class="situation-icon">🏚️</div><div class="situation-title">Facing Foreclosure</div><div class="situation-desc">Avoid foreclosure and protect your credit.</div></div>
+        <div class="situation"><div class="situation-icon">📜</div><div class="situation-title">Inherited Property</div><div class="situation-desc">Sell an inherited home without the hassle.</div></div>
+        <div class="situation"><div class="situation-icon">💔</div><div class="situation-title">Going Through Divorce</div><div class="situation-desc">Quickly split assets and move on.</div></div>
+        <div class="situation"><div class="situation-icon">✈️</div><div class="situation-title">Relocating</div><div class="situation-desc">Sell fast so you can start fresh.</div></div>
+        <div class="situation"><div class="situation-icon">😩</div><div class="situation-title">Tired Landlord</div><div class="situation-desc">Done dealing with tenants and repairs.</div></div>
+        <div class="situation"><div class="situation-icon">💳</div><div class="situation-title">Behind on Payments</div><div class="situation-desc">Get cash before the situation gets worse.</div></div>
+        <div class="situation"><div class="situation-icon">🏠</div><div class="situation-title">Vacant Property</div><div class="situation-desc">Stop paying taxes on a home you don't use.</div></div>
+        <div class="situation"><div class="situation-icon">🔨</div><div class="situation-title">Needs Major Repairs</div><div class="situation-desc">We buy as-is — no repairs needed.</div></div>
+    </div>
+</section>
+<div class="divider"></div>
+
+<!-- TESTIMONIALS -->
+<section class="section fade-in">
+    <div class="section-label">What Sellers Say</div>
+    <div class="section-title">Real Stories from Las Vegas Homeowners</div>
+    <div class="section-sub" style="margin-bottom:30px"></div>
+    <div class="testimonials">
+        <div class="testimonial">
+            <div class="testimonial-stars">★★★★★</div>
+            <div class="testimonial-text">"I needed to sell fast because of a job transfer. They gave me a fair offer on Monday and we closed that Friday. I couldn't believe how easy it was."</div>
+            <div class="testimonial-author">Marcus T.</div>
+            <div class="testimonial-loc">Summerlin, Las Vegas</div>
+        </div>
+        <div class="testimonial">
+            <div class="testimonial-stars">★★★★★</div>
+            <div class="testimonial-text">"My mom passed and left us a house that needed a lot of work. Cash Offer Specialist took it off our hands with zero stress. They handled everything."</div>
+            <div class="testimonial-author">Jennifer R.</div>
+            <div class="testimonial-loc">Henderson, NV</div>
+        </div>
+        <div class="testimonial">
+            <div class="testimonial-stars">★★★★★</div>
+            <div class="testimonial-text">"The roof was damaged, the AC was shot, and I couldn't afford to fix it. They bought it as-is and gave me a fair price. No inspections, no games."</div>
+            <div class="testimonial-author">David &amp; Maria L.</div>
+            <div class="testimonial-loc">North Las Vegas</div>
+        </div>
+    </div>
+</section>
+<div class="divider"></div>
+
+<!-- OFFER FORM -->
+<section class="form-section" id="get-offer">
+    <div class="form-wrap">
+        <div class="section-label">Get Started</div>
+        <div class="section-title">Get Your Free Cash Offer Now</div>
+        <div class="section-sub">Tell us about your property and we'll send you a no-obligation cash offer.</div>
+        <div class="form-container">
+            <div class="step-nav">
+                <div class="step-nav-item active" id="stepNav1"><div class="step-circle">1</div><div class="step-label">Property</div></div>
+                <div class="step-divider" id="divider1"></div>
+                <div class="step-nav-item" id="stepNav2"><div class="step-circle">2</div><div class="step-label">Contact</div></div>
+            </div>
+            <form id="offerForm">
+                <div class="form-step active" id="step1">
+                    <div class="form-title"><span class="si">1</span> Tell us about your property</div>
+                    <div class="form-row">
+                        <div class="form-group"><label for="address">Property Address <span class="required">*</span></label><input type="text" id="address" placeholder="123 Main Street" required><div class="error-message" id="addressError">Property address is required</div></div>
+                        <div class="form-group"><label for="city">City</label><input type="text" id="city" value="Las Vegas" readonly></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label for="bedrooms">Bedrooms <span class="required">*</span></label><select id="bedrooms" required><option value="">Select</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option value="6+">6+</option></select><div class="error-message" id="bedroomsError">Please select bedrooms</div></div>
+                        <div class="form-group"><label for="bathrooms">Bathrooms <span class="required">*</span></label><select id="bathrooms" required><option value="">Select</option><option>1</option><option>1.5</option><option>2</option><option>2.5</option><option>3</option><option>3.5</option><option>4</option><option value="5+">5+</option></select><div class="error-message" id="bathroomsError">Please select bathrooms</div></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label for="sqft">Approx. Square Footage <span class="required">*</span></label><input type="number" id="sqft" placeholder="2000" min="100" required><div class="error-message" id="sqftError">Square footage is required</div></div>
+                        <div class="form-group"><label for="condition">Property Condition <span class="required">*</span></label><select id="condition" required><option value="">Select condition</option><option value="Excellent">Excellent</option><option value="Good">Good</option><option value="Fair">Fair</option><option value="NeedsWork">Needs Work</option><option value="MajorRepairs">Major Repairs</option></select><div class="error-message" id="conditionError">Please select condition</div></div>
+                    </div>
+                    <div class="form-row full">
+                        <div class="form-group"><label for="timeline">Timeline to Sell <span class="required">*</span></label><select id="timeline" required><option value="">Select timeline</option><option value="ASAP">ASAP</option><option value="1-2 weeks">1–2 weeks</option><option value="1 month">1 month</option><option value="2-3 months">2–3 months</option><option value="Just exploring">Just exploring</option></select><div class="error-message" id="timelineError">Please select timeline</div></div>
+                    </div>
+                    <div class="button-group"><button type="button" class="btn-primary" onclick="nextStep()">Next Step →</button></div>
+                </div>
+                <div class="form-step" id="step2">
+                    <div class="form-title"><span class="si">2</span> Your contact information</div>
+                    <div class="form-row">
+                        <div class="form-group"><label for="name">Your Name <span class="required">*</span></label><input type="text" id="name" placeholder="John Smith" required><div class="error-message" id="nameError">Name is required</div></div>
+                        <div class="form-group"><label for="phone">Phone Number <span class="required">*</span></label><input type="tel" id="phone" placeholder="(702) 555-1234" required><div class="error-message" id="phoneError">Phone number is required</div></div>
+                    </div>
+                    <div class="form-row full"><div class="form-group"><label for="email">Email Address (Optional)</label><input type="email" id="email" placeholder="you@example.com"></div></div>
+                    <div class="form-row full">
+                        <div class="form-group"><label for="source">How did you hear about us? <span class="required">*</span></label><select id="source" required><option value="">Select source</option><option>Google</option><option>Facebook</option><option>Referral</option><option value="Direct Mail">Direct Mail</option><option value="Drove By">Drove By</option><option>Other</option></select><div class="error-message" id="sourceError">Please select source</div></div>
+                    </div>
+                    <div class="button-group">
+                        <button type="button" class="btn-secondary" onclick="prevStep()">← Back</button>
+                        <button type="submit" class="btn-primary">Get My Offer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <!-- Results -->
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header">
+                <h2>Your Estimated Cash Offer Range</h2>
+                <div class="property-summary"><span id="resultAddress"></span> &bull; <span id="resultBeds"></span> bed, <span id="resultBaths"></span> bath &bull; <span id="resultSqft"></span> sq ft</div>
+            </div>
+            <div class="offer-cards">
+                <div class="offer-card low"><div class="offer-label">Quick Close Offer</div><div class="offer-amount" id="lowOffer">$0</div></div>
+                <div class="offer-card target"><div class="offer-label">Our Best Cash Offer</div><div class="offer-amount" id="midOffer">$0</div></div>
+                <div class="offer-card high"><div class="offer-label">Flexible Close Offer</div><div class="offer-amount" id="highOffer">$0</div></div>
+            </div>
+            <div class="cta-section">
+                <div class="close-timeline">✓ Close in as little as 7 days</div>
+                <div class="cta-benefits">
+                    <div class="cta-benefit"><span class="cta-benefit-icon">✓</span><span>No repairs</span></div>
+                    <div class="cta-benefit"><span class="cta-benefit-icon">✓</span><span>No agents</span></div>
+                    <div class="cta-benefit"><span class="cta-benefit-icon">✓</span><span>No fees</span></div>
+                </div>
+                <a href="tel:7252261303" class="btn-call">CALL NOW: (725) 226-1303</a>
+                <div class="call-subtext">Or we'll call you within 15 minutes</div>
+            </div>
+            <div class="button-group" style="justify-content:center"><button type="button" class="btn-secondary" onclick="resetForm()">Start Over</button></div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="section fade-in">
+    <div class="section-label">FAQ</div>
+    <div class="section-title">Common Questions</div>
+    <div class="section-sub" style="margin-bottom:30px"></div>
+    <div class="faq-list">
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How does selling for cash work? <span class="faq-arrow">+</span></div><div class="faq-a"><p>You fill out our form, we review your property details, and within 24 hours we present a no-obligation cash offer. If you accept, we open escrow with a local title company and close on your timeline — as fast as 7 days. You get paid at closing.</p></div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How do you determine your offer price? <span class="faq-arrow">+</span></div><div class="faq-a"><p>We look at recent comparable sales in your area, the current condition of your home, and current market trends. Our goal is to give you a fair, competitive offer that works for both sides.</p></div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Are there any fees or commissions? <span class="faq-arrow">+</span></div><div class="faq-a"><p>None. We pay all closing costs. There are no agent commissions, no service fees, and no hidden charges. The offer we give you is the amount you receive at closing.</p></div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">How fast can you close? <span class="faq-arrow">+</span></div><div class="faq-a"><p>As fast as 7 days if you need to move quickly. Most of our closings happen within 7–14 days, but we can also work around your schedule if you need more time.</p></div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">Do I need to make any repairs? <span class="faq-arrow">+</span></div><div class="faq-a"><p>Absolutely not. We buy homes as-is. Roof damage, foundation issues, outdated kitchen — doesn't matter. You don't need to fix, clean, or stage anything.</p></div></div>
+        <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">What if I'm behind on my mortgage? <span class="faq-arrow">+</span></div><div class="faq-a"><p>We work with homeowners in all financial situations, including those behind on payments or facing foreclosure. We can often close before foreclosure proceedings and help you walk away with cash in hand.</p></div></div>
+    </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="final-cta fade-in">
+    <div class="section-title">Ready to Sell Your Home?</div>
+    <div class="final-cta-sub">Get your free, no-obligation cash offer in minutes.</div>
+    <a href="#get-offer" class="hero-cta">Get Your Free Cash Offer Now</a>
+    <div class="final-phone">Or call us directly: <a href="tel:7252261303">(725) 226-1303</a></div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    Cash Offer Specialist | Las Vegas, NV | <a href="tel:7252261303">(725) 226-1303</a> | <a href="mailto:info@cashofferspecialist.com">info@cashofferspecialist.com</a><br>
+    <a href="https://cashofferspecialist.com">cashofferspecialist.com</a>
+</div>
+
+<script>
+// STICKY NAV
+const nav = document.getElementById('stickyNav');
+const heroH = document.querySelector('.hero').offsetHeight;
+window.addEventListener('scroll', () => { nav.classList.toggle('visible', window.scrollY > heroH * 0.7); });
+
+// SCROLL FADE-IN
+const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+// FAQ
+function toggleFaq(el) { el.parentElement.classList.toggle('open'); }
+
+// FORM NAV
+function nextStep() {
+    if (!validateStep1()) return;
+    document.getElementById('step1').classList.remove('active');
+    document.getElementById('step2').classList.add('active');
+    document.getElementById('stepNav1').classList.add('completed');
+    document.getElementById('stepNav2').classList.add('active');
+    document.getElementById('divider1').classList.add('active');
+}
+function prevStep() {
+    document.getElementById('step2').classList.remove('active');
+    document.getElementById('step1').classList.add('active');
+    document.getElementById('stepNav1').classList.remove('completed');
+    document.getElementById('stepNav2').classList.remove('active');
+    document.getElementById('divider1').classList.remove('active');
+}
+
+// VALIDATION
+function validateStep1() {
+    let ok = true;
+    ['address','bedrooms','bathrooms','sqft','condition','timeline'].forEach(f => {
+        const inp = document.getElementById(f), err = document.getElementById(f+'Error');
+        if (!inp.value) { inp.classList.add('error'); err.classList.add('show'); ok = false; }
+        else { inp.classList.remove('error'); err.classList.remove('show'); }
+    });
+    return ok;
+}
+function validateStep2() {
+    let ok = true;
+    ['name','phone','source'].forEach(f => {
+        const inp = document.getElementById(f), err = document.getElementById(f+'Error');
+        if (!inp.value) { inp.classList.add('error'); err.classList.add('show'); ok = false; }
+        else { inp.classList.remove('error'); err.classList.remove('show'); }
+    });
+    const em = document.getElementById('email');
+    if (em.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em.value)) { em.classList.add('error'); ok = false; }
+    else em.classList.remove('error');
+    return ok;
+}
+
+// OFFER CALC
+function calculateOffer() {
+    const sqft = parseInt(document.getElementById('sqft').value);
+    const cond = document.getElementById('condition').value;
+    const beds = parseInt(document.getElementById('bedrooms').value);
+    const rates = { Excellent:230, Good:200, Fair:170, NeedsWork:130, MajorRepairs:90 };
+    let base = (rates[cond]||170) * sqft;
+    if (beds >= 4) base *= 1.05;
+    let lo = base*0.60-15000, mid = base*0.65-12000, hi = base*0.70-10000;
+    if (cond==='MajorRepairs') { lo-=25000; mid-=25000; hi-=25000; }
+    const fl = 50000;
+    return { low:Math.round(Math.max(lo,fl)), mid:Math.round(Math.max(mid,fl)), high:Math.round(Math.max(hi,fl)) };
+}
+function fmt(v) { return '$'+v.toLocaleString('en-US'); }
+
+// SUBMIT
+document.getElementById('offerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!validateStep2()) return;
+    const d = {
+        address:document.getElementById('address').value, city:document.getElementById('city').value,
+        bedrooms:document.getElementById('bedrooms').value, bathrooms:document.getElementById('bathrooms').value,
+        sqft:document.getElementById('sqft').value, condition:document.getElementById('condition').value,
+        timeline:document.getElementById('timeline').value, name:document.getElementById('name').value,
+        phone:document.getElementById('phone').value, email:document.getElementById('email').value,
+        source:document.getElementById('source').value, timestamp:new Date().toISOString()
+    };
+    const offer = calculateOffer();
+    d.estimatedRange = offer;
+    sendLeadEmail(d, offer);
+    displayResults(d, offer);
+});
+
+// DISPLAY RESULTS
+function displayResults(d, offer) {
+    document.getElementById('offerForm').style.display = 'none';
+    document.querySelector('.form-container').style.display = 'none';
+    document.getElementById('resultAddress').textContent = d.address;
+    document.getElementById('resultBeds').textContent = d.bedrooms;
+    document.getElementById('resultBaths').textContent = d.bathrooms;
+    document.getElementById('resultSqft').textContent = d.sqft;
+    setTimeout(()=>{ document.getElementById('lowOffer').textContent=fmt(offer.low); },100);
+    setTimeout(()=>{ document.getElementById('midOffer').textContent=fmt(offer.mid); },200);
+    setTimeout(()=>{ document.getElementById('highOffer').textContent=fmt(offer.high); },300);
+    document.getElementById('resultsContainer').classList.add('show');
+    setTimeout(()=>{ document.getElementById('resultsContainer').scrollIntoView({behavior:'smooth',block:'start'}); },300);
+}
+
+// RESET
+function resetForm() {
+    document.getElementById('offerForm').reset();
+    document.getElementById('offerForm').style.display = 'block';
+    document.querySelector('.form-container').style.display = 'block';
+    document.getElementById('resultsContainer').classList.remove('show');
+    document.getElementById('step1').classList.add('active');
+    document.getElementById('step2').classList.remove('active');
+    document.getElementById('stepNav1').classList.remove('completed');
+    document.getElementById('stepNav2').classList.remove('active');
+    document.getElementById('divider1').classList.remove('active');
+    document.getElementById('city').value = 'Las Vegas';
+    document.querySelector('.form-container').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// LEAD DELIVERY
+const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY_HERE';
+async function sendLeadEmail(d, offer) {
+    let leads = JSON.parse(localStorage.getItem('cosOfferLeads')||'[]');
+    leads.push(d); localStorage.setItem('cosOfferLeads', JSON.stringify(leads));
+    if (WEB3FORMS_KEY==='YOUR_ACCESS_KEY_HERE') {
+        const body=`New Cash Offer Lead\n\nProperty: ${d.address}, ${d.city}\nBeds: ${d.bedrooms} | Baths: ${d.bathrooms} | SqFt: ${d.sqft}\nCondition: ${d.condition}\nTimeline: ${d.timeline}\n\nSeller: ${d.name}\nPhone: ${d.phone}\nEmail: ${d.email}\nSource: ${d.source}\n\nOffer Range: ${fmt(offer.low)} - ${fmt(offer.high)}`;
+        window.open(`mailto:info@cashofferspecialist.com?subject=New Lead - ${encodeURIComponent(d.address)}&body=${encodeURIComponent(body)}`,'_blank');
+        return;
+    }
+    try {
+        const r=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({access_key:WEB3FORMS_KEY,subject:`New Cash Offer Lead — ${d.address}`,from_name:'COS Landing Page',to:'info@cashofferspecialist.com',
+                'Property Address':`${d.address}, ${d.city}`,'Bedrooms':d.bedrooms,'Bathrooms':d.bathrooms,'Square Footage':d.sqft,
+                'Condition':d.condition,'Timeline':d.timeline,'Seller Name':d.name,'Phone':d.phone,'Email':d.email||'Not provided',
+                'Source':d.source,'Offer Range':`${fmt(offer.low)} — ${fmt(offer.mid)} — ${fmt(offer.high)}`,'Submitted':new Date().toLocaleString(),'Page':'sell.html'})});
+        const res=await r.json();
+        if(res.success)console.log('Lead sent');else console.error('Web3Forms:',res);
+    } catch(err){console.error('Lead send failed:',err);}
+}
+
+// REAL-TIME CLEARING
+document.querySelectorAll('input, select').forEach(f=>{
+    f.addEventListener('blur',function(){
+        if(this.id&&this.value&&this.classList.contains('error')){
+            this.classList.remove('error');
+            const err=document.getElementById(this.id+'Error');
+            if(err)err.classList.remove('show');
+        }
+    });
+});
+</script>
+</body>
+</html>
