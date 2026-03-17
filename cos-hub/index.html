@@ -14,10 +14,22 @@
   --t1:#eef2ff;--t2:#8899bb;--t3:#4a5878;
   --r:8px;--r2:12px;
 }
+body.light{
+  --bg:#f5f7fa;--s1:#ffffff;--s2:#f0f2f5;--card:#ffffff;--border:#dfe3ea;--border2:#c8cdd6;
+  --bluedim:#e8f0fe;--greendim:#e6f9f1;
+  --t1:#111827;--t2:#4b5563;--t3:#6b7280;
+}
+body.light .badge{background:#f3f4f6 !important}
+body.light .tag-pill{background:#f3f4f6 !important}
+body.light input,body.light select,body.light textarea{background:#fff;border-color:#dfe3ea;color:#111827}
+body.light input[type=range]{accent-color:#4f8ef7}
+body.light .card{background:#fff;border-color:#e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+body.light ::-webkit-scrollbar-thumb{background:#c8cdd6}
 body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;min-height:100vh;font-size:15px}
 input,select,textarea{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--t1);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;width:100%}
 input:focus,select:focus,textarea:focus{border-color:var(--blue)}
-select option{background:#141826}
+select option{background:var(--card);color:var(--t1)}
+body.light select option{background:#fff;color:#111}
 input[type=range]{background:transparent;border:none;padding:2px 0;cursor:pointer;accent-color:var(--blue)}
 input[type=checkbox]{width:auto;cursor:pointer;accent-color:var(--blue)}
 button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
@@ -46,6 +58,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <button onclick="nav('calc')" id="n-calc" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">🧮 CALCULATOR</button>
     <button onclick="nav('scripts')" id="n-scripts" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">📝 SCRIPTS</button>
     <button id="kb-btn" style="padding:8px 12px;font-size:14px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer;position:relative" title="Keyboard Shortcuts: 1/Alt+1 Deal Analyzer, 2/Alt+2 Calculator, 3/Alt+3 Scripts, Ctrl/Cmd+E Export, Ctrl/Cmd+K Copy Script, Esc Close">⌨️</button>
+    <button id="theme-btn" onclick="toggleTheme()" style="padding:8px 12px;font-size:14px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer" title="Toggle Light/Dark Mode">🌙</button>
   </div>
   <div style="margin-left:auto;font-size:13px;color:var(--t3)" id="list-counter">No list loaded</div>
 </div>
@@ -1795,6 +1808,19 @@ document.addEventListener('keydown', function(e) {
   else if((e.ctrlKey || e.metaKey) && key === 'k') { e.preventDefault(); document.querySelector('[onclick*="copyScript"]')?.click(); }
   else if(key === 'escape') { e.preventDefault(); document.querySelectorAll('[onclick*="toggleSection"]').forEach(el => el.click()); }
 });
+// ── THEME TOGGLE ──────────────────────────────────────────────────────
+function toggleTheme(){
+  const isLight=document.body.classList.toggle('light');
+  document.getElementById('theme-btn').textContent=isLight?'☀️':'🌙';
+  try{localStorage.setItem('cos-theme',isLight?'light':'dark');}catch(e){}
+}
+function initTheme(){
+  try{
+    const saved=localStorage.getItem('cos-theme');
+    if(saved==='light'){document.body.classList.add('light');document.getElementById('theme-btn').textContent='☀️';}
+  }catch(e){}
+}
+initTheme();
 loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();
 </script>
 </body>
