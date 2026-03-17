@@ -904,9 +904,15 @@ function sortLeads(){
 
 function exportTop(){
   const top=filteredLeads.slice(0,10);
-  const lines=['Name,Address,AI Score,ARV,Asking,Equity%,DOM,Distress,Flags,Notes'];
+  const lines=['Name,Address,City,Zip,Beds,Baths,SqFt,AI Score,Score Label,ARV,Asking,Debt,MAO,Equity%,Equity$,DOM,Price Cuts,Distress,Source,Flags,Agent,Agent Phone,Notes'];
   const csvQ=(v)=>{const s=String(v==null?'':v);return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
-  top.forEach(l=>{const eq=l.arv>0?(((l.arv-(l.debt||0))/l.arv)*100).toFixed(0)+'%':'—';lines.push([l.name,l.address,l.score,fm(l.arv),fm(l.asking),eq,l.dom||0,l.distress,(l.flags||[]).join('|'),l.notes].map(csvQ).join(','));});
+  top.forEach(l=>{
+    const eq=l.arv>0?Math.round(((l.arv-(l.debt||0))/l.arv)*100):0;
+    const eqDollar=l.arv>0?l.arv-(l.debt||0):0;
+    const mao=l.arv>0?Math.round(l.arv*0.70-(l.repairs||0)-13000):0;
+    const sl=l.score>=80?'FIRE':l.score>=60?'SOLID':l.score>=40?'WORTH A LOOK':'PASS';
+    lines.push([l.name,l.address,l.city||'',l.zip||'',l.beds||'',l.baths||'',l.sqft||'',l.score,sl,fm(l.arv),fm(l.asking),fm(l.debt||0),fm(mao),eq+'%',fm(eqDollar),l.dom||0,l.pricecuts||0,l.distress,l.source||'',(l.flags||[]).join(' | '),l.agentName||'',l.agentPhone||'',l.notes].map(csvQ).join(','));
+  });
   const blob=new Blob([lines.join('\n')],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cos-hub-top-leads.csv';a.click();
 }
@@ -1476,9 +1482,11 @@ function getDealSummaryData(){
   const pct=+(document.getElementById('c-pct')||{value:80}).value||80;
   const scoreEl=document.getElementById('c-score-num');
   const score=scoreEl?scoreEl.textContent:'—';
+  const sqft=+(document.getElementById('c-sqft')||{value:0}).value||0;
   const scriptEl=document.getElementById('c-verbal-script');
   const script=scriptEl?scriptEl.textContent:'';
-  return{mao,fee,arv,repairs,disposition,allin,eq,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,script};
+  const scoreLbl=score>=80?'FIRE DEAL':score>=60?'SOLID DEAL':score>=40?'WORTH A LOOK':'PASS';
+  return{mao,fee,arv,repairs,disposition,allin,eq,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,script};
 }
 
 function exportDealEmail(){
@@ -1492,11 +1500,14 @@ function exportDealEmail(){
 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
 'PROPERTY:        '+d.propAddr+'\n'+
 'SELLER:          '+d.sellerName+'\n'+
+(d.sqft?'SIZE:            '+d.sqft.toLocaleString()+' sqft\n':'')+
 'DISTRESS TYPE:   '+d.distress+'\n'+
 'NEIGHBORHOOD:    '+d.hood+'\n'+
+'CLOSE TIMELINE:  '+d.closeDays+' days\n'+
 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'+
 'DEAL NUMBERS\n'+
 'ARV:             '+fm(d.arv)+'\n'+
+(d.sqft&&d.arv?'Price/SqFt:      $'+Math.round(d.arv/d.sqft)+'/sqft\n':'')+
 'Repairs:         '+fm(d.repairs)+'\n'+
 'MAO (our offer): '+fm(d.mao)+'\n'+
 'Assignment Fee:  '+fm(d.fee)+'\n'+
@@ -1505,7 +1516,7 @@ function exportDealEmail(){
 'Equity Spread:   '+fm(d.eq)+'\n'+
 'Buyer ROI:       '+d.roi.toFixed(1)+'%\n'+
 'Market %:        '+d.pct+'%\n'+
-'Deal Score:      '+d.score+'/100\n\n'+
+'Deal Score:      '+d.score+'/100 ('+d.scoreLbl+')\n\n'+
 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
 'VERBAL OFFER SCRIPT\n'+
 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
@@ -1559,7 +1570,7 @@ function exportDealPDF(){
   <div class="meta">
     <div style="font-weight:700">DEAL ANALYSIS SUMMARY</div>
     <div>${today}</div>
-    <div style="margin-top:6px"><span class="score-badge">Deal Score: ${d.score}/100</span></div>
+    <div style="margin-top:6px"><span class="score-badge">Deal Score: ${d.score}/100 — ${d.scoreLbl}</span></div>
   </div>
 </div>
 
@@ -1567,6 +1578,12 @@ function exportDealPDF(){
   <div class="section-title">Property</div>
   <div class="prop-address">${d.propAddr}</div>
   <div class="prop-sub">Seller: ${d.sellerName} &nbsp;·&nbsp; Distress: ${d.distress||'—'} &nbsp;·&nbsp; Neighborhood: ${d.hood||'—'}</div>
+  <div style="display:flex;gap:20px;margin-top:10px;font-size:13px;color:#555">
+    ${d.sqft?'<span><b>'+d.sqft.toLocaleString()+'</b> sqft</span>':''}
+    ${d.sqft&&d.arv?'<span><b>$'+Math.round(d.arv/d.sqft)+'</b>/sqft (ARV)</span>':''}
+    <span>Close in <b>${d.closeDays}</b> days</span>
+    <span>Offer at <b>${d.pct}%</b> of ARV</span>
+  </div>
 </div>
 
 <div class="section">
@@ -1577,7 +1594,7 @@ function exportDealPDF(){
     <div class="num-cell highlight"><div class="num-label">MAO (Our Offer)</div><div class="num-value blue">${fm(d.mao)}</div></div>
     <div class="num-cell green"><div class="num-label">Disposition Price</div><div class="num-value green">${fm(d.disposition)}</div><div style="font-size:11px;color:#888;margin-top:2px">MAO + ${fm(d.fee)} fee</div></div>
     <div class="num-cell"><div class="num-label">Buyer All-In</div><div class="num-value">${fm(d.allin)}</div></div>
-    <div class="num-cell"><div class="num-label">Equity Spread</div><div class="num-value ${d.eq>0?'green':''}">  ${fm(d.eq)}</div></div>
+    <div class="num-cell"><div class="num-label">Equity Spread</div><div class="num-value ${d.eq>0?'green':''}">${fm(d.eq)}</div></div>
     <div class="num-cell"><div class="num-label">Buyer ROI</div><div class="num-value amber">${d.roi.toFixed(1)}%</div></div>
     <div class="num-cell"><div class="num-label">Your Fee</div><div class="num-value green">${fm(d.fee)}</div></div>
     <div class="num-cell"><div class="num-label">Market %</div><div class="num-value">${d.pct}%</div></div>
