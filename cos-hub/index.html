@@ -168,9 +168,9 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <span class="label" style="margin-bottom:0">ARV</span>
     <span class="hdr" id="c-arv-lbl" style="font-size:18px;color:var(--blue)">$380,000</span>
   </div>
-  <input type="range" min="50000" max="800000" step="5000" value="380000" id="c-arv"
+  <input type="range" min="50000" max="2000000" step="5000" value="380000" id="c-arv"
     oninput="document.getElementById('c-arv-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" />
-  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:3px"><span>$50K</span><span>$800K</span></div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-top:3px"><span>$50K</span><span>$2M</span></div>
 </div>
         <div><span class="label">Neighborhood</span>
           <select id="c-hood" onchange="calcMAO()" style="font-size:11px">
