@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Your Cash Offer - Cash Offer Specialist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: #06080f;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            color: #4f8ef7;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .tagline {
+            font-size: 14px;
+            color: #0ecf8a;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .headline {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .subheadline {
+            font-size: 16px;
+            color: #a0a0a0;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        /* Trust Elements */
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .trust-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 13px;
+            color: #a0a0a0;
+        }
+
+        .trust-badge-value {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: #0ecf8a;
+            margin-bottom: 3px;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: linear-gradient(135deg, #0b0e18 0%, #141826 100%);
+            border: 1px solid #1a2030;
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-indicator {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #4f8ef7, #0ecf8a);
+            border-radius: 50%;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 15px;
+        }
+
+        .step-nav-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .step-nav-item.active .step-circle {
+            background: linear-gradient(135deg, #4f8ef7, #0ecf8a);
+            color: #ffffff;
+        }
+
+        .step-nav-item.completed .step-circle {
+            background: #0ecf8a;
+            color: #ffffff;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1a2030;
+            color: #808080;
+            font-weight: 600;
+            font-family: 'Barlow Condensed', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+            transition: all 0.3s ease;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: #808080;
+            font-weight: 500;
+        }
+
+        .step-nav-item.active .step-label,
+        .step-nav-item.completed .step-label {
+            color: #ffffff;
+        }
+
+        .step-divider {
+            flex: 1;
+            height: 2px;
+            background: #1a2030;
+            margin: 0 10px;
+        }
+
+        .step-divider.active {
+            background: #0ecf8a;
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+
+        .required {
+            color: #f04060;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            background-color: #0b0e18;
+            border: 1px solid #1a2030;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #4f8ef7;
+            box-shadow: 0 0 0 3px rgba(79, 142, 247, 0.1);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f8ef7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 20px;
+            padding-right: 40px;
+        }
+
+        /* Form Grid */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .headline {
+                font-size: 32px;
+            }
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f8ef7, #0ecf8a);
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(79, 142, 247, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background-color: #1a2030;
+            color: #4f8ef7;
+            border: 1px solid #4f8ef7;
+        }
+
+        .btn-secondary:hover {
+            background-color: #141826;
+            border-color: #0ecf8a;
+            color: #0ecf8a;
+        }
+
+        .btn-call {
+            background: linear-gradient(135deg, #f04060, #f0a500);
+            color: #ffffff;
+            font-size: 18px;
+            padding: 16px 30px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            margin: 10px 0;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-call:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(240, 64, 96, 0.3);
+        }
+
+        /* Results Section */
+        .results-container {
+            display: none;
+            animation: slideUp 0.6s ease;
+        }
+
+        .results-container.show {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .results-header h2 {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .property-summary {
+            background: #0b0e18;
+            border: 1px solid #1a2030;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            color: #a0a0a0;
+        }
+
+        .property-summary span {
+            color: #0ecf8a;
+            font-weight: 600;
+        }
+
+        /* Offer Cards */
+        .offer-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .offer-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .offer-card {
+            background: linear-gradient(135deg, #0b0e18 0%, #141826 100%);
+            border: 1px solid #1a2030;
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offer-card:hover {
+            border-color: #4f8ef7;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(79, 142, 247, 0.15);
+        }
+
+        .offer-card.target {
+            border: 2px solid #0ecf8a;
+            background: linear-gradient(135deg, #0b0e18 0%, #141826 100%);
+        }
+
+        .offer-card.target::before {
+            content: "RECOMMENDED";
+            position: absolute;
+            top: -8px;
+            right: -35px;
+            background: #0ecf8a;
+            color: #06080f;
+            padding: 4px 50px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            transform: rotate(45deg);
+            width: 200px;
+            text-align: center;
+        }
+
+        .offer-label {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #808080;
+            margin-bottom: 15px;
+        }
+
+        .offer-card.low .offer-label {
+            color: #f04060;
+        }
+
+        .offer-card.target .offer-label {
+            color: #0ecf8a;
+        }
+
+        .offer-card.high .offer-label {
+            color: #4f8ef7;
+        }
+
+        .offer-amount {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            animation: countUp 1s ease;
+        }
+
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .offer-card.low .offer-amount {
+            color: #f04060;
+        }
+
+        .offer-card.target .offer-amount {
+            color: #0ecf8a;
+        }
+
+        .offer-card.high .offer-amount {
+            color: #4f8ef7;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #0b0e18 0%, #141826 100%);
+            border: 1px solid #1a2030;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .benefits {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .benefit-icon {
+            color: #0ecf8a;
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .call-now-text {
+            font-size: 13px;
+            color: #808080;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+
+        .close-timeline {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #0ecf8a;
+            margin: 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            border-top: 1px solid #1a2030;
+            font-size: 13px;
+            color: #808080;
+        }
+
+        .footer a {
+            color: #4f8ef7;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #0ecf8a;
+        }
+
+        /* Form Steps */
+        .form-step {
+            display: none;
+        }
+
+        .form-step.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Error States */
+        .error-message {
+            color: #f04060;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        input.error,
+        select.error {
+            border-color: #f04060 !important;
+            box-shadow: 0 0 0 3px rgba(240, 64, 96, 0.1) !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .form-container {
+                padding: 25px;
+            }
+
+            .headline {
+                font-size: 32px;
+            }
+
+            .trust-badges {
+                gap: 15px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                padding: 12px 16px;
+            }
+
+            .benefits {
+                gap: 15px;
+            }
+        }
+
+        /* Animation */
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="tagline">Las Vegas Cash Buyer</div>
+            <div class="logo">CASH OFFER SPECIALIST</div>
+            <h1 class="headline">Get Your Free Cash Offer</h1>
+            <p class="subheadline">Find out what your Las Vegas home is worth in minutes. No appraisals. No repairs needed. No obligations.</p>
+
+            <!-- Trust Badges -->
+            <div class="trust-badges">
+                <div class="trust-badge">
+                    <div class="trust-badge-value">100+</div>
+                    <div>Properties Purchased</div>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-value">7-14 Days</div>
+                    <div>Average Close</div>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-value">A+ BBB</div>
+                    <div>Rated</div>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-value">2025+</div>
+                    <div>Las Vegas Trusted</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Container -->
+        <div class="form-container">
+            <!-- Step Navigation -->
+            <div class="step-nav">
+                <div class="step-nav-item active" id="stepNav1">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Property</div>
+                </div>
+                <div class="step-divider" id="divider1"></div>
+                <div class="step-nav-item" id="stepNav2">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Contact</div>
+                </div>
+            </div>
+
+            <form id="offerForm">
+                <!-- Step 1: Property Info -->
+                <div class="form-step active" id="step1">
+                    <div class="form-title">
+                        <span class="step-indicator">1</span> Tell us about your property
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="address">Property Address <span class="required">*</span></label>
+                            <input type="text" id="address" name="address" placeholder="123 Main Street" required>
+                            <div class="error-message" id="addressError">Property address is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" value="Las Vegas" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bedrooms">Bedrooms <span class="required">*</span></label>
+                            <select id="bedrooms" name="bedrooms" required>
+                                <option value="">Select bedrooms</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6+">6+</option>
+                            </select>
+                            <div class="error-message" id="bedroomsError">Please select bedrooms</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bathrooms">Bathrooms <span class="required">*</span></label>
+                            <select id="bathrooms" name="bathrooms" required>
+                                <option value="">Select bathrooms</option>
+                                <option value="1">1</option>
+                                <option value="1.5">1.5</option>
+                                <option value="2">2</option>
+                                <option value="2.5">2.5</option>
+                                <option value="3">3</option>
+                                <option value="3.5">3.5</option>
+                                <option value="4">4</option>
+                                <option value="5+">5+</option>
+                            </select>
+                            <div class="error-message" id="bathroomsError">Please select bathrooms</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sqft">Approx. Square Footage <span class="required">*</span></label>
+                            <input type="number" id="sqft" name="sqft" placeholder="2000" min="100" required>
+                            <div class="error-message" id="sqftError">Square footage is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="condition">Property Condition <span class="required">*</span></label>
+                            <select id="condition" name="condition" required>
+                                <option value="">Select condition</option>
+                                <option value="Excellent">Excellent</option>
+                                <option value="Good">Good</option>
+                                <option value="Fair">Fair</option>
+                                <option value="NeedsWork">Needs Work</option>
+                                <option value="MajorRepairs">Major Repairs</option>
+                            </select>
+                            <div class="error-message" id="conditionError">Please select property condition</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="timeline">Timeline to Sell <span class="required">*</span></label>
+                            <select id="timeline" name="timeline" required>
+                                <option value="">Select timeline</option>
+                                <option value="ASAP">ASAP</option>
+                                <option value="1-2 weeks">1-2 weeks</option>
+                                <option value="1 month">1 month</option>
+                                <option value="2-3 months">2-3 months</option>
+                                <option value="Just exploring">Just exploring</option>
+                            </select>
+                            <div class="error-message" id="timelineError">Please select timeline</div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-primary" onclick="nextStep()">Next Step →</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Contact Info -->
+                <div class="form-step" id="step2">
+                    <div class="form-title">
+                        <span class="step-indicator">2</span> Your contact information
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Your Name <span class="required">*</span></label>
+                            <input type="text" id="name" name="name" placeholder="John Smith" required>
+                            <div class="error-message" id="nameError">Name is required</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone Number <span class="required">*</span></label>
+                            <input type="tel" id="phone" name="phone" placeholder="(702) 555-1234" required>
+                            <div class="error-message" id="phoneError">Phone number is required</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="email">Email Address (Optional)</label>
+                            <input type="email" id="email" name="email" placeholder="you@example.com">
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="source">How did you hear about us? <span class="required">*</span></label>
+                            <select id="source" name="source" required>
+                                <option value="">Select source</option>
+                                <option value="Google">Google</option>
+                                <option value="Facebook">Facebook</option>
+                                <option value="Referral">Referral</option>
+                                <option value="Direct Mail">Direct Mail</option>
+                                <option value="Drove By">Drove By</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <div class="error-message" id="sourceError">Please select source</div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-secondary" onclick="prevStep()">← Back</button>
+                        <button type="submit" class="btn-primary">Get My Offer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header">
+                <h2>Your Estimated Cash Offer Range</h2>
+                <div class="property-summary">
+                    <span id="resultAddress"></span> • <span id="resultBeds"></span> bed, <span id="resultBaths"></span> bath • <span id="resultSqft"></span> sq ft
+                </div>
+            </div>
+
+            <div class="offer-cards">
+                <div class="offer-card low">
+                    <div class="offer-label">Conservative Offer</div>
+                    <div class="offer-amount" id="lowOffer">$0</div>
+                </div>
+                <div class="offer-card target">
+                    <div class="offer-label">Our Typical Offer</div>
+                    <div class="offer-amount" id="midOffer">$0</div>
+                </div>
+                <div class="offer-card high">
+                    <div class="offer-label">Stretch Offer</div>
+                    <div class="offer-amount" id="highOffer">$0</div>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <div class="close-timeline">✓ Close in as little as 7 days</div>
+                <div class="benefits">
+                    <div class="benefit-item">
+                        <span class="benefit-icon">✓</span>
+                        <span>No repairs</span>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-icon">✓</span>
+                        <span>No agents</span>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-icon">✓</span>
+                        <span>No fees</span>
+                    </div>
+                </div>
+                <a href="tel:(725) 226-1303" class="btn-call">CALL NOW: (725) 226-1303</a>
+                <div class="call-now-text">Or we'll call you within 15 minutes</div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn-secondary" onclick="resetForm()">Start Over</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Cash Offer Specialist | Las Vegas, NV | <a href="tel:(725) 226-1303">(725) 226-1303</a> | <a href="https://cashofferspecialist.com">cashofferspecialist.com</a>
+    </div>
+
+    <!-- Airtable Config (commented out for future integration) -->
+    <div id="airtable-config" data-base="" data-table="" style="display: none;"></div>
+
+    <script>
+        // ============================================
+        // FORM NAVIGATION
+        // ============================================
+        function nextStep() {
+            if (validateStep1()) {
+                document.getElementById('step1').classList.remove('active');
+                document.getElementById('step2').classList.add('active');
+
+                document.getElementById('stepNav1').classList.add('completed');
+                document.getElementById('stepNav2').classList.add('active');
+                document.getElementById('divider1').classList.add('active');
+            }
+        }
+
+        function prevStep() {
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+
+            document.getElementById('stepNav1').classList.remove('completed');
+            document.getElementById('stepNav2').classList.remove('active');
+            document.getElementById('divider1').classList.remove('active');
+        }
+
+        // ============================================
+        // VALIDATION
+        // ============================================
+        function validateStep1() {
+            let isValid = true;
+            const fields = ['address', 'bedrooms', 'bathrooms', 'sqft', 'condition', 'timeline'];
+
+            fields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(field + 'Error');
+
+                if (!input.value || input.value === '') {
+                    input.classList.add('error');
+                    error.classList.add('show');
+                    isValid = false;
+                } else {
+                    input.classList.remove('error');
+                    error.classList.remove('show');
+                }
+            });
+
+            return isValid;
+        }
+
+        function validateStep2() {
+            let isValid = true;
+            const fields = ['name', 'phone', 'source'];
+
+            fields.forEach(field => {
+                const input = document.getElementById(field);
+                const error = document.getElementById(field + 'Error');
+
+                if (!input.value || input.value === '') {
+                    input.classList.add('error');
+                    error.classList.add('show');
+                    isValid = false;
+                } else {
+                    input.classList.remove('error');
+                    error.classList.remove('show');
+                }
+            });
+
+            // Validate email format if provided
+            const email = document.getElementById('email');
+            if (email.value && !isValidEmail(email.value)) {
+                email.classList.add('error');
+                isValid = false;
+            } else {
+                email.classList.remove('error');
+            }
+
+            return isValid;
+        }
+
+        function isValidEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        // ============================================
+        // OFFER CALCULATION
+        // ============================================
+        function calculateOffer() {
+            const sqft = parseInt(document.getElementById('sqft').value);
+            const condition = document.getElementById('condition').value;
+            const beds = parseInt(document.getElementById('bedrooms').value);
+
+            // Base $/sqft by condition
+            const baseRates = {
+                'Excellent': 230,
+                'Good': 200,
+                'Fair': 170,
+                'NeedsWork': 130,
+                'MajorRepairs': 90
+            };
+
+            let basePsf = baseRates[condition] || 170;
+            let arv = sqft * basePsf;
+
+            // Adjust for 4+ bedrooms (add 5% to ARV)
+            if (beds >= 4) {
+                arv = arv * 1.05;
+            }
+
+            // Calculate offer tiers
+            let lowOffer = (arv * 0.60) - 15000;
+            let midOffer = (arv * 0.65) - 12000;
+            let highOffer = (arv * 0.70) - 10000;
+
+            // Subtract additional $25K if major repairs
+            if (condition === 'MajorRepairs') {
+                lowOffer -= 25000;
+                midOffer -= 25000;
+                highOffer -= 25000;
+            }
+
+            // Apply minimum floor
+            const minFloor = 50000;
+            lowOffer = Math.max(lowOffer, minFloor);
+            midOffer = Math.max(midOffer, minFloor);
+            highOffer = Math.max(highOffer, minFloor);
+
+            return {
+                low: Math.round(lowOffer),
+                mid: Math.round(midOffer),
+                high: Math.round(highOffer)
+            };
+        }
+
+        function formatCurrency(value) {
+            return '$' + value.toLocaleString('en-US');
+        }
+
+        // ============================================
+        // FORM SUBMISSION
+        // ============================================
+        document.getElementById('offerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!validateStep2()) {
+                return;
+            }
+
+            // Get form data
+            const formData = {
+                address: document.getElementById('address').value,
+                city: document.getElementById('city').value,
+                bedrooms: document.getElementById('bedrooms').value,
+                bathrooms: document.getElementById('bathrooms').value,
+                sqft: document.getElementById('sqft').value,
+                condition: document.getElementById('condition').value,
+                timeline: document.getElementById('timeline').value,
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                source: document.getElementById('source').value,
+                timestamp: new Date().toISOString()
+            };
+
+            // Calculate offer
+            const offer = calculateOffer();
+            formData.estimatedRange = offer;
+
+            // Save to localStorage
+            let leads = JSON.parse(localStorage.getItem('cosOfferLeads') || '[]');
+            leads.push(formData);
+            localStorage.setItem('cosOfferLeads', JSON.stringify(leads));
+
+            // Send email (mailto link construction)
+            const emailBody = `
+Property Information:
+Address: ${formData.address}, ${formData.city}
+Bedrooms: ${formData.bedrooms}
+Bathrooms: ${formData.bathrooms}
+Square Footage: ${formData.sqft}
+Condition: ${formData.condition}
+Timeline: ${formData.timeline}
+
+Contact Information:
+Name: ${formData.name}
+Phone: ${formData.phone}
+Email: ${formData.email}
+Source: ${formData.source}
+
+Estimated Offer Range:
+Conservative: ${formatCurrency(offer.low)}
+Target: ${formatCurrency(offer.mid)}
+Stretch: ${formatCurrency(offer.high)}
+
+---
+This is an automated form submission.
+            `;
+
+            const mailtoLink = `mailto:bking@kingvegashomes.com?subject=New Cash Offer Lead - ${encodeURIComponent(formData.address)}&body=${encodeURIComponent(emailBody)}`;
+
+            // Trigger mailto (this is a fallback; in production you'd want a backend service)
+            // window.location.href = mailtoLink;
+
+            // Call Airtable integration (commented out)
+            // sendToAirtable(formData);
+
+            // Show results
+            displayResults(formData, offer);
+        });
+
+        // ============================================
+        // DISPLAY RESULTS
+        // ============================================
+        function displayResults(formData, offer) {
+            // Hide form
+            document.getElementById('offerForm').style.display = 'none';
+
+            // Update results display
+            document.getElementById('resultAddress').textContent = formData.address;
+            document.getElementById('resultBeds').textContent = formData.bedrooms;
+            document.getElementById('resultBaths').textContent = formData.bathrooms;
+            document.getElementById('resultSqft').textContent = formData.sqft;
+
+            // Update offer amounts with animation
+            setTimeout(() => {
+                document.getElementById('lowOffer').textContent = formatCurrency(offer.low);
+            }, 100);
+            setTimeout(() => {
+                document.getElementById('midOffer').textContent = formatCurrency(offer.mid);
+            }, 200);
+            setTimeout(() => {
+                document.getElementById('highOffer').textContent = formatCurrency(offer.high);
+            }, 300);
+
+            // Show results container
+            document.getElementById('resultsContainer').classList.add('show');
+
+            // Scroll to results
+            setTimeout(() => {
+                document.getElementById('resultsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
+        }
+
+        // ============================================
+        // RESET FORM
+        // ============================================
+        function resetForm() {
+            document.getElementById('offerForm').reset();
+            document.getElementById('offerForm').style.display = 'block';
+            document.getElementById('resultsContainer').classList.remove('show');
+
+            // Reset form steps
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('stepNav1').classList.remove('completed');
+            document.getElementById('stepNav2').classList.remove('active');
+            document.getElementById('divider1').classList.remove('active');
+
+            // Reset city to default
+            document.getElementById('city').value = 'Las Vegas';
+
+            // Scroll to top
+            document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ============================================
+        // AIRTABLE INTEGRATION (commented out for future use)
+        // ============================================
+        /*
+        function sendToAirtable(formData) {
+            const config = document.getElementById('airtable-config');
+            const baseId = config.dataset.base;
+            const tableId = config.dataset.table;
+
+            if (!baseId || !tableId) {
+                console.log('Airtable config not set. Skipping integration.');
+                return;
+            }
+
+            const payload = {
+                records: [
+                    {
+                        fields: {
+                            'Address': formData.address,
+                            'City': formData.city,
+                            'Bedrooms': formData.bedrooms,
+                            'Bathrooms': formData.bathrooms,
+                            'Square Footage': formData.sqft,
+                            'Condition': formData.condition,
+                            'Timeline': formData.timeline,
+                            'Name': formData.name,
+                            'Phone': formData.phone,
+                            'Email': formData.email,
+                            'Source': formData.source,
+                            'Low Offer': formData.estimatedRange.low,
+                            'Mid Offer': formData.estimatedRange.mid,
+                            'High Offer': formData.estimatedRange.high,
+                            'Timestamp': formData.timestamp
+                        }
+                    }
+                ]
+            };
+
+            // This would call Airtable API
+            // fetch(`https://api.airtable.com/v0/${baseId}/${tableId}`, {
+            //     method: 'POST',
+            //     headers: {
+            //         'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+            //         'Content-Type': 'application/json'
+            //     },
+            //     body: JSON.stringify(payload)
+            // })
+        }
+        */
+
+        // ============================================
+        // INPUT VALIDATION (real-time)
+        // ============================================
+        document.querySelectorAll('input, select').forEach(field => {
+            field.addEventListener('blur', function() {
+                if (this.id && this.value && this.classList.contains('error')) {
+                    this.classList.remove('error');
+                    const error = document.getElementById(this.id + 'Error');
+                    if (error) error.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
