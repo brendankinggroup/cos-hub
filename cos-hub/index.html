@@ -359,7 +359,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       </div>
       <div id="c-full-extra" style="display:none;flex-direction:column;gap:7px;margin-bottom:10px">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
-          <div><span class="label">Hold months</span><input type="number" min="0" max="36" step="1" value="3" id="c-hm" oninput="calcMAO()" style="font-size:15px;font-weight:700;text-align:center;width:100%"/></div>
+          <div><span class="label">Hold months</span><input type="number" min="1" max="36" step="1" value="3" id="c-hm" oninput="calcMAO()" style="font-size:15px;font-weight:700;text-align:center;width:100%"/></div>
           <div><span class="label">Agent comm. %</span><input type="number" min="0" max="10" step="0.5" value="6" id="c-ac" oninput="calcMAO()" style="font-size:15px;font-weight:700;text-align:center;width:100%"/></div>
         </div>
         <div>
@@ -380,10 +380,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
         </div>
         <div>
           <span class="label">Hold Months <span style="color:var(--t3);font-weight:400">(for Annual ROI)</span></span>
-          <select id="c-hm" onchange="calcMAO()" style="font-size:14px;font-weight:700;width:100px">
-            <option value="3">3 mo</option><option value="4" selected>4 mo</option><option value="5">5 mo</option>
-            <option value="6">6 mo</option><option value="8">8 mo</option><option value="10">10 mo</option><option value="12">12 mo</option>
-          </select>
+          <input type="number" min="1" max="36" step="1" value="4" id="c-hm2" oninput="calcMAO()" style="font-size:16px;font-weight:700;text-align:center;width:80px"/>
         </div>
       </div>
     </div>
@@ -1013,24 +1010,65 @@ function calcMAO(){
   let mao;
   if(calcMode==='quick'){mao=arv*pct-repairs-fee;}
   else{const bp=(+(document.getElementById('c-bp')||{value:20}).value||20)/100;const hm=+(document.getElementById('c-hm')||{value:3}).value||3;const ac=(+(document.getElementById('c-ac')||{value:6}).value||6)/100;const fc=arv*0.03+arv*ac+800*hm+1800+(arv/500)*1.95;mao=arv-repairs-fc-arv*bp-fee;}
-  const dd=arv>0?Math.min(25,(arv-mao)/arv*25):0;
-  const rs=Math.max(0,15-(repairs/Math.max(arv,1))*60);
+  // ── DEAL SCORE — based on actual economics, not arbitrary metrics ──
+  // Uses the buyer-side numbers we just calculated above
+  const distressVal=(document.getElementById('c-distress')||{value:''}).value;
+  let score=0;
+
+  // 1. Straight ROI (max 35 pts) — THE most important factor
+  //    10%+ ROI = full points, 0% = zero
+  if(straightRoi>=20) score+=35;
+  else if(straightRoi>=15) score+=30;
+  else if(straightRoi>=12) score+=25;
+  else if(straightRoi>=10) score+=22;
+  else if(straightRoi>=8) score+=18;
+  else if(straightRoi>=5) score+=12;
+  else if(straightRoi>=2) score+=6;
+  else if(straightRoi>0) score+=3;
+
+  // 2. Profit dollars (max 25 pts) — does the deal move the needle?
+  if(profit>=100000) score+=25;
+  else if(profit>=75000) score+=22;
+  else if(profit>=50000) score+=18;
+  else if(profit>=35000) score+=15;
+  else if(profit>=25000) score+=12;
+  else if(profit>=15000) score+=8;
+  else if(profit>=5000) score+=4;
+
+  // 3. MAO is positive and viable (max 10 pts)
+  if(mao>0) score+=10;
+
+  // 4. Repairs relative to ARV (max 10 pts) — lower = less risk
+  const repRatio=repairs/Math.max(arv,1);
+  if(repRatio<=0.05) score+=10;
+  else if(repRatio<=0.10) score+=8;
+  else if(repRatio<=0.15) score+=6;
+  else if(repRatio<=0.20) score+=4;
+  else if(repRatio<=0.30) score+=2;
+
+  // 5. Location (max 10 pts)
   const premiumHoods=['Summerlin','Summerlin South','The Lakes','Anthem (Henderson)','MacDonald Ranch','Green Valley','Seven Hills'];
   const solidHoods=['Henderson','Enterprise','Spring Valley','Southwest Las Vegas','Silverado Ranch','Rhodes Ranch','Mountains Edge','Inspirada'];
   const midHoods=['Paradise','Whitney','Sunrise Manor','Winchester','Boulder City','Aliante','Centennial Hills','Lone Mountain'];
-  const ls=premiumHoods.includes(hood)?15:solidHoods.includes(hood)?12:midHoods.includes(hood)?9:7;
-  const distressVal=(document.getElementById('c-distress')||{value:''}).value;
+  if(premiumHoods.includes(hood)) score+=10;
+  else if(solidHoods.includes(hood)) score+=8;
+  else if(midHoods.includes(hood)) score+=6;
+  else score+=4;
+
+  // 6. Distress type (max 10 pts) — higher urgency = more likely to close
   const distressBonus={
-    'Pre-foreclosure':12,'Notice of Trustee Sale':14,'Lis Pendens':11,'Tax Delinquent':11,
-    'Code Violations':9,'Distressed':9,'Distressed (Landvoice)':10,'Divorce':9,'Probate/Estate':7,
-    'Inherited':6,'Job Relocation':5,'Death in Family':7,'Medical Hardship':6,
-    'Bankruptcy':10,'Vacant':8,'Tired Landlord':6,'Problem Tenants':5,
+    'Pre-foreclosure':10,'Notice of Trustee Sale':10,'Lis Pendens':9,'Tax Delinquent':9,
+    'Code Violations':7,'Distressed':7,'Distressed (Landvoice)':8,'Divorce':8,'Probate/Estate':6,
+    'Inherited':5,'Job Relocation':5,'Death in Family':6,'Medical Hardship':6,
+    'Bankruptcy':8,'Vacant':7,'Tired Landlord':5,'Problem Tenants':5,
     'Hoarder/Condition':4,'Fire Damage':5,'Foundation Issues':3,'Failed Flip':4,
-    'High Equity Absentee':4,'Underwater':3,'Behind on Payments':9,'Debt Consolidation':8,'HOA Delinquent':6,
-    'IRS Tax Lien':8,'FSBO/Expired':3,'Expired Listing':4,'Price Reduced':4,
-    'Failed to Close':5,'Short Sale':7,'Other':2
-  }[distressVal]||4;
-  const score=Math.min(100,Math.round(dd+rs+ls+distressBonus+(pct>=0.7?10:pct>=0.65?7:5)+(mao>0?10:0)));
+    'High Equity Absentee':4,'Underwater':3,'Behind on Payments':8,'Debt Consolidation':7,'HOA Delinquent':5,
+    'IRS Tax Lien':7,'FSBO/Expired':4,'Expired Listing':4,'Price Reduced':4,
+    'Failed to Close':5,'Short Sale':6,'Other':3
+  }[distressVal]||3;
+  score+=distressBonus;
+
+  score=Math.min(100,score);
   const sc=score>=80?'var(--red)':score>=60?'var(--green)':score>=40?'var(--amber)':'var(--t3)';
   const sl=score>=80?'🔥 FIRE DEAL':score>=60?'✅ SOLID DEAL':score>=40?'👀 WORTH A LOOK':'❌ PASS';
   document.getElementById('c-score-num').textContent=score;document.getElementById('c-score-num').style.color=sc;
@@ -1056,7 +1094,9 @@ function calcMAO(){
   const allin=disposition+purchaseCosts+repairs+sellingCosts; // TRUE all-in for buyer
   const profit=arv-allin; // Estimated Profit
   const straightRoi=allin>0?(profit/allin*100):0;
-  const holdMonths=+(document.getElementById('c-hm')||{value:4}).value||4;
+  const hm1=+(document.getElementById('c-hm')||{value:4}).value;
+  const hm2=+(document.getElementById('c-hm2')||{value:4}).value;
+  const holdMonths=Math.max(1,calcMode==='quick'?hm2:hm1)||4;
   const annualRoi=straightRoi*(12/holdMonths);
 
   document.getElementById('c-allin').textContent=fm(allin);
@@ -1562,7 +1602,7 @@ function getDealSummaryData(){
   const roi=parseFloat(roiText)||0;
   const annRoiText=txt('c-ann-roi');
   const annRoi=parseFloat(annRoiText)||0;
-  const holdMonths=val('c-hm',4);
+  const holdMonths=Math.max(1,val('c-hm2',0)||val('c-hm',4));
   const score=+(txt('c-score-num'))||0;
 
   // Repairs: read active total from DOM, fallback to recalculate from inputs
