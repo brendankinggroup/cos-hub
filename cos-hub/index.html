@@ -258,7 +258,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
   <span class="label" style="margin-bottom:4px">Sq Footage</span>
   <div style="display:flex;align-items:center;gap:6px">
     <input type="number" min="500" max="10000" step="50" value="1600" id="c-sqft"
-      oninput="document.getElementById('c-sqft-lbl').textContent=(+this.value).toLocaleString()+' sqft';calcMAO()"
+      oninput="document.getElementById('c-sqft-lbl').textContent=(+this.value).toLocaleString()+' sqft';syncSliderToOverride()"
       style="font-size:18px;font-weight:700;color:var(--t2);width:100%;text-align:right" />
     <span style="font-size:14px;font-weight:700;color:var(--t3)">sqft</span>
   </div>
@@ -335,13 +335,13 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div><span class="label">Kitchen <span style="color:var(--t3);font-weight:400">($18K–$35K)</span></span>
-          <input type="number" id="c-r1" placeholder="0" oninput="calcMAO()" style="font-size:14px;text-align:right"/></div>
+          <input type="number" id="c-r1" placeholder="0" oninput="syncSliderToOverride()" style="font-size:14px;text-align:right"/></div>
         <div><span class="label">Bathroom <span style="color:var(--t3);font-weight:400">($8K–$18K)</span></span>
-          <input type="number" id="c-r2" placeholder="0" oninput="calcMAO()" style="font-size:14px;text-align:right"/></div>
+          <input type="number" id="c-r2" placeholder="0" oninput="syncSliderToOverride()" style="font-size:14px;text-align:right"/></div>
         <div><span class="label">Roof <span style="color:var(--t3);font-weight:400">($8K–$18K)</span></span>
-          <input type="number" id="c-r3" placeholder="0" oninput="calcMAO()" style="font-size:14px;text-align:right"/></div>
+          <input type="number" id="c-r3" placeholder="0" oninput="syncSliderToOverride()" style="font-size:14px;text-align:right"/></div>
         <div><span class="label">HVAC <span style="color:var(--t3);font-weight:400">($6K–$12K)</span></span>
-          <input type="number" id="c-r4" placeholder="0" oninput="calcMAO()" style="font-size:14px;text-align:right"/></div>
+          <input type="number" id="c-r4" placeholder="0" oninput="syncSliderToOverride()" style="font-size:14px;text-align:right"/></div>
       </div>
       <div style="padding-top:7px;border-top:1px solid var(--border)">
         <div style="font-size:9px;color:var(--t3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em">Or type exact total (overrides above)</div>
@@ -1134,6 +1134,7 @@ function calcMAO(){
     if(!l&&!v)return'<div style="height:8px"></div>';
     return`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:${bold?'12':'10'}px"><span style="color:var(--t3)">${l}</span><span style="font-weight:${bold?800:600};color:${c}">${v}</span></div>`;
   }).join('');
+  const debt=window._c_debt||0;
   const exits=[{l:'Fix & Flip',s:repairs>25000&&straightRoi>25?88:55,c:'#4f8ef7',n:'Heavy rehab'},{l:'Wholetail',s:repairs<20000&&profit>60000?85:52,c:'#0ecf8a',n:'Light work'},{l:'Buy & Hold',s:arv<400000?72:45,c:'#9b6ff7',n:'Cash flow check'},{l:'Double Close',s:fee>18000?78:48,c:'#f0a500',n:'Large fee'},{l:'Subject-To',s:debt>arv*0.7&&profit>30000?82:50,c:'#ff6b6b',n:'Assume mortgage'},{l:'Seller Finance',s:arv<250000&&debt<120000?80:48,c:'#a8e6cf',n:'Owner financed'},{l:'Novation',s:repairs>30000&&profit>50000?81:52,c:'#ffd93d',n:'Assign mortgage'}].sort((a,b)=>b.s-a.s);
   document.getElementById('c-exits').innerHTML=exits.map((e,i)=>`<div style="background:${i===0?e.c+'22':'var(--card)'};border:1px solid ${i===0?e.c+'55':'var(--border)'};border-radius:7px;padding:8px;text-align:center"><div style="font-size:10px;font-weight:700;color:${i===0?e.c:'var(--t3)'}">${e.l}</div><div style="font-size:9px;color:var(--t3)">${e.n}</div>${i===0?`<div style="font-size:9px;color:${e.c};font-weight:700;margin-top:2px">★ BEST</div>`:''}</div>`).join('');
   window._c_mao=mao;window._c_fee=fee;window._c_repairs=repairs;window._c_arv=arv;
@@ -1810,29 +1811,30 @@ function exportDealPDF(){
 
 // REPAIR SYNC — two-way between slider and override input
 function syncOverrideToSlider(){
+  // Override total changed → back-calculate $/sqft to match
   const overrideEl=document.getElementById('c-rep-override');
-  const val=+(overrideEl?.value||0);
-  if(val>0){
-    // Back-calculate $/sqft from total, accounting for itemized flat repairs
+  const total=+(overrideEl?.value||0);
+  if(total>0){
     const sqft=+(document.getElementById('c-sqft')||{value:1600}).value||1600;
     const flat=['c-r1','c-r2','c-r3','c-r4'].reduce((s,id)=>s+(+(document.getElementById(id)||{value:0}).value||0),0);
-    const remainder=val-flat;
+    const remainder=total-flat;
     if(sqft>0&&remainder>=0){
       const psf=Math.min(80,Math.max(5,Math.round(remainder/sqft)));
       const sliderEl=document.getElementById('c-psf');
       if(sliderEl) sliderEl.value=psf;
-      const psfLbl=document.getElementById('c-psf-lbl');
-      if(psfLbl) psfLbl.textContent='$'+psf;
     }
   }
   calcMAO();
 }
 
 function syncSliderToOverride(){
-  // $/sqft input changed — clear override so $/sqft is in control
+  // $/sqft or itemized changed → update override total to match
+  const sqft=+(document.getElementById('c-sqft')||{value:1600}).value||1600;
+  const psf=+(document.getElementById('c-psf')||{value:25}).value||25;
+  const flat=['c-r1','c-r2','c-r3','c-r4'].reduce((s,id)=>s+(+(document.getElementById(id)||{value:0}).value||0),0);
+  const total=sqft*psf+flat;
   const overrideEl=document.getElementById('c-rep-override');
-  if(overrideEl&&overrideEl.value) overrideEl.value='';
-  // Update psf label (now an input so no separate label needed)
+  if(overrideEl) overrideEl.value=total>0?total:'';
   calcMAO();
 }
 
@@ -2064,6 +2066,7 @@ async function batchLookup(){
     // Show owner info bar
     const ownerBar=document.getElementById('bd-owner-bar');
     const mortBal=ol.totalOpenLienBalance||0;
+    window._c_debt=mortBal;
     const eqPct=v.equityPercent||0;
     const eqDollar=v.equityCurrentEstimatedBalance||0;
     const propensity=intel.salePropensity||0;
