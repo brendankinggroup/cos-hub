@@ -1978,9 +1978,9 @@ async function batchLookup(){
   }
 
   try{
-    const resp=await fetch('https://api.batchdata.com/api/v1/property/lookup/all-attributes',{
+    const resp=await fetch('/api/batchdata',{
       method:'POST',
-      headers:{'Authorization':'Bearer '+BATCHDATA_KEY,'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({requests:[{address:{street,city,state,zip}}]})
     });
     const json=await resp.json();
