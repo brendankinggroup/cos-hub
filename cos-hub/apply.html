@@ -485,6 +485,8 @@
 const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY_HERE';
 const CLOUDINARY_CLOUD = 'YOUR_CLOUD_NAME'; // Sign up free at cloudinary.com
 const CLOUDINARY_PRESET = 'YOUR_UPLOAD_PRESET'; // Create an unsigned upload preset
+const BATCHDATA_KEY = 'FUYAMVRI5mCePugUkFvKyM7Nq2eq32gGDcJDudxY';
+let batchEstValue = 0; // Stores real estimated value from BatchData
 
 // ============================================
 // CONDITION AREAS
@@ -747,6 +749,9 @@ function goStep(n) {
 
     // Show repair preview on step 5
     if (n === 5) showRepairPreview();
+
+    // Pull BatchData when leaving Step 1 (address entered)
+    if (n === 2 && batchEstValue === 0) batchLookup();
 }
 
 function validateStep(n) {
@@ -819,14 +824,26 @@ function showRepairPreview() {
 function calcOffer() {
     const sqft = parseInt(document.getElementById('f-sqft').value) || 1500;
     const beds = parseInt(document.getElementById('f-beds').value) || 3;
-    const rates = {5:230, 4:200, 3:170, 2:130, 1:90};
 
-    // Average condition rating
+    // Average condition rating from seller's room-by-room input
     const ratings = Object.values(conditionRatings);
     const avgRating = ratings.length > 0 ? Math.round(ratings.reduce((a,b)=>a+b,0)/ratings.length) : 3;
 
-    let estValue = sqft * (rates[avgRating] || 170);
-    if (beds >= 4) estValue *= 1.05;
+    // ARV = estimated value + rehab premium scaled by condition
+    // Worse condition = more upside after renovation
+    // Rating 5 (excellent) = +5%, Rating 4 = +8%, Rating 3 (avg) = +12%, Rating 2 = +16%, Rating 1 (poor) = +20%
+    const rehabPremium = {5: 0.05, 4: 0.08, 3: 0.12, 2: 0.16, 1: 0.20}[avgRating] || 0.12;
+
+    let estValue;
+    if (batchEstValue > 0) {
+        // BatchData gives current as-is value — add rehab premium to estimate ARV
+        estValue = Math.round(batchEstValue * (1 + rehabPremium));
+    } else {
+        // Fallback: $/sqft estimate when no API data
+        const rates = {5:230, 4:200, 3:170, 2:130, 1:90};
+        estValue = sqft * (rates[avgRating] || 170);
+        if (beds >= 4) estValue *= 1.05;
+    }
 
     const repairs = calcRepairs().total;
     const fee = 10000; // assignment fee
@@ -1054,6 +1071,53 @@ document.addEventListener('input', (e) => {
         if (err) err.classList.remove('show');
     }
 });
+// ============================================
+// BATCHDATA PROPERTY LOOKUP — Real Estimated Value
+// ============================================
+async function batchLookup() {
+    const street = (document.getElementById('f-address').value || '').trim();
+    const city = (document.getElementById('f-city').value || 'Las Vegas').trim();
+    const zip = (document.getElementById('f-zip').value || '').trim();
+    if (!street || !zip) return;
+
+    try {
+        const resp = await fetch('https://api.batchdata.com/api/v1/property/lookup/all-attributes', {
+            method: 'POST',
+            headers: {'Authorization': 'Bearer ' + BATCHDATA_KEY, 'Content-Type': 'application/json'},
+            body: JSON.stringify({requests: [{address: {street, city, state: 'NV', zip}}]})
+        });
+        const json = await resp.json();
+        if (json.status?.code !== 200 || !json.results?.properties?.length) return;
+
+        const p = json.results.properties[0];
+        const v = p.valuation || {};
+        const l = p.listing || {};
+
+        // Store real estimated value for offer calculation
+        if (v.estimatedValue > 0) {
+            batchEstValue = v.estimatedValue;
+        }
+
+        // Auto-fill fields the seller hasn't filled yet
+        const sqftEl = document.getElementById('f-sqft');
+        const sqftVal = l.totalBuildingAreaSquareFeet || l.livingArea || 0;
+        if (sqftVal > 0 && !sqftEl.value) sqftEl.value = sqftVal;
+
+        const bedsEl = document.getElementById('f-beds');
+        if (l.bedroomCount && !bedsEl.value) bedsEl.value = l.bedroomCount <= 5 ? l.bedroomCount : '6+';
+
+        const bathsEl = document.getElementById('f-baths');
+        if (l.bathroomCount && !bathsEl.value) bathsEl.value = l.bathroomCount <= 4 ? l.bathroomCount : '5+';
+
+        const yrEl = document.getElementById('f-year');
+        if (l.yearBuilt && yrEl && !yrEl.value) yrEl.value = l.yearBuilt;
+
+        console.log('BatchData: est value $' + (v.estimatedValue||0).toLocaleString() + ', confidence ' + (v.confidenceScore||0) + '%');
+    } catch(e) {
+        console.log('BatchData lookup error:', e.message);
+    }
+}
+
 // ============================================
 // GOOGLE PLACES ADDRESS AUTOCOMPLETE
 // ============================================
