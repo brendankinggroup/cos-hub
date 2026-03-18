@@ -392,10 +392,6 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
             <span id="c-fee-lbl" style="font-size:14px;font-weight:700;color:var(--green)" class="hdr">$13,000</span>
           </div>
         </div>
-        <div>
-          <span class="label">Hold Months <span style="color:var(--t3);font-weight:400">(for Annual ROI)</span></span>
-          <input type="number" min="1" max="36" step="1" value="4" id="c-hm2" oninput="calcMAO()" style="font-size:16px;font-weight:700;text-align:center;width:80px"/>
-        </div>
       </div>
     </div>
   </div>
@@ -428,7 +424,6 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Buyer All-In</div><div class="hdr" id="c-allin" style="font-size:20px;color:var(--t1)">$247K</div><div style="font-size:8px;color:var(--t3);margin-top:2px">Dispo + purch + rehab + sell</div></div>
       <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Est. Profit</div><div class="hdr" id="c-equity" style="font-size:20px;color:var(--green)">$132K</div><div style="font-size:8px;color:var(--t3);margin-top:2px">ARV − All-In</div></div>
       <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Straight ROI</div><div class="hdr" id="c-roi" style="font-size:20px;color:var(--amber)">—</div><div style="font-size:8px;color:var(--t3);margin-top:2px">Profit ÷ All-In</div></div>
-      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Annual ROI</div><div class="hdr" id="c-ann-roi" style="font-size:20px;color:var(--purple)">—</div><div style="font-size:8px;color:var(--t3);margin-top:2px">× 12 ÷ hold months</div></div>
       <div class="card" style="border:1px solid var(--green)33"><div style="font-size:11px;color:var(--green);margin-bottom:4px;font-weight:700">Your Fee</div><div class="hdr" id="c-myfee" style="font-size:20px;color:var(--green)">$13K</div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
@@ -1046,9 +1041,6 @@ function calcMAO(){
   const profit=arv-allin; // Estimated Profit
   const straightRoi=allin>0?(profit/allin*100):0;
   const hm1=+(document.getElementById('c-hm')||{value:4}).value;
-  const hm2=+(document.getElementById('c-hm2')||{value:4}).value;
-  const holdMonths=Math.max(1,calcMode==='quick'?hm2:hm1)||4;
-  const annualRoi=straightRoi*(12/holdMonths);
 
   // ── DEAL SCORE — based on actual economics ──
   let score=0;
@@ -1116,7 +1108,6 @@ function calcMAO(){
   document.getElementById('c-equity').textContent=fm(profit);document.getElementById('c-equity').style.color=profit>0?'var(--green)':'var(--red)';
   document.getElementById('c-roi').textContent=straightRoi.toFixed(1)+'%';
   document.getElementById('c-myfee').textContent=fm(fee);
-  const annRoiEl=document.getElementById('c-ann-roi');if(annRoiEl)annRoiEl.textContent=annualRoi.toFixed(1)+'%';
   const purchEl=document.getElementById('c-purchase-costs');if(purchEl)purchEl.textContent=fm(purchaseCosts);
   const sellEl=document.getElementById('c-selling-costs');if(sellEl)sellEl.textContent=fm(sellingCosts);
 
@@ -1138,7 +1129,6 @@ function calcMAO(){
     ['− Buyer All-In','−'+fm(allin),'var(--red)',false],
     ['= Est. Profit',fm(profit),'var(--green)',true],
     ['Straight ROI',straightRoi.toFixed(1)+'%','var(--amber)',false],
-    ['Annual ROI ('+holdMonths+'mo hold)',annualRoi.toFixed(1)+'%','var(--purple)',false],
   ];
   document.getElementById('c-formula').innerHTML=formulaLines.map(([l,v,c,bold])=>{
     if(!l&&!v)return'<div style="height:8px"></div>';
@@ -1148,7 +1138,7 @@ function calcMAO(){
   document.getElementById('c-exits').innerHTML=exits.map((e,i)=>`<div style="background:${i===0?e.c+'22':'var(--card)'};border:1px solid ${i===0?e.c+'55':'var(--border)'};border-radius:7px;padding:8px;text-align:center"><div style="font-size:10px;font-weight:700;color:${i===0?e.c:'var(--t3)'}">${e.l}</div><div style="font-size:9px;color:var(--t3)">${e.n}</div>${i===0?`<div style="font-size:9px;color:${e.c};font-weight:700;margin-top:2px">★ BEST</div>`:''}</div>`).join('');
   window._c_mao=mao;window._c_fee=fee;window._c_repairs=repairs;window._c_arv=arv;
   window._c_disposition=disposition;window._c_allin=allin;window._c_profit=profit;window._c_roi=straightRoi;
-  window._c_annRoi=annualRoi;window._c_purchaseCosts=purchaseCosts;window._c_sellingCosts=sellingCosts;
+  window._c_purchaseCosts=purchaseCosts;window._c_sellingCosts=sellingCosts;
   window._c_pct=pct;window._c_score=score;window._c_sqft=sqft;window._c_psf=psf;
   window._c_maoLo=mao*.95;window._c_maoHi=mao*1.03;
 
@@ -1613,9 +1603,6 @@ function getDealSummaryData(){
   const profit=parseFm(txt('c-equity'));
   const roiText=txt('c-roi');
   const roi=parseFloat(roiText)||0;
-  const annRoiText=txt('c-ann-roi');
-  const annRoi=parseFloat(annRoiText)||0;
-  const holdMonths=Math.max(1,val('c-hm2',0)||val('c-hm',4));
   const score=+(txt('c-score-num'))||0;
 
   // Repairs: read active total from DOM, fallback to recalculate from inputs
@@ -1637,7 +1624,7 @@ function getDealSummaryData(){
 
   const scoreLbl=score>=80?'FIRE DEAL':score>=60?'SOLID DEAL':score>=40?'WORTH A LOOK':'PASS';
 
-  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,annRoi,holdMonths,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script};
+  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script};
 }
 
 function exportDealEmail(){
@@ -1668,7 +1655,6 @@ function exportDealEmail(){
 'Buyer All-In:      '+fm(d.allin)+'\n'+
 'Est. Profit:       '+fm(d.profit)+'\n'+
 'Straight ROI:      '+d.roi.toFixed(1)+'%\n'+
-'Annual ROI:        '+d.annRoi.toFixed(1)+'% ('+d.holdMonths+'mo hold)\n'+
 'Market %:          '+d.pct+'%\n'+
 'Deal Score:        '+d.score+'/100 ('+d.scoreLbl+')\n\n'+
 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
@@ -1776,7 +1762,6 @@ function exportDealPDF(){
     <div class="num-cell"><div class="num-label">Buyer All-In</div><div class="num-value">${fm(d.allin)}</div><div class="num-sub">Dispo + purch + rehab + sell</div></div>
     <div class="num-cell"><div class="num-label">Est. Profit</div><div class="num-value ${d.profit>0?'green':'red'}">${fm(d.profit)}</div><div class="num-sub">ARV − All-In</div></div>
     <div class="num-cell"><div class="num-label">Straight ROI</div><div class="num-value amber">${d.roi.toFixed(1)}%</div><div class="num-sub">Profit ÷ All-In</div></div>
-    <div class="num-cell"><div class="num-label">Annual ROI (${d.holdMonths}mo)</div><div class="num-value purple">${d.annRoi.toFixed(1)}%</div><div class="num-sub">× 12 ÷ hold months</div></div>
     <div class="num-cell green-hl"><div class="num-label">Wholesale Fee</div><div class="num-value green">${fm(d.fee)}</div></div>
     <div class="num-cell"><div class="num-label">Market %</div><div class="num-value">${d.arv>0?Math.round(d.mao/d.arv*100):0}%</div></div>
   </div>
@@ -1808,7 +1793,6 @@ function exportDealPDF(){
   <div class="formula-row"><span class="fl">− Buyer All-In</span><span class="fv" style="color:var(--red)">−${fm(d.allin)}</span></div>
   <div class="formula-row total"><span class="fl">= Est. Profit</span><span class="fv" style="color:var(--green)">${fm(d.profit)}</span></div>
   <div class="formula-row"><span class="fl">Straight ROI</span><span class="fv" style="color:var(--amber)">${d.roi.toFixed(1)}%</span></div>
-  <div class="formula-row"><span class="fl">Annual ROI (${d.holdMonths}mo hold)</span><span class="fv" style="color:var(--purple)">${d.annRoi.toFixed(1)}%</span></div>
 </div>
 
 <div class="section" style="page-break-before:auto">
