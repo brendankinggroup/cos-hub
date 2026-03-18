@@ -939,41 +939,49 @@ async function sendLead(data, offer) {
     let photoLinks = '';
     Object.entries(data.photoUrls).forEach(([k,v]) => { photoLinks += `${k}: ${v}\n`; });
 
-    if (WEB3FORMS_KEY === 'YOUR_ACCESS_KEY_HERE') {
-        const body = `NEW PROPERTY SUBMISSION\n\n📍 ${data.address}, ${data.city} ${data.zip}\nType: ${data.propertyType} | ${data.beds}bd/${data.baths}ba | ${data.sqft} sqft\nYear: ${data.yearBuilt} | Lot: ${data.lotSize} | HOA: ${data.hoa} | Pool: ${data.pool}\n\n🔧 CONDITION:\n${condSummary}\nSolar: ${data.solar} | Unpermitted: ${data.unpermitted} | Liens: ${data.liens}\n\n💰 FINANCIALS:\nMortgage: ${data.mortgage} | Asking: ${data.asking}\nReason: ${data.reason} | Timeline: ${data.timeline}\nOccupancy: ${data.occupancy}\nNotes: ${data.notes}\n\n👤 CONTACT:\n${data.name} | ${data.phone} | ${data.email}\nPrefers: ${data.contactPref}\n\n📊 ESTIMATES:\nEst. Value: $${data.estimatedValue.toLocaleString()}\nEst. Repairs: $${data.estimatedRepairs.toLocaleString()}\nOffer Range: $${offer.low.toLocaleString()} — $${offer.high.toLocaleString()}\nPhotos: ${data.photoCount}\n\n📸 PHOTO LINKS:\n${photoLinks || 'No Cloudinary uploads (not configured)'}`;
-
-        window.open(`mailto:info@cashofferspecialist.com?subject=Property Submission - ${encodeURIComponent(data.address)}&body=${encodeURIComponent(body)}`,'_blank');
-        return;
-    }
+    // Send via Web3Forms (stays in app — no mailto popup)
+    const payload = {
+        access_key: WEB3FORMS_KEY === 'YOUR_ACCESS_KEY_HERE' ? '0a47fb7c-56cb-4696-8293-4dccbddfad27' : WEB3FORMS_KEY,
+        subject: `🏠 New Property Submission — ${data.address}, ${data.zip}`,
+        from_name: data.name || 'COS Apply Page',
+        replyto: data.email || '',
+        to: 'info@cashofferspecialist.com',
+        'Property Address': `${data.address}, ${data.city} ${data.zip}`,
+        'Property Type': `${data.propertyType} | ${data.beds}bd/${data.baths}ba | ${data.sqft}sqft`,
+        'Property Details': `Year: ${data.yearBuilt} | Lot: ${data.lotSize} | HOA: ${data.hoa} | Pool: ${data.pool}`,
+        'Condition Summary': condSummary,
+        'Special Issues': `Solar: ${data.solar} | Unpermitted: ${data.unpermitted} | Liens: ${data.liens}`,
+        'Mortgage Balance': data.mortgage,
+        'Asking Price': data.asking,
+        'Reason for Selling': data.reason,
+        'Timeline': data.timeline,
+        'Occupancy': data.occupancy,
+        'Seller Notes': data.notes || 'None',
+        'Seller Name': data.name,
+        'Seller Phone': data.phone,
+        'Seller Email': data.email,
+        'Contact Preference': data.contactPref,
+        'Estimated Value': `$${data.estimatedValue.toLocaleString()}`,
+        'Estimated Repairs': `$${data.estimatedRepairs.toLocaleString()}`,
+        'Offer Range': `$${offer.low.toLocaleString()} — $${offer.high.toLocaleString()}`,
+        'Photos Uploaded': data.photoCount + ' photos',
+        'Photo Links': photoLinks || 'No photos uploaded',
+        'Submitted At': new Date().toLocaleString()
+    };
 
     try {
         const r = await fetch('https://api.web3forms.com/submit', {
-            method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({
-                access_key: WEB3FORMS_KEY,
-                subject: `🏠 Property Submission — ${data.address}, ${data.zip}`,
-                from_name: 'COS Apply Page',
-                to: 'info@cashofferspecialist.com',
-                'Property': `${data.address}, ${data.city} ${data.zip}`,
-                'Type': `${data.propertyType} | ${data.beds}bd/${data.baths}ba | ${data.sqft}sqft`,
-                'Details': `Year: ${data.yearBuilt} | Lot: ${data.lotSize} | HOA: ${data.hoa} | Pool: ${data.pool}`,
-                'Condition Summary': condSummary,
-                'Special Issues': `Solar: ${data.solar} | Unpermitted: ${data.unpermitted} | Liens: ${data.liens}`,
-                'Mortgage': data.mortgage, 'Asking': data.asking,
-                'Reason': data.reason, 'Timeline': data.timeline,
-                'Occupancy': data.occupancy, 'Notes': data.notes,
-                'Seller': `${data.name} | ${data.phone} | ${data.email} | Prefers: ${data.contactPref}`,
-                'Est Value': `$${data.estimatedValue.toLocaleString()}`,
-                'Est Repairs': `$${data.estimatedRepairs.toLocaleString()}`,
-                'Offer Range': `$${offer.low.toLocaleString()} — $${offer.high.toLocaleString()}`,
-                'Photos': data.photoCount + ' uploaded',
-                'Photo Links': photoLinks || 'Cloudinary not configured',
-                'Submitted': new Date().toLocaleString()
-            })
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
         });
         const res = await r.json();
-        if (res.success) console.log('Lead sent'); else console.error('Web3Forms:', res);
-    } catch(err) { console.error('Send failed:', err); }
+        if (res.success) console.log('Lead sent via Web3Forms');
+        else console.error('Web3Forms error:', res);
+    } catch(err) {
+        console.error('Send failed:', err);
+        // Silent fail — data is already saved to localStorage
+    }
 }
 
 // ============================================

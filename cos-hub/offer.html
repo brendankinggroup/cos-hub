@@ -1122,22 +1122,13 @@
             leads.push(formData);
             localStorage.setItem('cosOfferLeads', JSON.stringify(leads));
 
-            // If Web3Forms key isn't set, use mailto fallback
-            if (WEB3FORMS_KEY === 'YOUR_ACCESS_KEY_HERE') {
-                console.warn('Web3Forms key not set. Using mailto fallback.');
-                const emailBody = `New Cash Offer Lead\n\nProperty: ${formData.address}, ${formData.city}\nBeds: ${formData.bedrooms} | Baths: ${formData.bathrooms} | SqFt: ${formData.sqft}\nCondition: ${formData.condition}\nTimeline: ${formData.timeline}\n\nSeller: ${formData.name}\nPhone: ${formData.phone}\nEmail: ${formData.email}\nSource: ${formData.source}\n\nEstimated Range: ${formatCurrency(offer.low)} - ${formatCurrency(offer.high)}`;
-                const link = `mailto:info@cashofferspecialist.com?subject=New Lead - ${encodeURIComponent(formData.address)}&body=${encodeURIComponent(emailBody)}`;
-                window.open(link, '_blank');
-                return;
-            }
-
-            // Send via Web3Forms (instant email to info@cashofferspecialist.com)
+            // Send via Web3Forms (stays in app — no mailto popup)
             try {
                 const response = await fetch('https://api.web3forms.com/submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        access_key: WEB3FORMS_KEY,
+                        access_key: WEB3FORMS_KEY === 'YOUR_ACCESS_KEY_HERE' ? '0a47fb7c-56cb-4696-8293-4dccbddfad27' : WEB3FORMS_KEY,
                         subject: `🏠 New Cash Offer Lead — ${formData.address}`,
                         from_name: 'COS Offer Page',
                         to: 'info@cashofferspecialist.com',
