@@ -1643,7 +1643,6 @@ function exportDealPDF(){
   *{box-sizing:border-box;margin:0;padding:0}
   :root{--bg:#ffffff;--card:#f8f9fa;--border:#e5e7eb;--t1:#111;--t2:#555;--t3:#888;--blue:#4f8ef7;--green:#059669;--amber:#d97706;--purple:#7c3aed;--red:#dc2626;--bluebg:#f0f9ff;--greenbg:#f0fdf4;--amberbg:#fffbeb;--redbg:#fef2f2}
   body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t1);padding:40px;font-size:14px;line-height:1.6}
-  body.dark{--bg:#06080f;--card:#111827;--border:#1f2937;--t1:#f1f5f9;--t2:#94a3b8;--t3:#64748b;--bluebg:#0a1628;--greenbg:#042f1a;--amberbg:#1a1500;--redbg:#1a0808}
   .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid var(--t1);padding-bottom:16px;margin-bottom:24px}
   .logo{font-size:28px;font-weight:900;letter-spacing:.04em}
   .logo span{color:var(--blue)}
@@ -1684,8 +1683,6 @@ function exportDealPDF(){
 </style>
 </head><body>
 <div class="toolbar">
-  <button onclick="document.body.classList.remove('dark')" style="background:#f1f5f9;color:#111">☀️ Light</button>
-  <button onclick="document.body.classList.add('dark')" style="background:#111827;color:#f1f5f9">🌙 Dark</button>
   <button onclick="window.print()" style="background:#4f8ef7;color:#fff">🖨️ Print / Save as PDF</button>
 </div>
 
