@@ -370,14 +370,20 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
           </div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:auto 1fr;align-items:center;gap:12px;margin-top:4px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px">
         <div>
           <span class="label">Assignment Fee</span>
-          <input type="number" min="0" max="100000" step="500" value="13000" id="c-fee" oninput="document.getElementById('c-fee-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" style="font-size:18px;font-weight:700;color:var(--green);border-color:var(--green)55;text-align:right;width:140px"/>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" min="0" max="100000" step="500" value="13000" id="c-fee" oninput="document.getElementById('c-fee-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" style="font-size:16px;font-weight:700;color:var(--green);border-color:var(--green)55;text-align:right;width:120px"/>
+            <span id="c-fee-lbl" style="font-size:14px;font-weight:700;color:var(--green)" class="hdr">$13,000</span>
+          </div>
         </div>
-        <div style="background:var(--card);border-radius:8px;padding:10px 14px">
-          <span id="c-fee-lbl" style="font-size:18px;font-weight:900;color:var(--green)" class="hdr">$13,000</span>
-          <div style="font-size:11px;color:var(--t3);margin-top:2px">your wholesale profit</div>
+        <div>
+          <span class="label">Hold Months <span style="color:var(--t3);font-weight:400">(for Annual ROI)</span></span>
+          <select id="c-hm" onchange="calcMAO()" style="font-size:14px;font-weight:700;width:100px">
+            <option value="3">3 mo</option><option value="4" selected>4 mo</option><option value="5">5 mo</option>
+            <option value="6">6 mo</option><option value="8">8 mo</option><option value="10">10 mo</option><option value="12">12 mo</option>
+          </select>
         </div>
       </div>
     </div>
@@ -402,14 +408,17 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
       <div class="card" style="border:1px solid var(--green)33">
-        <div style="font-size:9px;color:var(--green);margin-bottom:2px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Disposition Price</div>
+        <div style="font-size:9px;color:var(--green);margin-bottom:2px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Rehabber's Price</div>
         <div class="hdr" id="c-disposition" style="font-size:20px;color:var(--green)">$207K</div>
-        <div style="font-size:8px;color:var(--t3);margin-top:2px">MAO + your fee</div>
+        <div style="font-size:8px;color:var(--t3);margin-top:2px">Contract + your fee</div>
       </div>
-      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Buyer All-In</div><div class="hdr" id="c-allin" style="font-size:20px;color:var(--t1)">$247K</div></div>
-      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Equity Spread</div><div class="hdr" id="c-equity" style="font-size:20px;color:var(--green)">$132K</div></div>
-      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Buyer ROI</div><div class="hdr" id="c-roi" style="font-size:20px;color:var(--amber)">53%</div></div>
-      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Your Fee</div><div class="hdr" id="c-myfee" style="font-size:20px;color:var(--green)">$13K</div></div>
+      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Purchase Costs <span style="font-size:9px;opacity:.6">(1%)</span></div><div class="hdr" id="c-purchase-costs" style="font-size:20px;color:var(--amber)">—</div></div>
+      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Selling Costs <span style="font-size:9px;opacity:.6">(6.5%)</span></div><div class="hdr" id="c-selling-costs" style="font-size:20px;color:var(--amber)">—</div></div>
+      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Buyer All-In</div><div class="hdr" id="c-allin" style="font-size:20px;color:var(--t1)">$247K</div><div style="font-size:8px;color:var(--t3);margin-top:2px">Dispo + purch + rehab + sell</div></div>
+      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Est. Profit</div><div class="hdr" id="c-equity" style="font-size:20px;color:var(--green)">$132K</div><div style="font-size:8px;color:var(--t3);margin-top:2px">ARV − All-In</div></div>
+      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Straight ROI</div><div class="hdr" id="c-roi" style="font-size:20px;color:var(--amber)">—</div><div style="font-size:8px;color:var(--t3);margin-top:2px">Profit ÷ All-In</div></div>
+      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Annual ROI</div><div class="hdr" id="c-ann-roi" style="font-size:20px;color:var(--purple)">—</div><div style="font-size:8px;color:var(--t3);margin-top:2px">× 12 ÷ hold months</div></div>
+      <div class="card" style="border:1px solid var(--green)33"><div style="font-size:11px;color:var(--green);margin-bottom:4px;font-weight:700">Your Fee</div><div class="hdr" id="c-myfee" style="font-size:20px;color:var(--green)">$13K</div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div class="card"><div style="font-size:12px;font-weight:700;color:var(--t3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.07em">Formula Breakdown</div><div id="c-formula" style="font-size:11px"></div></div>
@@ -1040,17 +1049,53 @@ function calcMAO(){
   // Tint override box when active
   const roEl=document.getElementById('c-rep-override');
   if(roEl){roEl.style.borderColor=repOverride>0?'var(--blue)':'var(--border2)';roEl.style.color=repOverride>0?'var(--blue)':'var(--amber)';}
-  const allin=mao+fee+repairs,eq=arv-allin,roi=mao+fee>0?(eq/(mao+fee)*100):0;
-  document.getElementById('c-allin').textContent=fm(allin);document.getElementById('c-equity').textContent=fm(eq);document.getElementById('c-equity').style.color=eq>0?'var(--green)':'var(--red)';document.getElementById('c-roi').textContent=roi.toFixed(1)+'%';document.getElementById('c-myfee').textContent=fm(fee);
-  // Disposition = what you sell to your buyer (MAO + your fee)
-  const disposition=mao+fee;
+  // ── BUYER ECONOMICS (matching COS spreadsheet) ──
+  const disposition=mao+fee; // Rehabber's Price
+  const purchaseCosts=Math.round(disposition*0.01); // ~1% of dispo (title, escrow, etc.)
+  const sellingCosts=Math.round(arv*0.065); // 6.5% of ARV (agent commissions + seller closing)
+  const allin=disposition+purchaseCosts+repairs+sellingCosts; // TRUE all-in for buyer
+  const profit=arv-allin; // Estimated Profit
+  const straightRoi=allin>0?(profit/allin*100):0;
+  const holdMonths=+(document.getElementById('c-hm')||{value:4}).value||4;
+  const annualRoi=straightRoi*(12/holdMonths);
+
+  document.getElementById('c-allin').textContent=fm(allin);
+  document.getElementById('c-equity').textContent=fm(profit);document.getElementById('c-equity').style.color=profit>0?'var(--green)':'var(--red)';
+  document.getElementById('c-roi').textContent=straightRoi.toFixed(1)+'%';
+  document.getElementById('c-myfee').textContent=fm(fee);
+  const annRoiEl=document.getElementById('c-ann-roi');if(annRoiEl)annRoiEl.textContent=annualRoi.toFixed(1)+'%';
+  const purchEl=document.getElementById('c-purchase-costs');if(purchEl)purchEl.textContent=fm(purchaseCosts);
+  const sellEl=document.getElementById('c-selling-costs');if(sellEl)sellEl.textContent=fm(sellingCosts);
+
   const dispEl=document.getElementById('c-disposition');
   if(dispEl){dispEl.textContent=disposition>0?fm(disposition):'—';dispEl.style.color=disposition>0?'var(--green)':'var(--red)';}
-  document.getElementById('c-formula').innerHTML=(calcMode==='quick'?[[`ARV × ${Math.round(pct*100)}%`,fm(arv*pct),'var(--t1)'],['− Repairs','−'+fm(repairs),'var(--red)'],['− Assignment Fee','−'+fm(fee),'var(--red)'],['= MAO',fm(mao),'var(--blue)']]:[['ARV',fm(arv),'var(--t1)'],['− Repairs','−'+fm(repairs),'var(--red)'],['− Closings/Fees','−'+fm(arv*0.03),'var(--red)'],['− Buyer Profit','−'+fm(arv*(+(document.getElementById('c-bp')||{value:20}).value/100)),'var(--red)'],['− Assignment Fee','−'+fm(fee),'var(--red)'],['= MAO',fm(mao),'var(--blue)']]).map(([l,v,c])=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:${l==='= MAO'?'12':'10'}px"><span style="color:var(--t3)">${l}</span><span style="font-weight:${l==='= MAO'?800:600};color:${c}">${v}</span></div>`).join('');
-  const exits=[{l:'Fix & Flip',s:repairs>25000&&roi>25?88:55,c:'#4f8ef7',n:'Heavy rehab'},{l:'Wholetail',s:repairs<20000&&eq>60000?85:52,c:'#0ecf8a',n:'Light work'},{l:'Buy & Hold',s:arv<400000?72:45,c:'#9b6ff7',n:'Cash flow check'},{l:'Double Close',s:fee>18000?78:48,c:'#f0a500',n:'Large fee'},{l:'Subject-To',s:debt>arv*0.7&&eq>30000?82:50,c:'#ff6b6b',n:'Assume mortgage'},{l:'Seller Finance',s:arv<250000&&debt<120000?80:48,c:'#a8e6cf',n:'Owner financed'},{l:'Novation',s:repairs>30000&&eq>50000?81:52,c:'#ffd93d',n:'Assign mortgage'}].sort((a,b)=>b.s-a.s);
+  const formulaLines=[
+    [`ARV × ${Math.round(pct*100)}%`,fm(arv*pct),'var(--t1)',false],
+    ['− Repairs','−'+fm(repairs),'var(--red)',false],
+    ['− Wholesale Fee','−'+fm(fee),'var(--red)',false],
+    ['= Contract Price (MAO)',fm(mao),'var(--blue)',true],
+    ['','','',false],
+    ['Rehabber\'s Price (dispo)',fm(disposition),'var(--green)',false],
+    ['+ Purchase Costs (1%)',fm(purchaseCosts),'var(--amber)',false],
+    ['+ Rehab Cost',fm(repairs),'var(--amber)',false],
+    ['+ Selling Costs (6.5%)',fm(sellingCosts),'var(--amber)',false],
+    ['= Buyer All-In',fm(allin),'var(--t1)',true],
+    ['','','',false],
+    ['ARV',fm(arv),'var(--t1)',false],
+    ['− Buyer All-In','−'+fm(allin),'var(--red)',false],
+    ['= Est. Profit',fm(profit),'var(--green)',true],
+    ['Straight ROI',straightRoi.toFixed(1)+'%','var(--amber)',false],
+    ['Annual ROI ('+holdMonths+'mo hold)',annualRoi.toFixed(1)+'%','var(--purple)',false],
+  ];
+  document.getElementById('c-formula').innerHTML=formulaLines.map(([l,v,c,bold])=>{
+    if(!l&&!v)return'<div style="height:8px"></div>';
+    return`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:${bold?'12':'10'}px"><span style="color:var(--t3)">${l}</span><span style="font-weight:${bold?800:600};color:${c}">${v}</span></div>`;
+  }).join('');
+  const exits=[{l:'Fix & Flip',s:repairs>25000&&straightRoi>25?88:55,c:'#4f8ef7',n:'Heavy rehab'},{l:'Wholetail',s:repairs<20000&&profit>60000?85:52,c:'#0ecf8a',n:'Light work'},{l:'Buy & Hold',s:arv<400000?72:45,c:'#9b6ff7',n:'Cash flow check'},{l:'Double Close',s:fee>18000?78:48,c:'#f0a500',n:'Large fee'},{l:'Subject-To',s:debt>arv*0.7&&profit>30000?82:50,c:'#ff6b6b',n:'Assume mortgage'},{l:'Seller Finance',s:arv<250000&&debt<120000?80:48,c:'#a8e6cf',n:'Owner financed'},{l:'Novation',s:repairs>30000&&profit>50000?81:52,c:'#ffd93d',n:'Assign mortgage'}].sort((a,b)=>b.s-a.s);
   document.getElementById('c-exits').innerHTML=exits.map((e,i)=>`<div style="background:${i===0?e.c+'22':'var(--card)'};border:1px solid ${i===0?e.c+'55':'var(--border)'};border-radius:7px;padding:8px;text-align:center"><div style="font-size:10px;font-weight:700;color:${i===0?e.c:'var(--t3)'}">${e.l}</div><div style="font-size:9px;color:var(--t3)">${e.n}</div>${i===0?`<div style="font-size:9px;color:${e.c};font-weight:700;margin-top:2px">★ BEST</div>`:''}</div>`).join('');
   window._c_mao=mao;window._c_fee=fee;window._c_repairs=repairs;window._c_arv=arv;
-  window._c_disposition=disposition;window._c_allin=allin;window._c_eq=eq;window._c_roi=roi;
+  window._c_disposition=disposition;window._c_allin=allin;window._c_profit=profit;window._c_roi=straightRoi;
+  window._c_annRoi=annualRoi;window._c_purchaseCosts=purchaseCosts;window._c_sellingCosts=sellingCosts;
   window._c_pct=pct;window._c_score=score;window._c_sqft=sqft;window._c_psf=psf;
   window._c_maoLo=mao*.95;window._c_maoHi=mao*1.03;
 
@@ -1509,10 +1554,15 @@ function getDealSummaryData(){
   const maoLo=parseFm(txt('c-mao-lo'));
   const maoHi=parseFm(txt('c-mao-hi'));
   const disposition=parseFm(txt('c-disposition'));
+  const purchaseCosts=parseFm(txt('c-purchase-costs'));
+  const sellingCosts=parseFm(txt('c-selling-costs'));
   const allin=parseFm(txt('c-allin'));
-  const eq=parseFm(txt('c-equity'));
+  const profit=parseFm(txt('c-equity'));
   const roiText=txt('c-roi');
   const roi=parseFloat(roiText)||0;
+  const annRoiText=txt('c-ann-roi');
+  const annRoi=parseFloat(annRoiText)||0;
+  const holdMonths=val('c-hm',4);
   const score=+(txt('c-score-num'))||0;
 
   // Repairs: read active total from DOM, fallback to recalculate from inputs
@@ -1534,7 +1584,7 @@ function getDealSummaryData(){
 
   const scoreLbl=score>=80?'FIRE DEAL':score>=60?'SOLID DEAL':score>=40?'WORTH A LOOK':'PASS';
 
-  return{mao,fee,arv,repairs,disposition,allin,eq,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script};
+  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,annRoi,holdMonths,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script};
 }
 
 function exportDealEmail(){
@@ -1554,17 +1604,20 @@ function exportDealEmail(){
 'CLOSE TIMELINE:  '+d.closeDays+' days\n'+
 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'+
 'DEAL NUMBERS\n'+
-'ARV:             '+fm(d.arv)+'\n'+
-(d.sqft&&d.arv?'Price/SqFt:      $'+Math.round(d.arv/d.sqft)+'/sqft\n':'')+
-'Repairs:         '+fm(d.repairs)+'\n'+
-'MAO (our offer): '+fm(d.mao)+'\n'+
-'Assignment Fee:  '+fm(d.fee)+'\n'+
-'Disposition:     '+fm(d.disposition)+'\n'+
-'Buyer All-In:    '+fm(d.allin)+'\n'+
-'Equity Spread:   '+fm(d.eq)+'\n'+
-'Buyer ROI:       '+d.roi.toFixed(1)+'%\n'+
-'Market %:        '+d.pct+'%\n'+
-'Deal Score:      '+d.score+'/100 ('+d.scoreLbl+')\n\n'+
+'ARV:               '+fm(d.arv)+'\n'+
+(d.sqft&&d.arv?'Price/SqFt:        $'+Math.round(d.arv/d.sqft)+'/sqft\n':'')+
+'Rehab Cost:        '+fm(d.repairs)+'\n'+
+'Contract (MAO):    '+fm(d.mao)+'\n'+
+'Wholesale Fee:     '+fm(d.fee)+'\n'+
+'Rehabbers Price:   '+fm(d.disposition)+'\n'+
+'Purchase Costs:    '+fm(d.purchaseCosts)+'\n'+
+'Selling Costs:     '+fm(d.sellingCosts)+'\n'+
+'Buyer All-In:      '+fm(d.allin)+'\n'+
+'Est. Profit:       '+fm(d.profit)+'\n'+
+'Straight ROI:      '+d.roi.toFixed(1)+'%\n'+
+'Annual ROI:        '+d.annRoi.toFixed(1)+'% ('+d.holdMonths+'mo hold)\n'+
+'Market %:          '+d.pct+'%\n'+
+'Deal Score:        '+d.score+'/100 ('+d.scoreLbl+')\n\n'+
 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
 'VERBAL OFFER SCRIPT\n'+
 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n'+
@@ -1664,15 +1717,18 @@ function exportDealPDF(){
 <div class="section">
   <div class="section-title">Deal Numbers</div>
   <div class="numbers-grid">
-    <div class="num-cell"><div class="num-label">ARV (After Repair Value)</div><div class="num-value">${fm(d.arv)}</div>${arvPsf?'<div class="num-sub">'+arvPsf+'</div>':''}</div>
-    <div class="num-cell"><div class="num-label">Est. Repairs</div><div class="num-value amber">${fm(d.repairs)}</div>${repPsf?'<div class="num-sub">'+repPsf+'</div>':''}</div>
-    <div class="num-cell blue-hl"><div class="num-label">MAO (Our Offer)</div><div class="num-value blue">${fm(d.mao)}</div><div class="num-sub">${d.pct}% of ARV - repairs - fee</div></div>
-    <div class="num-cell green-hl"><div class="num-label">Disposition Price</div><div class="num-value green">${fm(d.disposition)}</div><div class="num-sub">MAO + ${fm(d.fee)} fee</div></div>
-    <div class="num-cell"><div class="num-label">Buyer All-In</div><div class="num-value">${fm(d.allin)}</div><div class="num-sub">Dispo + repairs</div></div>
-    <div class="num-cell"><div class="num-label">Equity Spread</div><div class="num-value ${d.eq>0?'green':'red'}">${fm(d.eq)}</div><div class="num-sub">ARV - all-in</div></div>
-    <div class="num-cell"><div class="num-label">Buyer ROI</div><div class="num-value amber">${d.roi.toFixed(1)}%</div><div class="num-sub">Equity ÷ investment</div></div>
-    <div class="num-cell green-hl"><div class="num-label">Your Fee (Wholesale Profit)</div><div class="num-value green">${fm(d.fee)}</div></div>
-    <div class="num-cell"><div class="num-label">Market % (Offer ÷ ARV)</div><div class="num-value">${d.arv>0?Math.round(d.mao/d.arv*100):0}%</div></div>
+    <div class="num-cell"><div class="num-label">ARV</div><div class="num-value">${fm(d.arv)}</div>${arvPsf?'<div class="num-sub">'+arvPsf+'</div>':''}</div>
+    <div class="num-cell"><div class="num-label">Rehab Cost</div><div class="num-value amber">${fm(d.repairs)}</div>${repPsf?'<div class="num-sub">'+repPsf+'</div>':''}</div>
+    <div class="num-cell blue-hl"><div class="num-label">Contract Price (MAO)</div><div class="num-value blue">${fm(d.mao)}</div><div class="num-sub">${d.pct}% of ARV − repairs − fee</div></div>
+    <div class="num-cell green-hl"><div class="num-label">Rehabber's Price</div><div class="num-value green">${fm(d.disposition)}</div><div class="num-sub">Contract + ${fm(d.fee)} fee</div></div>
+    <div class="num-cell"><div class="num-label">Purchase Costs (1%)</div><div class="num-value amber">${fm(d.purchaseCosts)}</div></div>
+    <div class="num-cell"><div class="num-label">Selling Costs (6.5%)</div><div class="num-value amber">${fm(d.sellingCosts)}</div></div>
+    <div class="num-cell"><div class="num-label">Buyer All-In</div><div class="num-value">${fm(d.allin)}</div><div class="num-sub">Dispo + purch + rehab + sell</div></div>
+    <div class="num-cell"><div class="num-label">Est. Profit</div><div class="num-value ${d.profit>0?'green':'red'}">${fm(d.profit)}</div><div class="num-sub">ARV − All-In</div></div>
+    <div class="num-cell"><div class="num-label">Straight ROI</div><div class="num-value amber">${d.roi.toFixed(1)}%</div><div class="num-sub">Profit ÷ All-In</div></div>
+    <div class="num-cell"><div class="num-label">Annual ROI (${d.holdMonths}mo)</div><div class="num-value purple">${d.annRoi.toFixed(1)}%</div><div class="num-sub">× 12 ÷ hold months</div></div>
+    <div class="num-cell green-hl"><div class="num-label">Wholesale Fee</div><div class="num-value green">${fm(d.fee)}</div></div>
+    <div class="num-cell"><div class="num-label">Market %</div><div class="num-value">${d.arv>0?Math.round(d.mao/d.arv*100):0}%</div></div>
   </div>
 </div>
 
@@ -1686,11 +1742,23 @@ function exportDealPDF(){
 </div>
 
 <div class="section">
-  <div class="section-title">Formula Breakdown</div>
+  <div class="section-title">Full Breakdown</div>
   <div class="formula-row"><span class="fl">ARV × ${d.pct}%</span><span class="fv">${fm(d.arv*d.pct/100)}</span></div>
-  <div class="formula-row"><span class="fl">− Est. Repairs</span><span class="fv" style="color:var(--red)">−${fm(d.repairs)}</span></div>
-  <div class="formula-row"><span class="fl">− Assignment Fee</span><span class="fv" style="color:var(--red)">−${fm(d.fee)}</span></div>
-  <div class="formula-row total"><span class="fl">= MAO (Max Allowable Offer)</span><span class="fv">${fm(d.mao)}</span></div>
+  <div class="formula-row"><span class="fl">− Repairs</span><span class="fv" style="color:var(--red)">−${fm(d.repairs)}</span></div>
+  <div class="formula-row"><span class="fl">− Wholesale Fee</span><span class="fv" style="color:var(--red)">−${fm(d.fee)}</span></div>
+  <div class="formula-row total"><span class="fl">= Contract Price (MAO)</span><span class="fv">${fm(d.mao)}</span></div>
+  <div style="height:10px"></div>
+  <div class="formula-row"><span class="fl">Rehabber's Price (dispo)</span><span class="fv">${fm(d.disposition)}</span></div>
+  <div class="formula-row"><span class="fl">+ Purchase Costs (1%)</span><span class="fv" style="color:var(--amber)">${fm(d.purchaseCosts)}</span></div>
+  <div class="formula-row"><span class="fl">+ Rehab Cost</span><span class="fv" style="color:var(--amber)">${fm(d.repairs)}</span></div>
+  <div class="formula-row"><span class="fl">+ Selling Costs (6.5% of ARV)</span><span class="fv" style="color:var(--amber)">${fm(d.sellingCosts)}</span></div>
+  <div class="formula-row total"><span class="fl">= Buyer All-In</span><span class="fv">${fm(d.allin)}</span></div>
+  <div style="height:10px"></div>
+  <div class="formula-row"><span class="fl">ARV</span><span class="fv">${fm(d.arv)}</span></div>
+  <div class="formula-row"><span class="fl">− Buyer All-In</span><span class="fv" style="color:var(--red)">−${fm(d.allin)}</span></div>
+  <div class="formula-row total"><span class="fl">= Est. Profit</span><span class="fv" style="color:var(--green)">${fm(d.profit)}</span></div>
+  <div class="formula-row"><span class="fl">Straight ROI</span><span class="fv" style="color:var(--amber)">${d.roi.toFixed(1)}%</span></div>
+  <div class="formula-row"><span class="fl">Annual ROI (${d.holdMonths}mo hold)</span><span class="fv" style="color:var(--purple)">${d.annRoi.toFixed(1)}%</span></div>
 </div>
 
 <div class="section" style="page-break-before:auto">
