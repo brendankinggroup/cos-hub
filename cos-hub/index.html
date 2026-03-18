@@ -177,6 +177,20 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 <!-- CALCULATOR -->
 <div id="p-calc" class="panel" style="display:none">
 <div style="display:flex;flex-direction:column;gap:14px">
+  <!-- BATCHDATA ADDRESS LOOKUP -->
+  <div class="card" style="border:1px solid var(--blue)44;background:linear-gradient(135deg,var(--s1) 0%,var(--bluedim) 100%)">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:16px">🔍</span>
+      <span class="label" style="margin:0;color:var(--blue)">Property Lookup — Auto-Fill from Address</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <input id="bd-address" type="text" placeholder="Enter full address (e.g. 3016 Palace Gate Ct, Las Vegas, NV 89117)" style="flex:1;font-size:13px;padding:10px 12px" onkeydown="if(event.key==='Enter')batchLookup()"/>
+      <button id="bd-btn" onclick="batchLookup()" style="background:var(--blue);color:#fff;border:none;border-radius:var(--r);padding:10px 20px;font-size:13px;font-weight:700;white-space:nowrap">Pull Data</button>
+    </div>
+    <div id="bd-status" style="font-size:11px;color:var(--t3);margin-top:6px;display:none"></div>
+    <div id="bd-owner-bar" style="display:none;margin-top:8px;padding:8px 12px;background:var(--card);border-radius:var(--r);border:1px solid var(--border);font-size:12px;color:var(--t2);line-height:1.6"></div>
+  </div>
+
   <div style="display:flex;flex-direction:column;gap:10px">
     <div class="card">
       <span class="label">Property Info</span>
@@ -1937,6 +1951,147 @@ document.addEventListener('keydown', function(e) {
   else if((e.ctrlKey || e.metaKey) && key === 'k') { e.preventDefault(); document.querySelector('[onclick*="copyScript"]')?.click(); }
   else if(key === 'escape') { e.preventDefault(); document.querySelectorAll('[onclick*="toggleSection"]').forEach(el => el.click()); }
 });
+// ── BATCHDATA PROPERTY LOOKUP ──────────────────────────────────────────
+const BATCHDATA_KEY='FUYAMVRI5mCePugUkFvKyM7Nq2eq32gGDcJDudxY';
+
+async function batchLookup(){
+  const addrRaw=document.getElementById('bd-address').value.trim();
+  if(!addrRaw){showBdStatus('Enter an address first','var(--amber)');return;}
+
+  const btn=document.getElementById('bd-btn');
+  btn.textContent='Looking up...';btn.disabled=true;
+  showBdStatus('Querying BatchData...','var(--blue)');
+
+  // Parse address string into components
+  const parts=addrRaw.split(',').map(s=>s.trim());
+  let street=parts[0]||'', city='', state='', zip='';
+  if(parts.length>=3){
+    city=parts[1]||'';
+    const stZip=(parts[2]||'').split(/\s+/);
+    state=stZip[0]||'';
+    zip=stZip[1]||'';
+  } else if(parts.length===2){
+    const stZip=(parts[1]||'').split(/\s+/);
+    city=stZip.length>2?stZip.slice(0,-2).join(' '):(stZip[0]||'');
+    state=stZip.length>2?stZip[stZip.length-2]:(stZip[1]||'');
+    zip=stZip[stZip.length-1]||'';
+  }
+
+  try{
+    const resp=await fetch('https://api.batchdata.com/api/v1/property/lookup/all-attributes',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+BATCHDATA_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({requests:[{address:{street,city,state,zip}}]})
+    });
+    const json=await resp.json();
+
+    if(json.status?.code===403){
+      showBdStatus('⚠️ Insufficient BatchData credits — add balance at app.batchdata.com','var(--red)');
+      btn.textContent='Pull Data';btn.disabled=false;return;
+    }
+    if(json.status?.code!==200||!json.results?.properties?.length){
+      showBdStatus('❌ No property found — check the address','var(--red)');
+      btn.textContent='Pull Data';btn.disabled=false;return;
+    }
+
+    const p=json.results.properties[0];
+    const v=p.valuation||{};
+    const l=p.listing||{};
+    const o=p.owner||{};
+    const ol=p.openLien||{};
+    const q=p.quickLists||{};
+    const intel=p.intel||{};
+
+    // Auto-fill calculator fields
+    const estValue=v.estimatedValue||l.price||0;
+    if(estValue){document.getElementById('c-arv').value=Math.round(estValue);document.getElementById('c-arv-lbl').textContent='$'+Math.round(estValue).toLocaleString();}
+
+    const sqft=l.totalBuildingAreaSquareFeet||l.livingArea||0;
+    if(sqft){document.getElementById('c-sqft').value=sqft;document.getElementById('c-sqft-lbl').textContent=sqft.toLocaleString()+' sqft';}
+
+    // Fill seller name and property address for verbal script
+    const ownerNames=(o.names||[]).map(n=>n.first+' '+n.last).join(' & ');
+    const sellerEl=document.getElementById('c-seller-name');
+    if(sellerEl&&ownerNames)sellerEl.value=ownerNames;
+    const propEl=document.getElementById('c-prop-addr');
+    if(propEl)propEl.value=street+(city?', '+city:'');
+
+    // Auto-detect distress type from flags
+    const distressEl=document.getElementById('c-distress');
+    if(distressEl){
+      if(q.preforeclosure)distressEl.value='Pre-foreclosure';
+      else if(q.noticeOfDefault)distressEl.value='Pre-foreclosure';
+      else if(q.noticeOfSale)distressEl.value='Notice of Trustee Sale';
+      else if(q.taxDefault)distressEl.value='Tax Delinquent';
+      else if(q.involuntaryLien)distressEl.value='Code Violations';
+      else if(q.vacant)distressEl.value='Vacant';
+      else if(q.inherited)distressEl.value='Inherited';
+      else if(q.failedListing||q.expiredListing)distressEl.value='Expired Listing';
+      else if(q.highEquity)distressEl.value='High Equity Absentee';
+    }
+
+    // Show owner info bar
+    const ownerBar=document.getElementById('bd-owner-bar');
+    const mortBal=ol.totalOpenLienBalance||0;
+    const eqPct=v.equityPercent||0;
+    const eqDollar=v.equityCurrentEstimatedBalance||0;
+    const propensity=intel.salePropensity||0;
+    const beds=l.bedroomCount||0;
+    const baths=l.bathroomCount||0;
+    const yrBuilt=l.yearBuilt||'—';
+    const propType=l.propertyType||'—';
+    const confidence=v.confidenceScore||0;
+
+    let infoHtml=`<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">`;
+    infoHtml+=`<span><b style="color:var(--t1)">${ownerNames||'Unknown Owner'}</b></span>`;
+    infoHtml+=`<span>🏠 ${propType}</span>`;
+    if(beds)infoHtml+=`<span>🛏 ${beds} bed</span>`;
+    if(baths)infoHtml+=`<span>🚿 ${baths} bath</span>`;
+    if(sqft)infoHtml+=`<span>📐 ${sqft.toLocaleString()} sqft</span>`;
+    infoHtml+=`<span>📅 Built ${yrBuilt}</span>`;
+    infoHtml+=`</div>`;
+    infoHtml+=`<div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:6px">`;
+    infoHtml+=`<span>💰 Est. Value: <b style="color:var(--green)">$${Math.round(estValue).toLocaleString()}</b> <span style="font-size:10px;opacity:.7">(${confidence}% confidence)</span></span>`;
+    if(mortBal)infoHtml+=`<span>🏦 Mortgage: <b style="color:var(--amber)">$${mortBal.toLocaleString()}</b></span>`;
+    if(eqDollar)infoHtml+=`<span>📊 Equity: <b style="color:var(--green)">$${Math.round(eqDollar).toLocaleString()}</b> (${eqPct.toFixed(1)}%)</span>`;
+    if(propensity)infoHtml+=`<span>🎯 Sale Propensity: <b>${propensity}%</b></span>`;
+    infoHtml+=`</div>`;
+
+    // Show distress flags
+    const flags=[];
+    if(q.preforeclosure)flags.push('🔴 Pre-Foreclosure');
+    if(q.taxDefault)flags.push('🔴 Tax Default');
+    if(q.involuntaryLien)flags.push('⚠️ Lien');
+    if(q.vacant)flags.push('🏚️ Vacant');
+    if(q.failedListing)flags.push('📉 Failed Listing');
+    if(q.highEquity)flags.push('💎 High Equity');
+    if(q.freeAndClear)flags.push('✅ Free & Clear');
+    if(q.absenteeOwner)flags.push('📬 Absentee');
+    if(q.seniorOwner)flags.push('👴 Senior');
+    if(q.corporateOwned)flags.push('🏢 Corp Owned');
+    if(flags.length){
+      infoHtml+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${flags.map(f=>`<span style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:600">${f}</span>`).join('')}</div>`;
+    }
+
+    ownerBar.innerHTML=infoHtml;
+    ownerBar.style.display='block';
+    showBdStatus('✅ Data loaded — '+(beds?beds+'bd/':'')+(baths?baths+'ba/':'')+(sqft?sqft+'sf ':'')+' — $'+Math.round(estValue).toLocaleString(),'var(--green)');
+
+    // Recalculate with new values
+    calcMAO();
+
+  }catch(err){
+    showBdStatus('❌ API error: '+err.message,'var(--red)');
+  }
+  btn.textContent='Pull Data';btn.disabled=false;
+}
+
+function showBdStatus(msg,color){
+  const el=document.getElementById('bd-status');
+  if(!el)return;
+  el.textContent=msg;el.style.color=color;el.style.display='block';
+}
+
 // ── THEME TOGGLE ──────────────────────────────────────────────────────
 function toggleTheme(){
   const isLight=document.body.classList.toggle('light');
