@@ -2398,8 +2398,11 @@ function pdfDeal(idx){
 function buyerPdf(idx){
   const d=savedDealsCache[idx];if(!d)return;
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-  const buyerProfit=d.arv-d.disposition-d.repairs;
-  const buyerROI=d.disposition>0?((buyerProfit/d.disposition)*100).toFixed(1)+'%':'—';
+  const purchaseCosts=Math.round(d.disposition*0.01);
+  const sellingCosts=Math.round(d.arv*0.065);
+  const buyerAllIn=d.disposition+purchaseCosts+d.repairs+sellingCosts;
+  const buyerProfit=d.arv-buyerAllIn;
+  const buyerROI=buyerAllIn>0?((buyerProfit/buyerAllIn)*100).toFixed(1)+'%':'—';
   const repPsf=d.sqft>0?'$'+Math.round(d.repairs/d.sqft)+'/sqft':'';
   const arvPsf=d.sqft&&d.arv?'$'+Math.round(d.arv/d.sqft)+'/sqft':'';
   const win=window.open('','_blank','width=800,height=1100');
@@ -2502,7 +2505,7 @@ function buyerPdf(idx){
       <div class="num-cell profit">
         <div class="num-label">Projected Net Profit</div>
         <div class="num-value green" style="font-size:28px">$${buyerProfit.toLocaleString()}</div>
-        <div class="num-sub">Before holding & selling costs</div>
+        <div class="num-sub">After all estimated costs</div>
       </div>
       <div class="num-cell">
         <div class="num-label">Projected ROI</div>
@@ -2515,6 +2518,8 @@ function buyerPdf(idx){
       <div class="formula-row"><span class="fl">ARV (After Repair Value)</span><span class="fv">$${d.arv.toLocaleString()}</span></div>
       <div class="formula-row"><span class="fl">− Purchase Price</span><span class="fv">$${d.disposition.toLocaleString()}</span></div>
       <div class="formula-row"><span class="fl">− Estimated Repairs</span><span class="fv">$${d.repairs.toLocaleString()}</span></div>
+      <div class="formula-row"><span class="fl">− Purchase Costs (1%)</span><span class="fv">$${purchaseCosts.toLocaleString()}</span></div>
+      <div class="formula-row"><span class="fl">− Selling Costs (6.5%)</span><span class="fv">$${sellingCosts.toLocaleString()}</span></div>
       <div class="formula-row total"><span class="fl">= Projected Profit</span><span class="fv">$${buyerProfit.toLocaleString()}</span></div>
     </div>
   </div>
