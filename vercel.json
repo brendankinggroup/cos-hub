@@ -1,9 +1,4 @@
 {
   "buildCommand": "",
-  "outputDirectory": "cos-hub",
-  "functions": {
-    "api/*.js": {
-      "runtime": "@vercel/node@3"
-    }
-  }
+  "outputDirectory": "cos-hub"
 }
