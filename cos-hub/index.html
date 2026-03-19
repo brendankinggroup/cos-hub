@@ -2160,6 +2160,7 @@ function renderSavedDeals(){
       <td style="padding:8px;text-align:center;white-space:nowrap">
         <button onclick="viewDeal(${i})" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="View deal info">👁️ View</button>
         <button onclick="pdfDeal(${i})" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Export PDF">📄 PDF</button>
+        <button onclick="buyerPdf(${i})" style="background:#f25116;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Investor deal sheet">🏷️ Buyer</button>
         <button onclick="recalcDeal(${i})" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Load into calculator">🧮 Recalc</button>
         <button onclick="deleteDeal(${i})" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:4px;padding:4px 8px;font-size:10px;font-weight:700" title="Delete">✕</button>
       </td>
@@ -2389,6 +2390,148 @@ function pdfDeal(idx){
 <div class="footer">
   <span>COS Hub · Cash Offer Specialist</span>
   <span>Generated ${today}</span>
+</div>
+</body></html>`);
+  win.document.close();
+}
+
+function buyerPdf(idx){
+  const d=savedDealsCache[idx];if(!d)return;
+  const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const buyerProfit=d.arv-d.disposition-d.repairs;
+  const buyerROI=d.disposition>0?((buyerProfit/d.disposition)*100).toFixed(1)+'%':'—';
+  const repPsf=d.sqft>0?'$'+Math.round(d.repairs/d.sqft)+'/sqft':'';
+  const arvPsf=d.sqft&&d.arv?'$'+Math.round(d.arv/d.sqft)+'/sqft':'';
+  const win=window.open('','_blank','width=800,height=1100');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Investment Opportunity — ${d.address}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#111;padding:0;font-size:14px;line-height:1.6}
+  .top-bar{background:#1a1a2e;padding:20px 40px;display:flex;justify-content:space-between;align-items:center}
+  .top-bar .logo{font-size:28px;font-weight:900;color:#fff;letter-spacing:.03em}
+  .top-bar .logo span{color:#52b7ea}
+  .top-bar .tagline{color:#8899bb;font-size:12px;margin-top:2px}
+  .top-bar .contact{text-align:right;color:#fff;font-size:12px}
+  .top-bar .contact .phone{font-size:16px;font-weight:700;color:#52b7ea}
+  .body-wrap{padding:30px 40px}
+  .badge{display:inline-block;background:#f25116;color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;text-transform:uppercase;letter-spacing:.08em}
+  .prop-title{font-size:26px;font-weight:800;margin:12px 0 4px;color:#111}
+  .prop-sub{font-size:13px;color:#666}
+  .prop-details{display:flex;gap:20px;margin-top:8px;font-size:12px;color:#666;flex-wrap:wrap}
+  .prop-details b{color:#111}
+  .section{margin-top:24px}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#888;border-bottom:2px solid #52b7ea;padding-bottom:6px;margin-bottom:14px}
+  .numbers-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .num-cell{border:1px solid #e5e7eb;border-radius:10px;padding:16px;text-align:center;background:#fafbfc}
+  .num-cell.highlight{background:#f0f9ff;border-color:#52b7ea}
+  .num-cell.profit{background:#f0fdf4;border-color:#059669}
+  .num-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+  .num-value{font-size:22px;font-weight:800;color:#111}
+  .num-value.blue{color:#52b7ea}
+  .num-value.green{color:#059669}
+  .num-value.amber{color:#d97706}
+  .num-sub{font-size:10px;color:#888;margin-top:2px}
+  .formula{margin-top:16px;background:#fafbfc;border:1px solid #e5e7eb;border-radius:10px;padding:16px}
+  .formula-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:13px}
+  .formula-row:last-child{border-bottom:none}
+  .formula-row .fl{color:#888}
+  .formula-row.total{font-weight:800;font-size:14px;border-top:2px solid #52b7ea;border-bottom:none;padding-top:10px;margin-top:4px}
+  .formula-row.total .fv{color:#059669}
+  .cta{margin-top:28px;background:linear-gradient(135deg,#1a1a2e,#2a2a4e);border-radius:12px;padding:24px;text-align:center;color:#fff}
+  .cta .cta-title{font-size:18px;font-weight:800;margin-bottom:6px}
+  .cta .cta-phone{font-size:24px;font-weight:900;color:#52b7ea;margin:8px 0}
+  .cta .cta-web{font-size:13px;color:#8899bb}
+  .footer{margin-top:24px;padding-top:14px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:10px;color:#aaa}
+  .disclaimer{margin-top:16px;font-size:10px;color:#aaa;line-height:1.5}
+  .toolbar{display:flex;gap:8px;justify-content:center;padding:16px;background:#fafbfc;border-bottom:1px solid #e5e7eb}
+  .toolbar button{border:none;border-radius:6px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer}
+  @media print{.toolbar{display:none}}
+</style>
+</head><body>
+<div class="toolbar">
+  <button onclick="window.print()" style="background:#52b7ea;color:#fff">🖨️ Print / Save as PDF</button>
+  <button onclick="window.close()" style="background:#e5e7eb;color:#333">Close</button>
+</div>
+
+<div class="top-bar">
+  <div>
+    <div class="logo">CASH OFFER <span>SPECIALIST</span></div>
+    <div class="tagline">Real Estate Investment Opportunity</div>
+  </div>
+  <div class="contact">
+    <div class="phone">(725) 226-1303</div>
+    <div>www.cashofferspecialist.com</div>
+  </div>
+</div>
+
+<div class="body-wrap">
+  <span class="badge">Investment Opportunity</span>
+  <div class="prop-title">${d.address||'[Property Address]'}</div>
+  <div class="prop-sub">${d.distress?d.distress+' · ':''}${d.hood||'Las Vegas, NV'}</div>
+  <div class="prop-details">
+    ${d.sqft?'<span>📐 <b>'+d.sqft.toLocaleString()+'</b> sqft</span>':''}
+    ${arvPsf?'<span>💰 <b>'+arvPsf+'</b> ARV/sqft</span>':''}
+    ${repPsf?'<span>🔧 <b>'+repPsf+'</b> repair/sqft</span>':''}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Deal Numbers</div>
+    <div class="numbers-grid">
+      <div class="num-cell highlight">
+        <div class="num-label">Purchase Price</div>
+        <div class="num-value blue">$${d.disposition.toLocaleString()}</div>
+        <div class="num-sub">Your acquisition cost</div>
+      </div>
+      <div class="num-cell">
+        <div class="num-label">After Repair Value</div>
+        <div class="num-value">$${d.arv.toLocaleString()}</div>
+        <div class="num-sub">Estimated resale value</div>
+      </div>
+      <div class="num-cell">
+        <div class="num-label">Est. Repairs</div>
+        <div class="num-value amber">$${d.repairs.toLocaleString()}</div>
+        ${repPsf?'<div class="num-sub">'+repPsf+'</div>':''}
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Projected Returns</div>
+    <div class="numbers-grid" style="grid-template-columns:1fr 1fr">
+      <div class="num-cell profit">
+        <div class="num-label">Projected Net Profit</div>
+        <div class="num-value green" style="font-size:28px">$${buyerProfit.toLocaleString()}</div>
+        <div class="num-sub">Before holding & selling costs</div>
+      </div>
+      <div class="num-cell">
+        <div class="num-label">Projected ROI</div>
+        <div class="num-value amber" style="font-size:28px">${buyerROI}</div>
+        <div class="num-sub">Return on investment</div>
+      </div>
+    </div>
+
+    <div class="formula">
+      <div class="formula-row"><span class="fl">ARV (After Repair Value)</span><span class="fv">$${d.arv.toLocaleString()}</span></div>
+      <div class="formula-row"><span class="fl">− Purchase Price</span><span class="fv">$${d.disposition.toLocaleString()}</span></div>
+      <div class="formula-row"><span class="fl">− Estimated Repairs</span><span class="fv">$${d.repairs.toLocaleString()}</span></div>
+      <div class="formula-row total"><span class="fl">= Projected Profit</span><span class="fv">$${buyerProfit.toLocaleString()}</span></div>
+    </div>
+  </div>
+
+  <div class="cta">
+    <div class="cta-title">Ready to Lock This Deal?</div>
+    <div style="font-size:13px;color:#8899bb;margin-bottom:4px">This property is available on a first-come, first-served basis.</div>
+    <div class="cta-phone">(725) 226-1303</div>
+    <div class="cta-web">www.cashofferspecialist.com</div>
+  </div>
+
+  <div class="disclaimer">This deal sheet is provided for informational purposes only. All numbers are estimates and should be independently verified by the buyer. Cash Offer Specialist makes no guarantees regarding property values, repair costs, or investment returns. Buyer is responsible for their own due diligence.</div>
+
+  <div class="footer">
+    <span>Cash Offer Specialist · Las Vegas, NV</span>
+    <span>Prepared ${today}</span>
+  </div>
 </div>
 </body></html>`);
   win.document.close();
