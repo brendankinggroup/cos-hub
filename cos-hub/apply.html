@@ -982,6 +982,62 @@ async function sendLead(data, offer) {
         console.error('Send failed:', err);
         // Silent fail — data is already saved to localStorage
     }
+
+    // Also save to Airtable
+    try {
+        let condSummaryAT = '';
+        AREAS.forEach(a => {
+            const r = data.conditionRatings[a.id];
+            if (r) condSummaryAT += `${a.label}: ${RATING_LABELS[r]} (${r}/5)\n`;
+        });
+        let photoLinksAT = '';
+        Object.entries(data.photoUrls).forEach(([k,v]) => { photoLinksAT += `${k}: ${v}\n`; });
+
+        const atFields = {
+            'Address': data.address,
+            'City': data.city,
+            'Zip': data.zip,
+            'Property Type': data.propertyType,
+            'Beds': +data.beds || 0,
+            'Baths': +data.baths || 0,
+            'SqFt': +data.sqft || 0,
+            'Year Built': +data.yearBuilt || 0,
+            'Lot Size': data.lotSize,
+            'HOA': data.hoa,
+            'Pool': data.pool,
+            'Condition Summary': condSummaryAT,
+            'Solar': data.solar,
+            'Unpermitted': data.unpermitted,
+            'Liens': data.liens,
+            'Mortgage': data.mortgage,
+            'Asking Price': data.asking,
+            'Reason': data.reason,
+            'Timeline': data.timeline,
+            'Occupancy': data.occupancy,
+            'Notes': data.notes || '',
+            'Seller Name': data.name,
+            'Seller Phone': data.phone,
+            'Seller Email': data.email,
+            'Contact Pref': data.contactPref,
+            'Est Repairs': data.estimatedRepairs || 0,
+            'Est Value': data.estimatedValue || 0,
+            'Offer Low': offer.low || 0,
+            'Offer High': offer.high || 0,
+            'Photo Count': data.photoCount || 0,
+            'Photo Links': photoLinksAT || '',
+            'Status': 'New',
+            'Submitted At': new Date().toISOString()
+        };
+
+        await fetch('/api/apply-leads', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({records: [{fields: atFields}]})
+        });
+        console.log('Lead saved to Airtable');
+    } catch(atErr) {
+        console.error('Airtable save failed:', atErr);
+    }
 }
 
 // ============================================
