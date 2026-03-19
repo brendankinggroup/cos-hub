@@ -776,6 +776,7 @@ async function saveStepToAirtable(step) {
             'Lot Size': document.getElementById('f-lot').value || '',
             'HOA': document.getElementById('f-hoa').value || '',
             'Pool': document.getElementById('f-pool').value || '',
+            'Source Page': 'Apply Page',
             'Status': 'New',
             'Submitted At': new Date().toISOString()
         };

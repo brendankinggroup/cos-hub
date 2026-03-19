@@ -620,6 +620,7 @@ async function sendLeadEmail(d, offer) {
                 'Seller Email': d.email || '',
                 'Offer Low': offer.low || 0,
                 'Offer High': offer.high || 0,
+                'Source Page': 'Sell Page',
                 'Status': 'New',
                 'Submitted At': new Date().toISOString()
             }}]})
