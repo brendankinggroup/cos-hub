@@ -639,6 +639,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       <button onclick="exportSavedCSV()" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">📥 Export CSV</button>
       <button onclick="exportSavedPDF()" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">📄 Export PDF</button>
       <button onclick="clearSavedDeals()" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">🗑️ Clear All</button>
+      <button onclick="disconnectAt()" style="background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">🔌 Disconnect</button>
     </div>
   </div>
   <div id="saved-table-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--r2)">
@@ -2005,57 +2006,124 @@ document.addEventListener('keydown', function(e) {
   else if((e.ctrlKey || e.metaKey) && key === 'k') { e.preventDefault(); document.querySelector('[onclick*="copyScript"]')?.click(); }
   else if(key === 'escape') { e.preventDefault(); document.querySelectorAll('[onclick*="toggleSection"]').forEach(el => el.click()); }
 });
-// ── SAVED DEALS ──────────────────────────────────────────────────────
-function getSavedDeals(){return JSON.parse(localStorage.getItem('cosSavedDeals')||'[]');}
-function setSavedDeals(deals){localStorage.setItem('cosSavedDeals',JSON.stringify(deals));}
+// ── SAVED DEALS (Airtable-synced) ──────────────────────────────────────
+function getAtKey(){return localStorage.getItem('cos_at_key')||'';}
+function setAtKey(k){localStorage.setItem('cos_at_key',k);}
+const AT_BASE='app467uZVWGxnatwK';
+const AT_TABLE='tblizewxGfQJNuMZr';
+const AT_URL=`https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}`;
+function atHeaders(){return{'Authorization':`Bearer ${getAtKey()}`,'Content-Type':'application/json'};}
 
-function saveDeal(){
+function showAtConnect(msg){
+  let overlay=document.getElementById('at-connect-overlay');
+  if(overlay){overlay.style.display='flex';if(msg)overlay.querySelector('.at-msg').textContent=msg;return;}
+  overlay=document.createElement('div');overlay.id='at-connect-overlay';
+  overlay.style.cssText='position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML=`<div style="background:var(--s1,#1a1a2e);border:1px solid var(--border,#333);border-radius:12px;padding:32px;max-width:420px;width:90%;text-align:center;font-family:inherit">
+    <div style="font-size:24px;margin-bottom:4px">🔗</div>
+    <h3 style="color:var(--t1,#fff);margin:0 0 8px">Connect to Airtable</h3>
+    <p class="at-msg" style="color:var(--t3,#999);font-size:13px;margin:0 0 16px">${msg||'Paste your team Airtable API key to sync deals across all devices.'}</p>
+    <input id="at-key-input" type="password" placeholder="pat..." style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border,#333);background:var(--s2,#222);color:var(--t1,#fff);font-size:14px;box-sizing:border-box;margin-bottom:12px">
+    <button onclick="connectAt()" style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--blue,#4a7dff);color:#fff;font-weight:600;font-size:14px;cursor:pointer">Connect</button>
+    <p style="color:var(--t3,#999);font-size:11px;margin:12px 0 0">Key is stored in your browser only — never sent to our servers.</p>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+async function connectAt(){
+  const input=document.getElementById('at-key-input');
+  const key=(input?input.value:'').trim();
+  if(!key||!key.startsWith('pat')){input.style.borderColor='var(--red,red)';return;}
+  // Test the key
+  try{
+    const r=await fetch(AT_URL+'?maxRecords=1',{headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'}});
+    if(!r.ok)throw new Error('Invalid key');
+    setAtKey(key);
+    const overlay=document.getElementById('at-connect-overlay');if(overlay)overlay.style.display='none';
+    loadSavedDeals();
+  }catch(e){
+    const msg=document.querySelector('#at-connect-overlay .at-msg');
+    if(msg){msg.textContent='Invalid key — check and try again.';msg.style.color='var(--red,#ff4444)';}
+    input.style.borderColor='var(--red,red)';
+  }
+}
+function disconnectAt(){
+  if(!confirm('Disconnect Airtable? Your deals stay in Airtable but won\'t show here until you reconnect.'))return;
+  localStorage.removeItem('cos_at_key');savedDealsCache=[];renderSavedDeals();showAtConnect();
+}
+
+let savedDealsCache=[];
+
+async function loadSavedDeals(){
+  if(!getAtKey()){showAtConnect();return;}
+  try{
+    const r=await fetch(AT_URL+'?sort%5B0%5D%5Bfield%5D=Saved+At&sort%5B0%5D%5Bdirection%5D=desc&maxRecords=100',{headers:atHeaders()});
+    const json=await r.json();
+    savedDealsCache=(json.records||[]).map(rec=>({
+      _atId:rec.id,
+      address:rec.fields['Address']||'',
+      seller:rec.fields['Seller']||'',
+      arv:rec.fields['ARV']||0,
+      repairs:rec.fields['Repairs']||0,
+      mao:rec.fields['MAO']||0,
+      fee:rec.fields['Fee']||0,
+      disposition:rec.fields['Dispo']||0,
+      purchaseCosts:rec.fields['Purchase Costs']||0,
+      sellingCosts:rec.fields['Selling Costs']||0,
+      allin:rec.fields['All-In']||0,
+      profit:rec.fields['Profit']||0,
+      roi:(rec.fields['ROI']||0)*100,
+      score:rec.fields['Deal Score']||0,
+      scoreLbl:rec.fields['Score Label']||'',
+      distress:rec.fields['Distress']||'',
+      hood:rec.fields['Neighborhood']||'',
+      sqft:rec.fields['SqFt']||0,
+      pct:rec.fields['Offer %']||70,
+      closeDays:rec.fields['Close Days']||14,
+      status:rec.fields['Status']||'New',
+      notes:rec.fields['Notes']||'',
+      savedAt:rec.fields['Saved At']||new Date().toISOString()
+    }));
+    renderSavedDeals();
+  }catch(e){console.error('Airtable load error:',e);renderSavedDeals();}
+}
+
+async function saveDeal(){
   const d=getDealSummaryData();
   if(!d.arv||d.arv<=0){showBdStatus('Set an ARV before saving','var(--red)');return;}
 
-  const deal={
-    id:Date.now(),
-    address:d.propAddr||'Unknown',
-    seller:d.sellerName||'',
-    arv:d.arv, repairs:d.repairs, mao:d.mao, fee:d.fee,
-    disposition:d.disposition, purchaseCosts:d.purchaseCosts, sellingCosts:d.sellingCosts,
-    allin:d.allin, profit:d.profit, roi:d.roi, score:d.score, scoreLbl:d.scoreLbl,
-    distress:d.distress, hood:d.hood, pct:d.pct, sqft:d.sqft, psf:d.psf,
-    closeDays:d.closeDays,
-    // Store raw inputs for recalculate
-    _arv:+(document.getElementById('c-arv')||{}).value||0,
-    _sqft:+(document.getElementById('c-sqft')||{}).value||0,
-    _psf:+(document.getElementById('c-psf')||{}).value||25,
-    _r1:+(document.getElementById('c-r1')||{}).value||0,
-    _r2:+(document.getElementById('c-r2')||{}).value||0,
-    _r3:+(document.getElementById('c-r3')||{}).value||0,
-    _r4:+(document.getElementById('c-r4')||{}).value||0,
-    _repOverride:+(document.getElementById('c-rep-override')||{}).value||0,
-    _pct:+(document.getElementById('c-pct')||{}).value||70,
-    _fee:+(document.getElementById('c-fee')||{}).value||13000,
-    _hood:(document.getElementById('c-hood')||{}).value||'Enterprise',
-    _distress:(document.getElementById('c-distress')||{}).value||'Other',
-    _closeDays:+(document.getElementById('c-close-days')||{}).value||14,
-    _tone:(document.getElementById('c-tone')||{}).value||'direct',
-    savedAt:new Date().toISOString()
+  const btn=document.getElementById('save-deal-btn');
+  btn.textContent='Saving...';btn.disabled=true;
+
+  const fields={
+    'Address':d.propAddr||'Unknown',
+    'Seller':d.sellerName||'',
+    'ARV':d.arv,'Repairs':d.repairs,'MAO':d.mao,'Fee':d.fee,
+    'Dispo':d.disposition,'Purchase Costs':d.purchaseCosts,'Selling Costs':d.sellingCosts,
+    'All-In':d.allin,'Profit':d.profit,'ROI':d.roi/100,
+    'Deal Score':d.score,'Score Label':d.scoreLbl,
+    'Distress':d.distress||'','Neighborhood':d.hood||'',
+    'SqFt':d.sqft||0,'Offer %':d.pct||70,'Close Days':d.closeDays||14,
+    'Status':'New','Saved At':new Date().toISOString()
   };
 
-  const deals=getSavedDeals();
-  // Prevent duplicate same address within 1 minute
-  const dup=deals.find(x=>x.address===deal.address&&(Date.now()-x.id)<60000);
-  if(dup){showBdStatus('Deal already saved','var(--amber)');return;}
-
-  deals.unshift(deal);
-  setSavedDeals(deals);
-  renderSavedDeals();
-
-  const btn=document.getElementById('save-deal-btn');
-  btn.textContent='✓ Saved!';btn.style.background='var(--green)';btn.style.color='#fff';
-  setTimeout(()=>{btn.textContent='💾 Save Deal';btn.style.background='var(--greendim)';btn.style.color='var(--green)';},2000);
+  try{
+    const r=await fetch(AT_URL,{method:'POST',headers:AT_HEADERS,body:JSON.stringify({records:[{fields}]})});
+    const json=await r.json();
+    if(json.records&&json.records.length){
+      btn.textContent='✓ Saved!';btn.style.background='var(--green)';btn.style.color='#fff';
+      await loadSavedDeals();
+    }else{
+      btn.textContent='✗ Error';btn.style.color='var(--red)';
+    }
+  }catch(e){
+    console.error('Airtable save error:',e);
+    btn.textContent='✗ Error';btn.style.color='var(--red)';
+  }
+  setTimeout(()=>{btn.textContent='💾 Save Deal';btn.style.background='var(--greendim)';btn.style.color='var(--green)';btn.disabled=false;},2000);
 }
 
 function renderSavedDeals(){
-  const deals=getSavedDeals();
+  const deals=savedDealsCache;
   const tbody=document.getElementById('saved-tbody');
   const empty=document.getElementById('saved-empty');
   const wrap=document.getElementById('saved-table-wrap');
@@ -2071,8 +2139,8 @@ function renderSavedDeals(){
   tbody.innerHTML=deals.map((d,i)=>{
     const sc=d.score>=80?'var(--red)':d.score>=60?'var(--green)':d.score>=40?'var(--amber)':'var(--t3)';
     const profitColor=d.profit>0?'var(--green)':'var(--red)';
-    const date=new Date(d.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    return`<tr style="border-bottom:1px solid var(--border);cursor:pointer" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
+    const date=d.savedAt?new Date(d.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';
+    return`<tr style="border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
       <td style="padding:8px;font-weight:600;color:var(--t1);white-space:nowrap">${esc(d.address)}</td>
       <td style="padding:8px;color:var(--t2)">${esc(d.seller)}</td>
       <td style="padding:8px;text-align:right;font-weight:700;color:var(--t1)">${fm(d.arv)}</td>
@@ -2095,56 +2163,52 @@ function renderSavedDeals(){
 }
 
 function recalcDeal(idx){
-  const deals=getSavedDeals();
-  const d=deals[idx];if(!d)return;
+  const d=savedDealsCache[idx];if(!d)return;
   nav('calc');
 
-  // Fill all raw inputs
   const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
-  set('c-arv',d._arv||d.arv);
-  set('c-sqft',d._sqft||d.sqft);
-  set('c-psf',d._psf||d.psf);
-  set('c-r1',d._r1||0);
-  set('c-r2',d._r2||0);
-  set('c-r3',d._r3||0);
-  set('c-r4',d._r4||0);
-  set('c-rep-override',d._repOverride||'');
-  set('c-pct',d._pct||d.pct||70);
-  set('c-fee',d._fee||d.fee||13000);
-  set('c-close-days',d._closeDays||d.closeDays||14);
-  const feeLbl=document.getElementById('c-fee-lbl');if(feeLbl)feeLbl.textContent='$'+(d._fee||d.fee||13000).toLocaleString();
+  set('c-arv',d.arv);
+  set('c-sqft',d.sqft);
+  set('c-rep-override',d.repairs||'');
+  set('c-pct',d.pct||70);
+  set('c-fee',d.fee||13000);
+  set('c-close-days',d.closeDays||14);
+  const feeLbl=document.getElementById('c-fee-lbl');if(feeLbl)feeLbl.textContent='$'+(d.fee||13000).toLocaleString();
 
-  // Set dropdowns
-  const hoodEl=document.getElementById('c-hood');if(hoodEl)hoodEl.value=d._hood||d.hood||'Enterprise';
-  const distEl=document.getElementById('c-distress');if(distEl)distEl.value=d._distress||d.distress||'Other';
-  const toneEl=document.getElementById('c-tone');if(toneEl)toneEl.value=d._tone||'direct';
+  const hoodEl=document.getElementById('c-hood');if(hoodEl)hoodEl.value=d.hood||'Enterprise';
+  const distEl=document.getElementById('c-distress');if(distEl)distEl.value=d.distress||'Other';
 
-  // Fill address fields
   const sellerEl=document.getElementById('c-seller-name');if(sellerEl)sellerEl.value=d.seller||'';
   const propEl=document.getElementById('c-prop-addr');if(propEl)propEl.value=d.address||'';
-
-  // Fill the BatchData lookup bar with the address too
   const bdAddr=document.getElementById('bd-address');if(bdAddr)bdAddr.value=d.address||'';
 
   calcMAO();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function deleteDeal(idx){
-  const deals=getSavedDeals();
-  deals.splice(idx,1);
-  setSavedDeals(deals);
-  renderSavedDeals();
+async function deleteDeal(idx){
+  const d=savedDealsCache[idx];if(!d||!d._atId)return;
+  if(!confirm('Delete this deal?'))return;
+  try{
+    await fetch(AT_URL+'/'+d._atId,{method:'DELETE',headers:AT_HEADERS});
+    await loadSavedDeals();
+  }catch(e){console.error('Airtable delete error:',e);}
 }
 
-function clearSavedDeals(){
-  if(!confirm('Delete all saved deals? This cannot be undone.'))return;
-  setSavedDeals([]);
-  renderSavedDeals();
+async function clearSavedDeals(){
+  if(!confirm('Delete ALL saved deals? This cannot be undone.'))return;
+  const ids=savedDealsCache.map(d=>d._atId).filter(Boolean);
+  // Airtable allows max 10 deletes per request
+  for(let i=0;i<ids.length;i+=10){
+    const batch=ids.slice(i,i+10);
+    const params=batch.map(id=>'records[]='+id).join('&');
+    try{await fetch(AT_URL+'?'+params,{method:'DELETE',headers:AT_HEADERS});}catch(e){}
+  }
+  await loadSavedDeals();
 }
 
 function exportSavedCSV(){
-  const deals=getSavedDeals();if(!deals.length)return;
+  const deals=savedDealsCache;if(!deals.length)return;
   const csvQ=(v)=>{const s=String(v==null?'':v);return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
   const headers=['Address','Seller','ARV','Repairs','MAO','Fee','Dispo','Purchase Costs','Selling Costs','All-In','Profit','ROI','Score','Distress','Neighborhood','SqFt','Pct','Close Days','Saved'];
   const lines=[headers.join(',')];
@@ -2156,7 +2220,7 @@ function exportSavedCSV(){
 }
 
 function exportSavedPDF(){
-  const deals=getSavedDeals();if(!deals.length)return;
+  const deals=savedDealsCache;if(!deals.length)return;
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   const win=window.open('','_blank','width=1100,height=800');
   const rows=deals.map(d=>{
@@ -2412,7 +2476,7 @@ function initTheme(){
   }catch(e){}
 }
 initTheme();
-loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();renderSavedDeals();
+loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();loadSavedDeals();
 </script>
 </body>
 </html>
