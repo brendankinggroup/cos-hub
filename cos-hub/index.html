@@ -47,7 +47,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 <body>
 
 <!-- LOGIN GATE -->
-<div id="login-gate" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:99999;display:flex;align-items:center;justify-content:center">
+<div id="login-gate" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:99999;align-items:center;justify-content:center">
   <div style="text-align:center;padding:40px;max-width:400px;width:100%">
     <div class="hdr" style="font-size:48px;color:var(--t1);margin-bottom:4px">COS <span style="color:var(--blue)">HUB</span></div>
     <div style="font-size:12px;color:var(--t3);letter-spacing:.1em;margin-bottom:32px">CASH OFFER SPECIALIST · LAS VEGAS</div>
@@ -3154,7 +3154,42 @@ function renderHome(){
   if(jokeEl) jokeEl.textContent=jokes[dayOfYear%jokes.length];
 }
 
+// ── AUTH / LOGIN ──────────────────────────────────────────────────────
+const _hp='Q2FzaE9mZmVyU2h1ZmZsZQ==';
+function doLogin(){
+  const pw=document.getElementById('login-pw').value.trim();
+  const err=document.getElementById('login-error');
+  if(!pw){err.textContent='Please enter a password';err.style.display='block';return;}
+  if(pw===atob(_hp)){
+    const token=btoa(pw+':'+new Date().toISOString().slice(0,10));
+    sessionStorage.setItem('hub_token',token);
+    showApp();
+  }else{
+    err.textContent='Incorrect password';err.style.display='block';
+  }
+}
+
+function showApp(){
+  document.getElementById('login-gate').style.display='none';
+  document.getElementById('app-wrap').style.display='block';
+}
+
+function checkSession(){
+  const token=sessionStorage.getItem('hub_token');
+  if(token){
+    try{
+      const decoded=atob(token);
+      const datePart=decoded.split(':').pop();
+      if(datePart===new Date().toISOString().slice(0,10)){showApp();return;}
+    }catch(e){}
+    sessionStorage.removeItem('hub_token');
+  }
+  document.getElementById('login-gate').style.display='flex';
+  document.getElementById('app-wrap').style.display='none';
+}
+
 initTheme();
+checkSession();
 loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();loadSavedDeals();
 (function(){const h=(location.hash||'').replace('#','');nav(['home','analyzer','calc','scripts','saved'].includes(h)?h:'home');})();
 </script>
