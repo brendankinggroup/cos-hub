@@ -57,6 +57,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <button onclick="nav('analyzer')" id="n-analyzer" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue)">📊 DEAL ANALYZER</button>
     <button onclick="nav('calc')" id="n-calc" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">🧮 CALCULATOR</button>
     <button onclick="nav('scripts')" id="n-scripts" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">📝 SCRIPTS</button>
+    <button onclick="nav('saved')" id="n-saved" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">💾 SAVED</button>
     <button id="kb-btn" style="padding:8px 12px;font-size:14px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer;position:relative" title="Keyboard Shortcuts: 1/Alt+1 Deal Analyzer, 2/Alt+2 Calculator, 3/Alt+3 Scripts, Ctrl/Cmd+E Export, Ctrl/Cmd+K Copy Script, Esc Close">⌨️</button>
     <button id="theme-btn" onclick="toggleTheme()" style="padding:8px 12px;font-size:14px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer" title="Toggle Light/Dark Mode">🌙</button>
   </div>
@@ -442,6 +443,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
         <button onclick="copyVerbalOffer()" id="c-copy-btn" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">Copy Script</button>
         <button onclick="exportDealEmail()" style="background:var(--greendim);color:var(--green);border:1px solid var(--green);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">✉️ Export Email</button>
         <button onclick="exportDealPDF()" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">📄 Export PDF</button>
+        <button onclick="saveDeal()" id="save-deal-btn" style="background:var(--greendim);color:var(--green);border:1px solid var(--green);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">💾 Save Deal</button>
       </div>
       </div>
 
@@ -626,6 +628,49 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 
 </div>
 
+<!-- SAVED DEALS -->
+<div id="p-saved" class="panel" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div>
+      <div style="font-size:18px;font-weight:700;color:var(--t1)" class="hdr">SAVED DEALS</div>
+      <div style="font-size:12px;color:var(--t3)" id="saved-count">0 deals saved</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="exportSavedCSV()" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">📥 Export CSV</button>
+      <button onclick="exportSavedPDF()" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">📄 Export PDF</button>
+      <button onclick="clearSavedDeals()" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">🗑️ Clear All</button>
+    </div>
+  </div>
+  <div id="saved-table-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--r2)">
+    <table id="saved-table" style="width:100%;border-collapse:collapse;font-size:12px;min-width:1200px">
+      <thead>
+        <tr style="background:var(--s1);border-bottom:2px solid var(--border)">
+          <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap">Address</th>
+          <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Seller</th>
+          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">ARV</th>
+          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Repairs</th>
+          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">MAO</th>
+          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Fee</th>
+          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Dispo</th>
+          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">All-In</th>
+          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Profit</th>
+          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">ROI</th>
+          <th style="padding:10px 8px;text-align:center;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Score</th>
+          <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Distress</th>
+          <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Saved</th>
+          <th style="padding:10px 8px;text-align:center;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="saved-tbody"></tbody>
+    </table>
+  </div>
+  <div id="saved-empty" style="text-align:center;padding:60px 20px;color:var(--t3)">
+    <div style="font-size:40px;margin-bottom:12px">💾</div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:6px">No saved deals yet</div>
+    <div style="font-size:12px">Use the <b style="color:var(--green)">Save Deal</b> button in the Calculator to save deals here.</div>
+  </div>
+</div>
+
 <script>
 const fm=(n)=>n||n===0?'$'+Math.round(n).toLocaleString():'—';
 const esc=(s)=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -677,7 +722,7 @@ const STACK_FILTERS=[
 ];
 
 function nav(p){
-  ['analyzer','calc','scripts'].forEach(id=>{
+  ['analyzer','calc','scripts','saved'].forEach(id=>{
     document.getElementById('p-'+id).style.display=id===p?'block':'none';
     const n=document.getElementById('n-'+id);
     n.style.background=id===p?'var(--bluedim)':'transparent';
@@ -1149,6 +1194,10 @@ function calcMAO(){
   const closeDays=+(document.getElementById('c-close-days')||{value:14}).value||14;
   const tone=(document.getElementById('c-tone')||{value:'direct'}).value;
   const distressType=distressVal||'Pre-foreclosure';
+
+  // Sync address & name to Scripts panel
+  const scAddr=document.getElementById('sc-addr');if(scAddr&&propAddr!=='[Property Address]')scAddr.value=propAddr;
+  const scName=document.getElementById('sc-name');if(scName&&sellerName!=='[Seller Name]')scName.value=sellerName;
 
   // Pick distress-aware opener
   const distressOpener={
@@ -1628,7 +1677,7 @@ function getDealSummaryData(){
   return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script};
 }
 
-function exportDealEmail(){
+async function exportDealEmail(){
   const d=getDealSummaryData();
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   const subject=encodeURIComponent('Cash Offer — '+d.propAddr+' — '+fm(d.mao));
@@ -1667,7 +1716,27 @@ d.script+'\n\n'+
 '(725) 226-1303 · www.cashofferspecialist.com\n'+
 'Las Vegas, NV'
   );
-  window.location.href='mailto:?subject='+subject+'&body='+body;
+  // Send via Web3Forms — stays in app, no mailto popup
+  const btn=document.querySelector('[onclick*="exportDealEmail"]');
+  const origText=btn?btn.textContent:'';
+  if(btn){btn.textContent='Sending...';btn.disabled=true;}
+  try{
+    const r=await fetch('https://api.web3forms.com/submit',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        access_key:'0a47fb7c-56cb-4696-8293-4dccbddfad27',
+        subject:'Cash Offer Summary — '+d.propAddr+' — '+fm(d.mao),
+        from_name:'COS Hub Calculator',
+        to:'info@cashofferspecialist.com',
+        message:decodeURIComponent(body)
+      })
+    });
+    const res=await r.json();
+    if(btn){btn.textContent=res.success?'✓ Sent!':'✗ Failed';btn.style.color=res.success?'var(--green)':'var(--red)';
+      setTimeout(()=>{btn.textContent=origText;btn.style.color='var(--green)';btn.disabled=false;},2500);}
+  }catch(err){
+    if(btn){btn.textContent='✗ Error';setTimeout(()=>{btn.textContent=origText;btn.disabled=false;},2500);}
+  }
 }
 
 function exportDealPDF(){
@@ -1936,6 +2005,210 @@ document.addEventListener('keydown', function(e) {
   else if((e.ctrlKey || e.metaKey) && key === 'k') { e.preventDefault(); document.querySelector('[onclick*="copyScript"]')?.click(); }
   else if(key === 'escape') { e.preventDefault(); document.querySelectorAll('[onclick*="toggleSection"]').forEach(el => el.click()); }
 });
+// ── SAVED DEALS ──────────────────────────────────────────────────────
+function getSavedDeals(){return JSON.parse(localStorage.getItem('cosSavedDeals')||'[]');}
+function setSavedDeals(deals){localStorage.setItem('cosSavedDeals',JSON.stringify(deals));}
+
+function saveDeal(){
+  const d=getDealSummaryData();
+  if(!d.arv||d.arv<=0){showBdStatus('Set an ARV before saving','var(--red)');return;}
+
+  const deal={
+    id:Date.now(),
+    address:d.propAddr||'Unknown',
+    seller:d.sellerName||'',
+    arv:d.arv, repairs:d.repairs, mao:d.mao, fee:d.fee,
+    disposition:d.disposition, purchaseCosts:d.purchaseCosts, sellingCosts:d.sellingCosts,
+    allin:d.allin, profit:d.profit, roi:d.roi, score:d.score, scoreLbl:d.scoreLbl,
+    distress:d.distress, hood:d.hood, pct:d.pct, sqft:d.sqft, psf:d.psf,
+    closeDays:d.closeDays,
+    // Store raw inputs for recalculate
+    _arv:+(document.getElementById('c-arv')||{}).value||0,
+    _sqft:+(document.getElementById('c-sqft')||{}).value||0,
+    _psf:+(document.getElementById('c-psf')||{}).value||25,
+    _r1:+(document.getElementById('c-r1')||{}).value||0,
+    _r2:+(document.getElementById('c-r2')||{}).value||0,
+    _r3:+(document.getElementById('c-r3')||{}).value||0,
+    _r4:+(document.getElementById('c-r4')||{}).value||0,
+    _repOverride:+(document.getElementById('c-rep-override')||{}).value||0,
+    _pct:+(document.getElementById('c-pct')||{}).value||70,
+    _fee:+(document.getElementById('c-fee')||{}).value||13000,
+    _hood:(document.getElementById('c-hood')||{}).value||'Enterprise',
+    _distress:(document.getElementById('c-distress')||{}).value||'Other',
+    _closeDays:+(document.getElementById('c-close-days')||{}).value||14,
+    _tone:(document.getElementById('c-tone')||{}).value||'direct',
+    savedAt:new Date().toISOString()
+  };
+
+  const deals=getSavedDeals();
+  // Prevent duplicate same address within 1 minute
+  const dup=deals.find(x=>x.address===deal.address&&(Date.now()-x.id)<60000);
+  if(dup){showBdStatus('Deal already saved','var(--amber)');return;}
+
+  deals.unshift(deal);
+  setSavedDeals(deals);
+  renderSavedDeals();
+
+  const btn=document.getElementById('save-deal-btn');
+  btn.textContent='✓ Saved!';btn.style.background='var(--green)';btn.style.color='#fff';
+  setTimeout(()=>{btn.textContent='💾 Save Deal';btn.style.background='var(--greendim)';btn.style.color='var(--green)';},2000);
+}
+
+function renderSavedDeals(){
+  const deals=getSavedDeals();
+  const tbody=document.getElementById('saved-tbody');
+  const empty=document.getElementById('saved-empty');
+  const wrap=document.getElementById('saved-table-wrap');
+  const countEl=document.getElementById('saved-count');
+
+  if(!deals.length){
+    empty.style.display='block';wrap.style.display='none';
+    countEl.textContent='0 deals saved';return;
+  }
+  empty.style.display='none';wrap.style.display='block';
+  countEl.textContent=deals.length+' deal'+(deals.length===1?'':'s')+' saved';
+
+  tbody.innerHTML=deals.map((d,i)=>{
+    const sc=d.score>=80?'var(--red)':d.score>=60?'var(--green)':d.score>=40?'var(--amber)':'var(--t3)';
+    const profitColor=d.profit>0?'var(--green)':'var(--red)';
+    const date=new Date(d.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return`<tr style="border-bottom:1px solid var(--border);cursor:pointer" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
+      <td style="padding:8px;font-weight:600;color:var(--t1);white-space:nowrap">${esc(d.address)}</td>
+      <td style="padding:8px;color:var(--t2)">${esc(d.seller)}</td>
+      <td style="padding:8px;text-align:right;font-weight:700;color:var(--t1)">${fm(d.arv)}</td>
+      <td style="padding:8px;text-align:right;color:var(--amber)">${fm(d.repairs)}</td>
+      <td style="padding:8px;text-align:right;font-weight:700;color:var(--blue)">${fm(d.mao)}</td>
+      <td style="padding:8px;text-align:right;color:var(--green)">${fm(d.fee)}</td>
+      <td style="padding:8px;text-align:right;color:var(--green)">${fm(d.disposition)}</td>
+      <td style="padding:8px;text-align:right;color:var(--t1)">${fm(d.allin)}</td>
+      <td style="padding:8px;text-align:right;font-weight:700;color:${profitColor}">${fm(d.profit)}</td>
+      <td style="padding:8px;text-align:right;color:var(--amber)">${d.roi?d.roi.toFixed(1)+'%':'—'}</td>
+      <td style="padding:8px;text-align:center"><span style="color:${sc};font-weight:700">${d.score||0}</span></td>
+      <td style="padding:8px;color:var(--t3);font-size:11px">${esc(d.distress||'—')}</td>
+      <td style="padding:8px;color:var(--t3);font-size:11px;white-space:nowrap">${date}</td>
+      <td style="padding:8px;text-align:center;white-space:nowrap">
+        <button onclick="recalcDeal(${i})" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Load into calculator">🧮 Recalc</button>
+        <button onclick="deleteDeal(${i})" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:4px;padding:4px 8px;font-size:10px;font-weight:700" title="Delete">✕</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function recalcDeal(idx){
+  const deals=getSavedDeals();
+  const d=deals[idx];if(!d)return;
+  nav('calc');
+
+  // Fill all raw inputs
+  const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
+  set('c-arv',d._arv||d.arv);
+  set('c-sqft',d._sqft||d.sqft);
+  set('c-psf',d._psf||d.psf);
+  set('c-r1',d._r1||0);
+  set('c-r2',d._r2||0);
+  set('c-r3',d._r3||0);
+  set('c-r4',d._r4||0);
+  set('c-rep-override',d._repOverride||'');
+  set('c-pct',d._pct||d.pct||70);
+  set('c-fee',d._fee||d.fee||13000);
+  set('c-close-days',d._closeDays||d.closeDays||14);
+  const feeLbl=document.getElementById('c-fee-lbl');if(feeLbl)feeLbl.textContent='$'+(d._fee||d.fee||13000).toLocaleString();
+
+  // Set dropdowns
+  const hoodEl=document.getElementById('c-hood');if(hoodEl)hoodEl.value=d._hood||d.hood||'Enterprise';
+  const distEl=document.getElementById('c-distress');if(distEl)distEl.value=d._distress||d.distress||'Other';
+  const toneEl=document.getElementById('c-tone');if(toneEl)toneEl.value=d._tone||'direct';
+
+  // Fill address fields
+  const sellerEl=document.getElementById('c-seller-name');if(sellerEl)sellerEl.value=d.seller||'';
+  const propEl=document.getElementById('c-prop-addr');if(propEl)propEl.value=d.address||'';
+
+  // Fill the BatchData lookup bar with the address too
+  const bdAddr=document.getElementById('bd-address');if(bdAddr)bdAddr.value=d.address||'';
+
+  calcMAO();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function deleteDeal(idx){
+  const deals=getSavedDeals();
+  deals.splice(idx,1);
+  setSavedDeals(deals);
+  renderSavedDeals();
+}
+
+function clearSavedDeals(){
+  if(!confirm('Delete all saved deals? This cannot be undone.'))return;
+  setSavedDeals([]);
+  renderSavedDeals();
+}
+
+function exportSavedCSV(){
+  const deals=getSavedDeals();if(!deals.length)return;
+  const csvQ=(v)=>{const s=String(v==null?'':v);return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
+  const headers=['Address','Seller','ARV','Repairs','MAO','Fee','Dispo','Purchase Costs','Selling Costs','All-In','Profit','ROI','Score','Distress','Neighborhood','SqFt','Pct','Close Days','Saved'];
+  const lines=[headers.join(',')];
+  deals.forEach(d=>{
+    lines.push([d.address,d.seller,d.arv,d.repairs,d.mao,d.fee,d.disposition,d.purchaseCosts,d.sellingCosts,d.allin,d.profit,d.roi?d.roi.toFixed(1)+'%':'',d.score,d.distress,d.hood,d.sqft,d.pct+'%',d.closeDays+'d',new Date(d.savedAt).toLocaleDateString()].map(csvQ).join(','));
+  });
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cos-saved-deals.csv';a.click();
+}
+
+function exportSavedPDF(){
+  const deals=getSavedDeals();if(!deals.length)return;
+  const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const win=window.open('','_blank','width=1100,height=800');
+  const rows=deals.map(d=>{
+    const sc=d.score>=80?'#dc2626':d.score>=60?'#059669':d.score>=40?'#d97706':'#6b7280';
+    const pc=d.profit>0?'#059669':'#dc2626';
+    return`<tr>
+      <td style="padding:6px 8px;font-weight:600">${esc(d.address)}</td>
+      <td style="padding:6px 8px">${esc(d.seller)}</td>
+      <td style="padding:6px 8px;text-align:right">${fm(d.arv)}</td>
+      <td style="padding:6px 8px;text-align:right;color:#d97706">${fm(d.repairs)}</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:700;color:#4f8ef7">${fm(d.mao)}</td>
+      <td style="padding:6px 8px;text-align:right;color:#059669">${fm(d.fee)}</td>
+      <td style="padding:6px 8px;text-align:right">${fm(d.allin)}</td>
+      <td style="padding:6px 8px;text-align:right;font-weight:700;color:${pc}">${fm(d.profit)}</td>
+      <td style="padding:6px 8px;text-align:right">${d.roi?d.roi.toFixed(1)+'%':'—'}</td>
+      <td style="padding:6px 8px;text-align:center;font-weight:700;color:${sc}">${d.score||0}</td>
+      <td style="padding:6px 8px">${esc(d.distress||'—')}</td>
+    </tr>`;
+  }).join('');
+
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Saved Deals — COS Hub</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',Arial,sans-serif;padding:30px;font-size:12px;color:#111}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #111;padding-bottom:12px;margin-bottom:20px}
+  .logo{font-size:24px;font-weight:900;letter-spacing:.04em}.logo span{color:#4f8ef7}
+  table{width:100%;border-collapse:collapse}
+  thead th{background:#f3f4f6;padding:8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;border-bottom:2px solid #e5e7eb}
+  tbody tr{border-bottom:1px solid #e5e7eb}
+  tbody tr:hover{background:#f9fafb}
+  .toolbar{display:flex;justify-content:center;margin-bottom:16px}
+  .toolbar button{background:#4f8ef7;color:#fff;border:none;border-radius:6px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer}
+  @media print{.toolbar{display:none}body{padding:15px}}
+</style></head><body>
+<div class="toolbar"><button onclick="window.print()">🖨️ Print / Save as PDF</button></div>
+<div class="header">
+  <div><div class="logo">COS <span>HUB</span></div><div style="font-size:11px;color:#888;margin-top:2px">SAVED DEALS · CASH OFFER SPECIALIST</div></div>
+  <div style="text-align:right;font-size:11px;color:#888"><div style="font-weight:700;color:#111">DEAL PIPELINE</div><div>${today}</div><div style="margin-top:4px">${deals.length} deal${deals.length===1?'':'s'}</div></div>
+</div>
+<table>
+  <thead><tr><th>Address</th><th>Seller</th><th style="text-align:right">ARV</th><th style="text-align:right">Repairs</th><th style="text-align:right">MAO</th><th style="text-align:right">Fee</th><th style="text-align:right">All-In</th><th style="text-align:right">Profit</th><th style="text-align:right">ROI</th><th style="text-align:center">Score</th><th>Distress</th></tr></thead>
+  <tbody>${rows}</tbody>
+</table>
+<div style="margin-top:20px;padding-top:12px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:10px;color:#888">
+  <div>Cash Offer Specialist · (725) 226-1303 · www.cashofferspecialist.com</div>
+  <div>Generated by COS Hub · ${today}</div>
+</div>
+</body></html>`);
+  win.document.close();
+}
+
 // ── BATCHDATA PROPERTY LOOKUP ──────────────────────────────────────────
 const BATCHDATA_KEY='FUYAMVRI5mCePugUkFvKyM7Nq2eq32gGDcJDudxY';
 
@@ -2139,7 +2412,7 @@ function initTheme(){
   }catch(e){}
 }
 initTheme();
-loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();
+loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();renderSavedDeals();
 </script>
 </body>
 </html>
