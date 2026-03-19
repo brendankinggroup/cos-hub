@@ -497,16 +497,16 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
       <div class="card" style="border:1px solid var(--green)33">
-        <div style="font-size:9px;color:var(--green);margin-bottom:2px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Rehabber's Price</div>
-        <div class="hdr" id="c-disposition" style="font-size:20px;color:var(--green)">$207K</div>
-        <div style="font-size:8px;color:var(--t3);margin-top:2px">Contract + your fee</div>
+        <div style="font-size:12px;color:var(--green);margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Rehabber's Price</div>
+        <div class="hdr" id="c-disposition" style="font-size:26px;color:var(--green)">$207K</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:3px">Contract + your fee</div>
       </div>
-      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Purchase Costs <span style="font-size:9px;opacity:.6">(1%)</span></div><div class="hdr" id="c-purchase-costs" style="font-size:20px;color:var(--amber)">—</div></div>
-      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Selling Costs <span style="font-size:9px;opacity:.6">(6.5%)</span></div><div class="hdr" id="c-selling-costs" style="font-size:20px;color:var(--amber)">—</div></div>
-      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Buyer All-In</div><div class="hdr" id="c-allin" style="font-size:20px;color:var(--t1)">$247K</div><div style="font-size:8px;color:var(--t3);margin-top:2px">Dispo + purch + rehab + sell</div></div>
-      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Est. Profit</div><div class="hdr" id="c-equity" style="font-size:20px;color:var(--green)">$132K</div><div style="font-size:8px;color:var(--t3);margin-top:2px">ARV − All-In</div></div>
-      <div class="card"><div style="font-size:11px;color:var(--t3);margin-bottom:4px">Straight ROI</div><div class="hdr" id="c-roi" style="font-size:20px;color:var(--amber)">—</div><div style="font-size:8px;color:var(--t3);margin-top:2px">Profit ÷ All-In</div></div>
-      <div class="card" style="border:1px solid var(--green)33"><div style="font-size:11px;color:var(--green);margin-bottom:4px;font-weight:700">Your Fee</div><div class="hdr" id="c-myfee" style="font-size:20px;color:var(--green)">$13K</div></div>
+      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Purchase Costs <span style="font-size:11px;opacity:.6">(1%)</span></div><div class="hdr" id="c-purchase-costs" style="font-size:26px;color:var(--amber)">—</div></div>
+      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Selling Costs <span style="font-size:11px;opacity:.6">(6.5%)</span></div><div class="hdr" id="c-selling-costs" style="font-size:26px;color:var(--amber)">—</div></div>
+      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Buyer All-In</div><div class="hdr" id="c-allin" style="font-size:26px;color:var(--t1)">$247K</div><div style="font-size:11px;color:var(--t3);margin-top:3px">Dispo + purch + rehab + sell</div></div>
+      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Est. Profit</div><div class="hdr" id="c-equity" style="font-size:26px;color:var(--green)">$132K</div><div style="font-size:11px;color:var(--t3);margin-top:3px">ARV − All-In</div></div>
+      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Straight ROI</div><div class="hdr" id="c-roi" style="font-size:26px;color:var(--amber)">—</div><div style="font-size:11px;color:var(--t3);margin-top:3px">Profit ÷ All-In</div></div>
+      <div class="card" style="border:1px solid var(--green)33"><div style="font-size:13px;color:var(--green);margin-bottom:4px;font-weight:700">Your Fee</div><div class="hdr" id="c-myfee" style="font-size:26px;color:var(--green)">$13K</div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <div class="card"><div style="font-size:12px;font-weight:700;color:var(--t3);margin-bottom:10px;text-transform:uppercase;letter-spacing:.07em">Formula Breakdown</div><div id="c-formula" style="font-size:11px"></div></div>
@@ -1296,7 +1296,7 @@ function calcMAO(){
   ];
   document.getElementById('c-formula').innerHTML=formulaLines.map(([l,v,c,bold])=>{
     if(!l&&!v)return'<div style="height:8px"></div>';
-    return`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);font-size:${bold?'12':'10'}px"><span style="color:var(--t3)">${l}</span><span style="font-weight:${bold?800:600};color:${c}">${v}</span></div>`;
+    return`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:${bold?'15':'13'}px"><span style="color:var(--t3)">${l}</span><span style="font-weight:${bold?800:600};color:${c}">${v}</span></div>`;
   }).join('');
   const debt=window._c_debt||0;
   const exits=[{l:'Fix & Flip',s:repairs>25000&&straightRoi>25?88:55,c:'#4f8ef7',n:'Heavy rehab'},{l:'Wholetail',s:repairs<20000&&profit>60000?85:52,c:'#0ecf8a',n:'Light work'},{l:'Buy & Hold',s:arv<400000?72:45,c:'#9b6ff7',n:'Cash flow check'},{l:'Double Close',s:fee>18000?78:48,c:'#f0a500',n:'Large fee'},{l:'Subject-To',s:debt>arv*0.7&&profit>30000?82:50,c:'#ff6b6b',n:'Assume mortgage'},{l:'Seller Finance',s:arv<250000&&debt<120000?80:48,c:'#a8e6cf',n:'Owner financed'},{l:'Novation',s:repairs>30000&&profit>50000?81:52,c:'#ffd93d',n:'Assign mortgage'}].sort((a,b)=>b.s-a.s);
