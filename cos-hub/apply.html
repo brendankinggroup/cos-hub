@@ -1079,11 +1079,14 @@ document.addEventListener('input', (e) => {
 // ============================================
 // BATCHDATA PROPERTY LOOKUP — Real Estimated Value
 // ============================================
+let _bdLookupBusy=false;
 async function batchLookup() {
+    if(_bdLookupBusy)return;
     const street = (document.getElementById('f-address').value || '').trim();
     const city = (document.getElementById('f-city').value || 'Las Vegas').trim();
     const zip = (document.getElementById('f-zip').value || '').trim();
     if (!street || !zip) return;
+    _bdLookupBusy=true;
 
     try {
         const resp = await fetch('/api/batchdata?endpoint=lookup', {
@@ -1120,6 +1123,8 @@ async function batchLookup() {
         console.log('BatchData: est value $' + (v.estimatedValue||0).toLocaleString() + ', confidence ' + (v.confidenceScore||0) + '%');
     } catch(e) {
         console.log('BatchData lookup error:', e.message);
+    } finally {
+        _bdLookupBusy=false;
     }
 }
 

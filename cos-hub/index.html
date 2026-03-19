@@ -2209,11 +2209,14 @@ function exportSavedPDF(){
 }
 
 // ── BATCHDATA PROPERTY LOOKUP ──────────────────────────────────────────
+let _bdLookupBusy=false;
 
 async function batchLookup(){
+  if(_bdLookupBusy)return; // prevent double-clicks / rapid Enter presses
   const addrRaw=document.getElementById('bd-address').value.trim();
   if(!addrRaw){showBdStatus('Enter an address first','var(--amber)');return;}
 
+  _bdLookupBusy=true;
   const btn=document.getElementById('bd-btn');
   btn.textContent='Looking up...';btn.disabled=true;
   showBdStatus('Querying BatchData...','var(--blue)');
@@ -2276,24 +2279,13 @@ async function batchLookup(){
     });
     let json=await resp.json();
 
-    // If exact lookup fails, try fuzzy search
-    if(json.status?.code===200&&json.results?.properties?.length===0||
-       (json.results?.meta?.results?.matchCount===0)){
-      showBdStatus('Exact match not found, trying fuzzy search...','var(--amber)');
-      resp=await fetch('/api/batchdata?endpoint=search',{
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({searchCriteria:{address:{street,city,state,zip}}})
-      });
-      json=await resp.json();
-    }
-
     if(json.status?.code===403){
       showBdStatus('⚠️ Insufficient BatchData credits — add balance at app.batchdata.com','var(--red)');
-      btn.textContent='Pull Data';btn.disabled=false;return;
+      btn.textContent='Pull Data';btn.disabled=false;_bdLookupBusy=false;return;
     }
     if(json.status?.code!==200||!json.results?.properties?.length){
-      showBdStatus('❌ No property found — try adding commas: "5735 Shadow Bend Dr, Las Vegas, NV 89135"','var(--red)');
-      btn.textContent='Pull Data';btn.disabled=false;return;
+      showBdStatus('❌ No property found — try format: "5735 Shadow Bend Dr, Las Vegas, NV 89135"','var(--red)');
+      btn.textContent='Pull Data';btn.disabled=false;_bdLookupBusy=false;return;
     }
 
     const p=json.results.properties[0];
@@ -2386,7 +2378,7 @@ async function batchLookup(){
   }catch(err){
     showBdStatus('❌ API error: '+err.message,'var(--red)');
   }
-  btn.textContent='Pull Data';btn.disabled=false;
+  btn.textContent='Pull Data';btn.disabled=false;_bdLookupBusy=false;
 }
 
 function showBdStatus(msg,color){
