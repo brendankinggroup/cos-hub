@@ -742,28 +742,11 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <button onclick="filterPipeline('Closed')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Closed</button>
     <button onclick="filterPipeline('Dead')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Dead</button>
   </div>
-  <div id="saved-table-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--r2)">
-    <table id="saved-table" style="width:100%;border-collapse:collapse;font-size:12px;min-width:1200px">
-      <thead>
-        <tr style="background:var(--s1);border-bottom:2px solid var(--border)">
-          <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap">Address</th>
-          <th style="padding:10px 8px;text-align:center;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Type</th>
-          <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Name</th>
-          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">ARV</th>
-          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Repairs</th>
-          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">MAO</th>
-          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Fee</th>
-          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Dispo</th>
-          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">All-In</th>
-          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Profit</th>
-          <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">ROI</th>
-          <th style="padding:10px 8px;text-align:center;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Score</th>
-          <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Distress</th>
-          <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Saved</th>
-          <th style="padding:10px 8px;text-align:center;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Pipeline</th>
-          <th style="padding:10px 8px;text-align:center;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Actions</th>
-        </tr>
-      </thead>
+  <div id="saved-table-wrap">
+    <div id="saved-cards" style="display:flex;flex-direction:column;gap:10px"></div>
+    <!-- hidden table for CSV export compatibility -->
+    <table id="saved-table" style="display:none">
+      <thead><tr></tr></thead>
       <tbody id="saved-tbody"></tbody>
     </table>
   </div>
@@ -2236,7 +2219,7 @@ async function saveDeal(){
 function renderSavedDeals(){
   const allDeals=savedDealsCache;
   const deals=currentPipelineFilter==='all'?allDeals:allDeals.filter(d=>d.pipeline===currentPipelineFilter);
-  const tbody=document.getElementById('saved-tbody');
+  const cards=document.getElementById('saved-cards');
   const empty=document.getElementById('saved-empty');
   const wrap=document.getElementById('saved-table-wrap');
   const countEl=document.getElementById('saved-count');
@@ -2251,37 +2234,63 @@ function renderSavedDeals(){
     allDeals.length+' deal'+(allDeals.length===1?'':'s')+' saved':
     deals.length+' of '+allDeals.length+' ('+currentPipelineFilter+')';
 
-  tbody.innerHTML=deals.map((d,i)=>{
+  cards.innerHTML=deals.map((d,i)=>{
     const realIdx=allDeals.indexOf(d);
     const sc=d.score>=80?'var(--red)':d.score>=60?'var(--green)':d.score>=40?'var(--amber)':'var(--t3)';
+    const scoreLbl=d.score>=80?'FIRE':d.score>=60?'SOLID':d.score>=40?'WARM':'COLD';
     const profitColor=d.profit>0?'var(--green)':'var(--red)';
     const date=d.savedAt?new Date(d.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';
-    return`<tr style="border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
-      <td style="padding:8px;font-weight:600;color:var(--t1);white-space:nowrap">${esc(d.address)}</td>
-      <td style="padding:8px;text-align:center"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;${d.dealType==='MLS / Agent'?'background:var(--bluedim);color:var(--blue)':'background:var(--greendim);color:var(--green)'}">${d.dealType==='MLS / Agent'?'Agent':'Seller'}</span></td>
-      <td style="padding:8px;color:var(--t2)">${esc(d.seller)}</td>
-      <td style="padding:8px;text-align:right;font-weight:700;color:var(--t1)">${fm(d.arv)}</td>
-      <td style="padding:8px;text-align:right;color:var(--amber)">${fm(d.repairs)}</td>
-      <td style="padding:8px;text-align:right;font-weight:700;color:var(--blue)">${fm(d.mao)}</td>
-      <td style="padding:8px;text-align:right;color:var(--green)">${fm(d.fee)}</td>
-      <td style="padding:8px;text-align:right;color:var(--green)">${fm(d.disposition)}</td>
-      <td style="padding:8px;text-align:right;color:var(--t1)">${fm(d.allin)}</td>
-      <td style="padding:8px;text-align:right;font-weight:700;color:${profitColor}">${fm(d.profit)}</td>
-      <td style="padding:8px;text-align:right;color:var(--amber)">${d.roi?d.roi.toFixed(1)+'%':'—'}</td>
-      <td style="padding:8px;text-align:center"><span style="color:${sc};font-weight:700">${d.score||0}</span></td>
-      <td style="padding:8px;color:var(--t3);font-size:11px">${esc(d.distress||'—')}</td>
-      <td style="padding:8px;color:var(--t3);font-size:11px;white-space:nowrap">${date}</td>
-      <td style="padding:8px;text-align:center"><select onchange="updatePipeline(${realIdx},this.value)" style="font-size:10px;padding:3px 6px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-weight:700;cursor:pointer">
-        ${['New','Contacted','Offer Made','Under Contract','Assigned','Closed','Dead'].map(s=>`<option value="${s}"${d.pipeline===s?' selected':''}>${s}</option>`).join('')}
-      </select></td>
-      <td style="padding:8px;text-align:center;white-space:nowrap">
-        <button onclick="viewDeal(${realIdx})" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="View deal info">👁️ View</button>
-        <button onclick="pdfDeal(${realIdx})" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Export PDF">📄 PDF</button>
-        <button onclick="buyerPdf(${realIdx})" style="background:#f25116;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Investor deal sheet">🏷️ Buyer</button>
-        <button onclick="recalcDeal(${realIdx})" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Load into calculator">🧮 Recalc</button>
-        <button onclick="deleteDeal(${realIdx})" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:4px;padding:4px 8px;font-size:10px;font-weight:700" title="Delete">✕</button>
-      </td>
-    </tr>`;
+    const pipeColor=PIPELINE_COLORS[d.pipeline||'New']||'var(--blue)';
+    return`<div class="card" style="padding:16px">
+      <!-- Row 1: Address + Pipeline + Score -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:16px;font-weight:800;color:var(--t1);line-height:1.3">${esc(d.address||'No Address')}</div>
+          <div style="font-size:13px;color:var(--t2);margin-top:2px">${esc(d.seller||'—')} · ${esc(d.distress||'—')} · ${date}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:12px">
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:${pipeColor}18;color:${pipeColor};border:1px solid ${pipeColor}44">${d.pipeline||'New'}</span>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:${sc}18;color:${sc}">${d.score||0} ${scoreLbl}</span>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;${d.dealType==='MLS / Agent'?'background:var(--bluedim);color:var(--blue)':'background:var(--greendim);color:var(--green)'}">${d.dealType==='MLS / Agent'?'Agent':'Seller'}</span>
+        </div>
+      </div>
+      <!-- Row 2: Numbers grid -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px">
+        <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">ARV</div>
+          <div style="font-size:15px;font-weight:800;color:var(--t1)">${fm(d.arv)}</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Repairs</div>
+          <div style="font-size:15px;font-weight:800;color:var(--amber)">${fm(d.repairs)}</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:var(--bluedim);border-radius:6px;border:1px solid var(--blue)33">
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">MAO</div>
+          <div style="font-size:15px;font-weight:800;color:var(--blue)">${fm(d.mao)}</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Fee</div>
+          <div style="font-size:15px;font-weight:800;color:var(--green)">${fm(d.fee)}</div>
+        </div>
+        <div style="text-align:center;padding:8px;background:${d.profit>0?'var(--greendim)':'#2a0a0a'};border-radius:6px;border:1px solid ${profitColor}33">
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Profit</div>
+          <div style="font-size:15px;font-weight:800;color:${profitColor}">${fm(d.profit)}</div>
+        </div>
+      </div>
+      <!-- Row 3: Actions -->
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <select onchange="updatePipeline(${realIdx},this.value)" style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-weight:600;cursor:pointer">
+          ${['New','Contacted','Offer Made','Under Contract','Assigned','Closed','Dead'].map(s=>`<option value="${s}"${d.pipeline===s?' selected':''}>${s}</option>`).join('')}
+        </select>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button onclick="viewDeal(${realIdx})" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="View">👁️ View</button>
+          <button onclick="pdfDeal(${realIdx})" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="PDF">📄 PDF</button>
+          <button onclick="buyerPdf(${realIdx})" style="background:#f25116;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Buyer Sheet">🏷️ Buyer</button>
+          <button onclick="recalcDeal(${realIdx})" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Recalc">🧮 Recalc</button>
+          <button onclick="deleteDeal(${realIdx})" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700" title="Delete">✕</button>
+        </div>
+      </div>
+    </div>`;
   }).join('');
 }
 
