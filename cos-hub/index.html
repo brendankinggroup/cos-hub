@@ -715,6 +715,16 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       <button onclick="clearSavedDeals()" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">🗑️ Clear All</button>
     </div>
   </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="pipeline-filters">
+    <button onclick="filterPipeline('all')" class="pf-btn pf-active" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue);cursor:pointer">All</button>
+    <button onclick="filterPipeline('New')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">New</button>
+    <button onclick="filterPipeline('Contacted')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Contacted</button>
+    <button onclick="filterPipeline('Offer Made')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Offer Made</button>
+    <button onclick="filterPipeline('Under Contract')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Under Contract</button>
+    <button onclick="filterPipeline('Assigned')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Assigned</button>
+    <button onclick="filterPipeline('Closed')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Closed</button>
+    <button onclick="filterPipeline('Dead')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Dead</button>
+  </div>
   <div id="saved-table-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--r2)">
     <table id="saved-table" style="width:100%;border-collapse:collapse;font-size:12px;min-width:1200px">
       <thead>
@@ -733,6 +743,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
           <th style="padding:10px 8px;text-align:center;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Score</th>
           <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Distress</th>
           <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Saved</th>
+          <th style="padding:10px 8px;text-align:center;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Pipeline</th>
           <th style="padding:10px 8px;text-align:center;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Actions</th>
         </tr>
       </thead>
@@ -2142,6 +2153,7 @@ async function loadSavedDeals(){
       pct:rec.fields['Offer %']||70,
       closeDays:rec.fields['Close Days']||14,
       dealType:rec.fields['Deal Type']||'Seller Direct',
+      pipeline:rec.fields['Pipeline']||'New',
       status:rec.fields['Status']||'New',
       notes:rec.fields['Notes']||'',
       savedAt:rec.fields['Saved At']||new Date().toISOString()
@@ -2167,6 +2179,7 @@ async function saveDeal(){
     'Distress':d.distress||'','Neighborhood':d.hood||'',
     'SqFt':d.sqft||0,'Offer %':d.pct||70,'Close Days':d.closeDays||14,
     'Deal Type':d.dealType==='agent'?'MLS / Agent':'Seller Direct',
+    'Pipeline':'New',
     'Status':'New','Saved At':new Date().toISOString()
   };
 
@@ -2195,20 +2208,25 @@ async function saveDeal(){
 }
 
 function renderSavedDeals(){
-  const deals=savedDealsCache;
+  const allDeals=savedDealsCache;
+  const deals=currentPipelineFilter==='all'?allDeals:allDeals.filter(d=>d.pipeline===currentPipelineFilter);
   const tbody=document.getElementById('saved-tbody');
   const empty=document.getElementById('saved-empty');
   const wrap=document.getElementById('saved-table-wrap');
   const countEl=document.getElementById('saved-count');
 
-  if(!deals.length){
+  if(!allDeals.length){
     empty.style.display='block';wrap.style.display='none';
     countEl.textContent='0 deals saved';return;
   }
-  empty.style.display='none';wrap.style.display='block';
-  countEl.textContent=deals.length+' deal'+(deals.length===1?'':'s')+' saved';
+  empty.style.display=deals.length?'none':'block';
+  wrap.style.display=deals.length?'block':'none';
+  countEl.textContent=currentPipelineFilter==='all'?
+    allDeals.length+' deal'+(allDeals.length===1?'':'s')+' saved':
+    deals.length+' of '+allDeals.length+' ('+currentPipelineFilter+')';
 
   tbody.innerHTML=deals.map((d,i)=>{
+    const realIdx=allDeals.indexOf(d);
     const sc=d.score>=80?'var(--red)':d.score>=60?'var(--green)':d.score>=40?'var(--amber)':'var(--t3)';
     const profitColor=d.profit>0?'var(--green)':'var(--red)';
     const date=d.savedAt?new Date(d.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';
@@ -2227,12 +2245,15 @@ function renderSavedDeals(){
       <td style="padding:8px;text-align:center"><span style="color:${sc};font-weight:700">${d.score||0}</span></td>
       <td style="padding:8px;color:var(--t3);font-size:11px">${esc(d.distress||'—')}</td>
       <td style="padding:8px;color:var(--t3);font-size:11px;white-space:nowrap">${date}</td>
+      <td style="padding:8px;text-align:center"><select onchange="updatePipeline(${realIdx},this.value)" style="font-size:10px;padding:3px 6px;border-radius:4px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-weight:700;cursor:pointer">
+        ${['New','Contacted','Offer Made','Under Contract','Assigned','Closed','Dead'].map(s=>`<option value="${s}"${d.pipeline===s?' selected':''}>${s}</option>`).join('')}
+      </select></td>
       <td style="padding:8px;text-align:center;white-space:nowrap">
-        <button onclick="viewDeal(${i})" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="View deal info">👁️ View</button>
-        <button onclick="pdfDeal(${i})" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Export PDF">📄 PDF</button>
-        <button onclick="buyerPdf(${i})" style="background:#f25116;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Investor deal sheet">🏷️ Buyer</button>
-        <button onclick="recalcDeal(${i})" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Load into calculator">🧮 Recalc</button>
-        <button onclick="deleteDeal(${i})" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:4px;padding:4px 8px;font-size:10px;font-weight:700" title="Delete">✕</button>
+        <button onclick="viewDeal(${realIdx})" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="View deal info">👁️ View</button>
+        <button onclick="pdfDeal(${realIdx})" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Export PDF">📄 PDF</button>
+        <button onclick="buyerPdf(${realIdx})" style="background:#f25116;color:#fff;border:none;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Investor deal sheet">🏷️ Buyer</button>
+        <button onclick="recalcDeal(${realIdx})" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Load into calculator">🧮 Recalc</button>
+        <button onclick="deleteDeal(${realIdx})" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:4px;padding:4px 8px;font-size:10px;font-weight:700" title="Delete">✕</button>
       </td>
     </tr>`;
   }).join('');
@@ -2619,6 +2640,28 @@ async function deleteDeal(idx){
     await fetch(API_URL+'?id='+d._atId,{method:'DELETE'});
     await loadSavedDeals();
   }catch(e){console.error('Airtable delete error:',e);}
+}
+
+async function updatePipeline(idx, status){
+  const d=savedDealsCache[idx];if(!d||!d._atId)return;
+  d.pipeline=status;
+  try{
+    await fetch(API_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({records:[{id:d._atId,fields:{'Pipeline':status}}]})});
+    console.log('Pipeline updated:',status);
+  }catch(e){console.error('Pipeline update error:',e);}
+}
+
+let currentPipelineFilter='all';
+function filterPipeline(status){
+  currentPipelineFilter=status;
+  document.querySelectorAll('.pf-btn').forEach(b=>{
+    const isActive=b.textContent.trim()===status||(status==='all'&&b.textContent.trim()==='All');
+    b.style.background=isActive?'var(--bluedim)':'transparent';
+    b.style.color=isActive?'var(--blue)':'var(--t3)';
+    b.style.borderColor=isActive?'var(--blue)':'var(--border)';
+  });
+  renderSavedDeals();
 }
 
 async function clearSavedDeals(){
