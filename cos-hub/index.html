@@ -421,11 +421,17 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
         </div>
       </div>
     </div>
-    <div style="margin-bottom:10px">
-      <span class="label">Comps Link <span style="color:var(--t3);font-weight:400">(paste MLS, Zillow, or Redfin link)</span></span>
-      <div style="display:flex;gap:6px">
-        <input id="c-comps-link" type="url" placeholder="https://..." style="flex:1;font-size:12px"/>
-        <button onclick="var u=document.getElementById('c-comps-link').value;if(u)window.open(u,'_blank')" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">Open</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div>
+        <span class="label">Price Offered <span style="color:var(--t3);font-weight:400">(actual offer to seller)</span></span>
+        <input id="c-price-offered" type="number" placeholder="e.g. 245000" style="font-size:13px;font-weight:700;color:var(--green);text-align:right"/>
+      </div>
+      <div>
+        <span class="label">Comps Link <span style="color:var(--t3);font-weight:400">(MLS, Zillow, etc.)</span></span>
+        <div style="display:flex;gap:6px">
+          <input id="c-comps-link" type="url" placeholder="https://..." style="flex:1;font-size:12px"/>
+          <button onclick="var u=document.getElementById('c-comps-link').value;if(u)window.open(u,'_blank')" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">Open</button>
+        </div>
       </div>
     </div>
     <div class="card">
@@ -1806,7 +1812,8 @@ function getDealSummaryData(){
 
   const dealType=currentDealType||'seller';
   const compsLink=(document.getElementById('c-comps-link')||{value:''}).value.trim();
-  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script,dealType,compsLink};
+  const priceOffered=+(document.getElementById('c-price-offered')||{value:''}).value||0;
+  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script,dealType,compsLink,priceOffered};
 }
 
 async function exportDealEmail(){
@@ -2169,6 +2176,7 @@ async function loadSavedDeals(){
       closeDays:rec.fields['Close Days']||14,
       dealType:rec.fields['Deal Type']||'Seller Direct',
       compsLink:rec.fields['Comps Link']||'',
+      priceOffered:rec.fields['Price Offered']||0,
       pipeline:rec.fields['Pipeline']||'New',
       status:rec.fields['Status']||'New',
       notes:rec.fields['Notes']||'',
@@ -2196,6 +2204,7 @@ async function saveDeal(){
     'SqFt':d.sqft||0,'Offer %':d.pct||70,'Close Days':d.closeDays||14,
     'Deal Type':d.dealType==='agent'?'MLS / Agent':'Seller Direct',
     'Comps Link':d.compsLink||'',
+    'Price Offered':d.priceOffered||0,
     'Pipeline':'New',
     'Status':'New','Saved At':new Date().toISOString()
   };
@@ -2301,6 +2310,7 @@ function recalcDeal(idx){
   const propEl=document.getElementById('c-prop-addr');if(propEl)propEl.value=d.address||'';
   const bdAddr=document.getElementById('bd-address');if(bdAddr)bdAddr.value=d.address||'';
   const compsEl=document.getElementById('c-comps-link');if(compsEl)compsEl.value=d.compsLink||'';
+  const priceEl=document.getElementById('c-price-offered');if(priceEl)priceEl.value=d.priceOffered||'';
 
   // Set deal type
   setDealType(d.dealType==='MLS / Agent'?'agent':'seller');
