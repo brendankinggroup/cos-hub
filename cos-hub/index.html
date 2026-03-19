@@ -72,6 +72,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <button onclick="nav('analyzer')" id="n-analyzer" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue)">📊 DEAL ANALYZER</button>
     <button onclick="nav('calc')" id="n-calc" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">🧮 CALCULATOR</button>
     <button onclick="nav('scripts')" id="n-scripts" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">📝 SCRIPTS</button>
+    <button onclick="nav('leads')" id="n-leads" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">📨 LEADS</button>
     <button onclick="nav('saved')" id="n-saved" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">💾 SAVED</button>
     <button id="theme-btn" onclick="toggleTheme()" style="padding:8px 12px;font-size:14px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer" title="Toggle Light/Dark Mode">🌙</button>
   </div>
@@ -732,6 +733,28 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 
 </div>
 
+<!-- INCOMING LEADS -->
+<div id="p-leads" class="panel" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div>
+      <div class="hdr" style="font-size:22px;color:var(--t1)">INCOMING LEADS</div>
+      <div style="font-size:12px;color:var(--t3)" id="leads-count">Loading...</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="loadLeads()" style="padding:8px 16px;font-size:12px;font-weight:700;border-radius:6px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue);cursor:pointer">🔄 Refresh</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="lead-filters">
+    <button onclick="filterLeads('all')" class="lead-filter active" data-filter="all" style="padding:6px 14px;font-size:12px;font-weight:700;border-radius:20px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue);cursor:pointer">All</button>
+    <button onclick="filterLeads('New')" class="lead-filter" data-filter="New" style="padding:6px 14px;font-size:12px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">New</button>
+    <button onclick="filterLeads('Contacted')" class="lead-filter" data-filter="Contacted" style="padding:6px 14px;font-size:12px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Contacted</button>
+    <button onclick="filterLeads('Offer Made')" class="lead-filter" data-filter="Offer Made" style="padding:6px 14px;font-size:12px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Offer Made</button>
+    <button onclick="filterLeads('Converted')" class="lead-filter" data-filter="Converted" style="padding:6px 14px;font-size:12px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Converted</button>
+    <button onclick="filterLeads('Dead')" class="lead-filter" data-filter="Dead" style="padding:6px 14px;font-size:12px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Dead</button>
+  </div>
+  <div id="leads-list"></div>
+</div>
+
 <!-- SAVED DEALS -->
 <div id="p-saved" class="panel" style="display:none">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
@@ -825,7 +848,7 @@ const STACK_FILTERS=[
 ];
 
 function nav(p, skipHash){
-  ['home','analyzer','calc','scripts','saved'].forEach(id=>{
+  ['home','analyzer','calc','scripts','leads','saved'].forEach(id=>{
     const panel=document.getElementById('p-'+id);
     if(panel) panel.style.display=id===p?'block':'none';
     const n=document.getElementById('n-'+id);
@@ -836,6 +859,7 @@ function nav(p, skipHash){
     }
   });
   if(p==='home') renderHome();
+  if(p==='leads') loadLeads();
   if(!skipHash) history.pushState(null,'','#'+p);
 }
 window.addEventListener('hashchange',()=>{
@@ -2219,6 +2243,11 @@ async function saveDeal(){
       btn.textContent=window._editingAtId?'✓ Updated!':'✓ Saved!';
       btn.style.background='var(--green)';btn.style.color='#fff';
       window._editingAtId=null;
+      // Mark lead as Converted if this came from a lead
+      if(window._activeLeadId){
+        try{await fetch(LEADS_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{id:window._activeLeadId,fields:{'Status':'Converted'}}]})});}catch(e){}
+        window._activeLeadId=null;
+      }
       await loadSavedDeals();
     }else{
       btn.textContent='✗ Error';btn.style.color='var(--red)';
@@ -3154,6 +3183,145 @@ function renderHome(){
   if(jokeEl) jokeEl.textContent=jokes[dayOfYear%jokes.length];
 }
 
+// ── INCOMING LEADS ───────────────────────────────────────────────────
+const LEADS_URL='/api/applyleads';
+let leadsCache=[];
+let leadFilter='all';
+
+async function loadLeads(){
+  const el=document.getElementById('leads-list');
+  if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">Loading leads...</div>';
+  try{
+    const r=await fetch(LEADS_URL+'?sort%5B0%5D%5Bfield%5D=Submitted+At&sort%5B0%5D%5Bdirection%5D=desc&maxRecords=200');
+    const json=await r.json();
+    leadsCache=(json.records||[]).map(rec=>({
+      _atId:rec.id,
+      address:rec.fields['Address']||'',
+      city:rec.fields['City']||'',
+      name:rec.fields['Seller Name']||'',
+      phone:rec.fields['Seller Phone']||'',
+      email:rec.fields['Seller Email']||'',
+      beds:rec.fields['Beds']||0,
+      baths:rec.fields['Baths']||0,
+      sqft:rec.fields['SqFt']||0,
+      condition:rec.fields['Condition Summary']||'',
+      timeline:rec.fields['Timeline']||'',
+      source:rec.fields['Source Page']||'',
+      status:rec.fields['Status']||'New',
+      offerLow:rec.fields['Offer Low']||0,
+      offerHigh:rec.fields['Offer High']||0,
+      submitted:rec.fields['Submitted At']||'',
+      notes:rec.fields['Notes']||''
+    }));
+    renderLeads();
+  }catch(e){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--red)">Error loading leads: '+e.message+'</div>';
+  }
+}
+
+function renderLeads(){
+  const el=document.getElementById('leads-list');
+  const filtered=leadFilter==='all'?leadsCache:leadsCache.filter(l=>l.status===leadFilter);
+  document.getElementById('leads-count').textContent=filtered.length+' of '+leadsCache.length+' leads';
+
+  // Update filter button styles
+  document.querySelectorAll('.lead-filter').forEach(btn=>{
+    const f=btn.dataset.filter;
+    const active=f===leadFilter;
+    btn.style.background=active?'var(--bluedim)':'transparent';
+    btn.style.color=active?'var(--blue)':'var(--t3)';
+    btn.style.borderColor=active?'var(--blue)':'var(--border)';
+  });
+
+  if(filtered.length===0){
+    el.innerHTML='<div style="text-align:center;padding:60px 20px"><div style="font-size:40px;margin-bottom:12px">📨</div><div style="font-size:16px;font-weight:700;color:var(--t1)">No leads yet</div><div style="font-size:13px;color:var(--t3);margin-top:6px">Leads from your sell, offer, and apply pages will appear here.</div></div>';
+    return;
+  }
+
+  el.innerHTML=filtered.map(l=>{
+    const statusColors={'New':'var(--blue)','Contacted':'var(--amber)','Offer Made':'var(--purple)','Converted':'var(--green)','Dead':'var(--red)'};
+    const sc=statusColors[l.status]||'var(--t3)';
+    const date=l.submitted?new Date(l.submitted).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+    const sourceLabel=l.source||'Unknown';
+    return `<div class="card" style="margin-bottom:10px;padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--t1)">${l.address||'No address'}${l.city?', '+l.city:''}</div>
+          <div style="font-size:12px;color:var(--t3);margin-top:2px">${l.name||'Unknown seller'}${l.phone?' · <a href="tel:'+l.phone+'" style="color:var(--blue);text-decoration:none">'+l.phone+'</a>':''}${l.email?' · '+l.email:''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;color:var(--t3)">${date}</span>
+          <span class="badge" style="background:${sc}22;color:${sc};font-size:10px">${l.status}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        ${l.beds?'<span class="tag-pill" style="font-size:10px">'+l.beds+' bd</span>':''}
+        ${l.baths?'<span class="tag-pill" style="font-size:10px">'+l.baths+' ba</span>':''}
+        ${l.sqft?'<span class="tag-pill" style="font-size:10px">'+l.sqft.toLocaleString()+' sqft</span>':''}
+        ${l.timeline?'<span class="tag-pill" style="font-size:10px">'+l.timeline+'</span>':''}
+        <span class="tag-pill" style="font-size:10px;background:var(--bluedim);color:var(--blue)">${sourceLabel}</span>
+        ${l.offerLow||l.offerHigh?'<span class="tag-pill" style="font-size:10px;background:var(--greendim);color:var(--green)">Range: $'+(l.offerLow||0).toLocaleString()+'–$'+(l.offerHigh||0).toLocaleString()+'</span>':''}
+      </div>
+      ${l.condition?'<div style="font-size:11px;color:var(--t2);margin-bottom:10px;white-space:pre-wrap;max-height:60px;overflow:hidden">'+l.condition+'</div>':''}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <button onclick="runNumbersFromLead('${l._atId}')" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:none;background:var(--blue);color:#fff;cursor:pointer">🧮 Run Numbers</button>
+        <select onchange="updateLeadStatus('${l._atId}',this.value)" style="padding:5px 8px;font-size:11px;font-weight:600;border-radius:6px;width:auto">
+          ${['New','Contacted','Offer Made','Converted','Dead'].map(s=>'<option value="'+s+'"'+(s===l.status?' selected':'')+'>'+s+'</option>').join('')}
+        </select>
+        ${l.phone?'<a href="tel:'+l.phone+'" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid var(--green);background:var(--greendim);color:var(--green);cursor:pointer;text-decoration:none">📞 Call</a>':''}
+        <button onclick="deleteLeadConfirm('${l._atId}')" style="padding:6px 10px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer;margin-left:auto">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterLeads(f){
+  leadFilter=f;
+  renderLeads();
+}
+
+async function updateLeadStatus(atId, newStatus){
+  try{
+    await fetch(LEADS_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{id:atId,fields:{'Status':newStatus}}]})});
+    const lead=leadsCache.find(l=>l._atId===atId);
+    if(lead)lead.status=newStatus;
+    renderLeads();
+  }catch(e){console.error('Lead status update failed:',e);}
+}
+
+function runNumbersFromLead(atId){
+  const lead=leadsCache.find(l=>l._atId===atId);
+  if(!lead)return;
+  // Pre-fill address
+  const addrEl=document.getElementById('bd-address');
+  if(addrEl) addrEl.value=lead.address+(lead.city?', '+lead.city:'');
+  // Pre-fill calculator fields
+  const sqftEl=document.getElementById('c-sqft');
+  if(sqftEl&&lead.sqft) sqftEl.value=lead.sqft;
+  // Pre-fill seller name in scripts
+  const sellerEl=document.getElementById('s-seller');
+  if(sellerEl&&lead.name) sellerEl.value=lead.name;
+  // Store lead ID so we can mark as converted when deal is saved
+  window._activeLeadId=atId;
+  // Navigate to calculator
+  nav('calc');
+  // Trigger recalc
+  if(typeof calcMAO==='function') calcMAO();
+  // Show status message
+  const status=document.getElementById('bd-status');
+  if(status){status.textContent='Lead loaded: '+lead.name+' — '+(lead.address||'');status.style.display='block';}
+}
+
+async function deleteLeadConfirm(atId){
+  if(!confirm('Delete this lead permanently?'))return;
+  try{
+    await fetch(LEADS_URL+'?id='+atId,{method:'DELETE'});
+    leadsCache=leadsCache.filter(l=>l._atId!==atId);
+    renderLeads();
+  }catch(e){console.error('Delete lead failed:',e);}
+}
+
 // ── AUTH / LOGIN ──────────────────────────────────────────────────────
 const _hp='Q2FzaE9mZmVyU2h1ZmZsZQ==';
 function doLogin(){
@@ -3191,7 +3359,7 @@ function checkSession(){
 initTheme();
 checkSession();
 loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();loadSavedDeals();
-(function(){const h=(location.hash||'').replace('#','');nav(['home','analyzer','calc','scripts','saved'].includes(h)?h:'home');})();
+(function(){const h=(location.hash||'').replace('#','');nav(['home','analyzer','calc','scripts','leads','saved'].includes(h)?h:'home');})();
 </script>
 </body>
 </html>
