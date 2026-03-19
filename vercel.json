@@ -1,4 +1,5 @@
 {
   "buildCommand": "",
-  "outputDirectory": "cos-hub"
+  "outputDirectory": "cos-hub",
+  "cleanUrls": true
 }
