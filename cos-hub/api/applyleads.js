@@ -1,4 +1,4 @@
-// Vercel serverless API route for Apply Leads table
+// Vercel serverless API route for Apply Leads table — COS Hub
 const AT_KEY = process.env.AIRTABLE_API_KEY;
 const AT_BASE = 'app467uZVWGxnatwK';
 const AT_TABLE = 'tblbWdHiLX24xBbIh';
