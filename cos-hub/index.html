@@ -181,15 +181,14 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
   <!-- BATCHDATA ADDRESS LOOKUP -->
   <div class="card" style="border:1px solid var(--blue)44;background:linear-gradient(135deg,var(--s1) 0%,var(--bluedim) 100%)">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="font-size:16px">🔍</span>
-      <span class="label" style="margin:0;color:var(--blue)">Property Lookup — Auto-Fill from Address</span>
+      <span style="font-size:16px">📍</span>
+      <span class="label" style="margin:0;color:var(--blue)">Property Address — Syncs to Calculator & Scripts</span>
     </div>
     <div style="display:flex;gap:8px">
-      <input id="bd-address" type="text" placeholder="Enter full address (e.g. 3016 Palace Gate Ct, Las Vegas, NV 89117)" style="flex:1;font-size:13px;padding:10px 12px" onkeydown="if(event.key==='Enter')batchLookup()"/>
-      <button id="bd-btn" onclick="batchLookup()" style="background:var(--blue);color:#fff;border:none;border-radius:var(--r);padding:10px 20px;font-size:13px;font-weight:700;white-space:nowrap">Pull Data</button>
+      <input id="bd-address" type="text" placeholder="Enter address (e.g. 3016 Palace Gate Ct, Las Vegas, NV)" style="flex:1;font-size:13px;padding:10px 12px" onkeydown="if(event.key==='Enter')useAddress()" oninput="useAddress()"/>
+      <button id="bd-btn" onclick="useAddress()" style="background:var(--blue);color:#fff;border:none;border-radius:var(--r);padding:10px 20px;font-size:13px;font-weight:700;white-space:nowrap">Use Address</button>
     </div>
-    <div id="bd-status" style="font-size:11px;color:var(--t3);margin-top:6px;display:none"></div>
-    <div id="bd-owner-bar" style="display:none;margin-top:8px;padding:8px 12px;background:var(--card);border-radius:var(--r);border:1px solid var(--border);font-size:12px;color:var(--t2);line-height:1.6"></div>
+    <div id="bd-status" style="font-size:11px;color:var(--green);margin-top:6px;display:none"></div>
   </div>
 
   <div style="display:flex;flex-direction:column;gap:10px">
@@ -2412,187 +2411,20 @@ function exportSavedPDF(){
 }
 
 // ── BATCHDATA PROPERTY LOOKUP ──────────────────────────────────────────
-const BATCHDATA_KEY='FUYAMVRI5mCePugUkFvKyM7Nq2eq32gGDcJDudxY';
+function useAddress(){
+  const addr=document.getElementById('bd-address').value.trim();
+  if(!addr)return;
 
-async function batchLookup(){
-  const addrRaw=document.getElementById('bd-address').value.trim();
-  if(!addrRaw){showBdStatus('Enter an address first','var(--amber)');return;}
+  // Sync address to Calculator and Scripts
+  const propEl=document.getElementById('c-prop-addr');
+  if(propEl)propEl.value=addr;
+  const scAddr=document.getElementById('sc-addr');
+  if(scAddr)scAddr.value=addr;
 
-  const btn=document.getElementById('bd-btn');
-  btn.textContent='Looking up...';btn.disabled=true;
-  showBdStatus('Querying BatchData...','var(--blue)');
+  // Recalculate to update verbal script
+  calcMAO();
 
-  // Parse address string into components — handles all formats:
-  // "5735 Shadow Bend Dr las vegas nv 89135"
-  // "5735 Shadow Bend Dr, Las Vegas, NV 89135"
-  // "5735 Shadow Bend Dr, Las Vegas NV 89135"
-  const NV_STATES=/^(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY)$/i;
-  let street='', city='', state='', zip='';
-  const parts=addrRaw.split(',').map(s=>s.trim()).filter(Boolean);
-
-  if(parts.length>=3){
-    // "street, city, state zip"
-    street=parts[0];
-    city=parts[1];
-    const stZip=parts[2].split(/\s+/);
-    state=stZip[0]||'';
-    zip=stZip[1]||'';
-  } else if(parts.length===2){
-    // "street, city state zip"
-    street=parts[0];
-    const words=parts[1].split(/\s+/);
-    zip=(/^\d{5}/.test(words[words.length-1]))?words.pop():'';
-    state=NV_STATES.test(words[words.length-1])?words.pop():'';
-    city=words.join(' ');
-  } else {
-    // No commas: "5735 Shadow Bend Dr las vegas nv 89135"
-    const words=addrRaw.split(/\s+/);
-    // Extract zip (5-digit number at end)
-    if(/^\d{5}(-\d{4})?$/.test(words[words.length-1])) zip=words.pop();
-    // Extract state (2-letter code)
-    if(words.length>1 && NV_STATES.test(words[words.length-1])) state=words.pop();
-    // Now find where street ends and city begins
-    // Strategy: common street suffixes mark end of street
-    const suffixes=/^(dr|drive|st|street|ave|avenue|blvd|boulevard|ln|lane|ct|court|way|pl|place|cir|circle|rd|road|pkwy|parkway|ter|terrace)$/i;
-    let splitIdx=-1;
-    for(let i=1;i<words.length;i++){
-      if(suffixes.test(words[i])){splitIdx=i;break;}
-    }
-    if(splitIdx>=0&&splitIdx<words.length-1){
-      street=words.slice(0,splitIdx+1).join(' ');
-      city=words.slice(splitIdx+1).join(' ');
-    } else {
-      // Fallback: assume last 2 words before state/zip are city
-      if(words.length>3){
-        city=words.splice(-2).join(' ');
-        street=words.join(' ');
-      } else {
-        street=words.join(' ');
-      }
-    }
-  }
-
-  try{
-    const bdHeaders={'Authorization':'Bearer '+BATCHDATA_KEY,'Content-Type':'application/json'};
-
-    // Try exact lookup first
-    let resp=await fetch('https://api.batchdata.com/api/v1/property/lookup/all-attributes',{
-      method:'POST', headers:bdHeaders,
-      body:JSON.stringify({requests:[{address:{street,city,state,zip}}]})
-    });
-    let json=await resp.json();
-
-    // If exact lookup fails, try fuzzy search
-    if(json.status?.code===200&&json.results?.properties?.length===0||
-       (json.results?.meta?.results?.matchCount===0)){
-      showBdStatus('Exact match not found, trying fuzzy search...','var(--amber)');
-      resp=await fetch('https://api.batchdata.com/api/v1/property/search',{
-        method:'POST', headers:bdHeaders,
-        body:JSON.stringify({searchCriteria:{address:{street,city,state,zip}}})
-      });
-      json=await resp.json();
-    }
-
-    if(json.status?.code===403){
-      showBdStatus('⚠️ Insufficient BatchData credits — add balance at app.batchdata.com','var(--red)');
-      btn.textContent='Pull Data';btn.disabled=false;return;
-    }
-    if(json.status?.code!==200||!json.results?.properties?.length){
-      showBdStatus('❌ No property found — try adding commas: "5735 Shadow Bend Dr, Las Vegas, NV 89135"','var(--red)');
-      btn.textContent='Pull Data';btn.disabled=false;return;
-    }
-
-    const p=json.results.properties[0];
-    const v=p.valuation||{};
-    const l=p.listing||{};
-    const o=p.owner||{};
-    const ol=p.openLien||{};
-    const q=p.quickLists||{};
-    const intel=p.intel||{};
-
-    // Auto-fill calculator fields
-    const estValue=v.estimatedValue||l.price||0;
-    if(estValue){document.getElementById('c-arv').value=Math.round(estValue);document.getElementById('c-arv-lbl').textContent='$'+Math.round(estValue).toLocaleString();}
-
-    const sqft=l.totalBuildingAreaSquareFeet||l.livingArea||0;
-    if(sqft){document.getElementById('c-sqft').value=sqft;document.getElementById('c-sqft-lbl').textContent=sqft.toLocaleString()+' sqft';}
-
-    // Fill seller name and property address for verbal script
-    const ownerNames=(o.names||[]).map(n=>n.first+' '+n.last).join(' & ');
-    const sellerEl=document.getElementById('c-seller-name');
-    if(sellerEl&&ownerNames)sellerEl.value=ownerNames;
-    const propEl=document.getElementById('c-prop-addr');
-    if(propEl)propEl.value=street+(city?', '+city:'');
-
-    // Auto-detect distress type from flags
-    const distressEl=document.getElementById('c-distress');
-    if(distressEl){
-      if(q.preforeclosure)distressEl.value='Pre-foreclosure';
-      else if(q.noticeOfDefault)distressEl.value='Pre-foreclosure';
-      else if(q.noticeOfSale)distressEl.value='Notice of Trustee Sale';
-      else if(q.taxDefault)distressEl.value='Tax Delinquent';
-      else if(q.involuntaryLien)distressEl.value='Code Violations';
-      else if(q.vacant)distressEl.value='Vacant';
-      else if(q.inherited)distressEl.value='Inherited';
-      else if(q.failedListing||q.expiredListing)distressEl.value='Expired Listing';
-      else if(q.highEquity)distressEl.value='High Equity Absentee';
-    }
-
-    // Show owner info bar
-    const ownerBar=document.getElementById('bd-owner-bar');
-    const mortBal=ol.totalOpenLienBalance||0;
-    window._c_debt=mortBal;
-    const eqPct=v.equityPercent||0;
-    const eqDollar=v.equityCurrentEstimatedBalance||0;
-    const propensity=intel.salePropensity||0;
-    const beds=l.bedroomCount||0;
-    const baths=l.bathroomCount||0;
-    const yrBuilt=l.yearBuilt||'—';
-    const propType=l.propertyType||'—';
-    const confidence=v.confidenceScore||0;
-
-    let infoHtml=`<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">`;
-    infoHtml+=`<span><b style="color:var(--t1)">${ownerNames||'Unknown Owner'}</b></span>`;
-    infoHtml+=`<span>🏠 ${propType}</span>`;
-    if(beds)infoHtml+=`<span>🛏 ${beds} bed</span>`;
-    if(baths)infoHtml+=`<span>🚿 ${baths} bath</span>`;
-    if(sqft)infoHtml+=`<span>📐 ${sqft.toLocaleString()} sqft</span>`;
-    infoHtml+=`<span>📅 Built ${yrBuilt}</span>`;
-    infoHtml+=`</div>`;
-    infoHtml+=`<div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:6px">`;
-    infoHtml+=`<span>💰 Est. Value: <b style="color:var(--green)">$${Math.round(estValue).toLocaleString()}</b> <span style="font-size:10px;opacity:.7">(${confidence}% confidence)</span></span>`;
-    if(mortBal)infoHtml+=`<span>🏦 Mortgage: <b style="color:var(--amber)">$${mortBal.toLocaleString()}</b></span>`;
-    if(eqDollar)infoHtml+=`<span>📊 Equity: <b style="color:var(--green)">$${Math.round(eqDollar).toLocaleString()}</b> (${eqPct.toFixed(1)}%)</span>`;
-    if(propensity)infoHtml+=`<span>🎯 Sale Propensity: <b>${propensity}%</b></span>`;
-    infoHtml+=`</div>`;
-
-    // Show distress flags
-    const flags=[];
-    if(q.preforeclosure)flags.push('🔴 Pre-Foreclosure');
-    if(q.taxDefault)flags.push('🔴 Tax Default');
-    if(q.involuntaryLien)flags.push('⚠️ Lien');
-    if(q.vacant)flags.push('🏚️ Vacant');
-    if(q.failedListing)flags.push('📉 Failed Listing');
-    if(q.highEquity)flags.push('💎 High Equity');
-    if(q.freeAndClear)flags.push('✅ Free & Clear');
-    if(q.absenteeOwner)flags.push('📬 Absentee');
-    if(q.seniorOwner)flags.push('👴 Senior');
-    if(q.corporateOwned)flags.push('🏢 Corp Owned');
-    if(flags.length){
-      infoHtml+=`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">${flags.map(f=>`<span style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:2px 8px;font-size:10px;font-weight:600">${f}</span>`).join('')}</div>`;
-    }
-
-    ownerBar.innerHTML=infoHtml;
-    ownerBar.style.display='block';
-    showBdStatus('✅ Data loaded — '+(beds?beds+'bd/':'')+(baths?baths+'ba/':'')+(sqft?sqft+'sf ':'')+' — $'+Math.round(estValue).toLocaleString(),'var(--green)');
-
-    // Recalculate with new values
-    calcMAO();
-
-  }catch(err){
-    showBdStatus('❌ API error: '+err.message,'var(--red)');
-  }
-  btn.textContent='Pull Data';btn.disabled=false;
+  showBdStatus('Address synced to Calculator & Scripts','var(--green)');
 }
 
 function showBdStatus(msg,color){
