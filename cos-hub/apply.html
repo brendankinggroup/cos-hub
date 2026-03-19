@@ -814,7 +814,7 @@ async function saveStepToAirtable(step) {
     try {
         if (!_applyAtId) {
             // Create new record on first save (step 1)
-            const r = await fetch('/api/apply-leads', {
+            const r = await fetch('/api/applyleads', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({records: [{fields}]})
@@ -826,7 +826,7 @@ async function saveStepToAirtable(step) {
             }
         } else {
             // Update existing record
-            await fetch('/api/apply-leads', {
+            await fetch('/api/applyleads', {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({records: [{id: _applyAtId, fields}]})
@@ -1082,7 +1082,7 @@ async function sendLead(data, offer) {
 
         if (_applyAtId) {
             // Update existing progressive record
-            await fetch('/api/apply-leads', {
+            await fetch('/api/applyleads', {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({records: [{id: _applyAtId, fields: finalFields}]})
@@ -1113,7 +1113,7 @@ async function sendLead(data, offer) {
                 'Photo Count': data.photoCount || 0, 'Photo Links': photoLinksAT || '',
                 'Status': 'New', 'Submitted At': new Date().toISOString()
             };
-            await fetch('/api/apply-leads', {
+            await fetch('/api/applyleads', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({records: [{fields: allFields}]})
