@@ -1187,11 +1187,11 @@ function calcMAO(){
   document.getElementById('c-mao').textContent=fm(mao);
   document.getElementById('c-mao-lo').textContent=fm(mao*.95);document.getElementById('c-mao-mi').textContent=fm(mao);document.getElementById('c-mao-hi').textContent=fm(mao*1.03);
   const calcRepairs=sqft*psf+flat;
-  // Show slider estimate live
-  const sliderEl=document.getElementById('c-rep-slider');
-  if(sliderEl) sliderEl.textContent=fm(calcRepairs);
   // Active total = override if set, else calculated
   const activeRepairs=repOverride>0?repOverride:calcRepairs;
+  // Show both labels in sync
+  const sliderEl=document.getElementById('c-rep-slider');
+  if(sliderEl) sliderEl.textContent=fm(activeRepairs);
   const repTotalEl=document.getElementById('c-rep-total');
   if(repTotalEl){repTotalEl.textContent=fm(activeRepairs);repTotalEl.style.color=repOverride>0?'var(--blue)':'var(--amber)';}
   // Tint override box when active
@@ -2886,38 +2886,54 @@ function initTheme(){
   }catch(e){}
 }
 // ── REHAB ESTIMATOR ──────────────────────────────────────────────────
+// psf = per sqft rates (multiplied by sqft). null = fixed cost.
 const REHAB_ITEMS=[
   {cat:'Exterior',items:[
-    {id:'roof',name:'Roof',costs:[0,2500,5000,10000,16000],labels:['Good','Patch Only','Partial','Full Reshingle','Full Replacement']},
-    {id:'exterior_paint',name:'Exterior Paint',costs:[0,1500,3500,6000,9000],labels:['Good','Touch Up','1 Side','Full Paint','Stucco Repair+Paint']},
-    {id:'landscaping',name:'Landscaping',costs:[0,500,1500,3000,6000],labels:['Good','Trim/Clean','Rock/Mulch','New Plants+Rock','Full Redo']},
-    {id:'garage',name:'Garage Door',costs:[0,300,800,1500,3000],labels:['Good','Adjust/Lube','Opener','Single Door','Double Door']},
-    {id:'fencing',name:'Fencing',costs:[0,500,1500,3000,6000],labels:['Good','Patch','Partial','Full Back','Full Property']},
-    {id:'pool',name:'Pool (if applicable)',costs:[0,500,2000,5000,15000],labels:['N/A or Good','Clean+Chemical','Resurface','Equipment','Full Reno']},
-    {id:'driveway',name:'Driveway/Concrete',costs:[0,500,1500,3000,6000],labels:['Good','Crack Fill','Partial','Overlay','Replace']},
+    {id:'roof',name:'Roof',costs:[0,2500,5000,10000,16000],psf:null,labels:['Good','Patch Only','Partial','Full Reshingle','Full Replacement']},
+    {id:'exterior_paint',name:'Exterior Paint',psf:[0,0,1.5,2.5,4],costs:null,labels:['Good','Touch Up','1 Side','Full Paint','Stucco Repair+Paint'],psfLabels:['Good','Touch Up','$1.50/sf','$2.50/sf','$4/sf']},
+    {id:'landscaping',name:'Landscaping',costs:[0,500,1500,3000,6000],psf:null,labels:['Good','Trim/Clean','Rock/Mulch','New Plants+Rock','Full Redo']},
+    {id:'garage',name:'Garage Door',costs:[0,300,800,1500,3000],psf:null,labels:['Good','Adjust/Lube','Opener','Single Door','Double Door']},
+    {id:'fencing',name:'Fencing',costs:[0,500,1500,3000,6000],psf:null,labels:['Good','Patch','Partial','Full Back','Full Property']},
+    {id:'pool',name:'Pool (if applicable)',costs:[0,500,2000,5000,15000],psf:null,labels:['N/A or Good','Clean+Chemical','Resurface','Equipment','Full Reno']},
+    {id:'driveway',name:'Driveway/Concrete',costs:[0,500,1500,3000,6000],psf:null,labels:['Good','Crack Fill','Partial','Overlay','Replace']},
   ]},
   {cat:'Interior — Big Ticket',items:[
-    {id:'kitchen',name:'Kitchen',costs:[0,5000,12000,22000,35000],labels:['Good','Cosmetic','Partial Remodel','Full Remodel','Gut+Custom']},
-    {id:'bathrooms',name:'Bathrooms (all)',costs:[0,3000,8000,15000,25000],labels:['Good','Cosmetic','1 Full Reno','2 Full Reno','3+ Full Reno']},
-    {id:'hvac',name:'HVAC System',costs:[0,500,2000,5000,10000],labels:['Good','Service','Repair','Replace 1 Unit','Full System']},
-    {id:'electrical',name:'Electrical Panel',costs:[0,500,1500,3500,8000],labels:['Good','Outlets/Switches','Partial Rewire','Panel Upgrade','Full Rewire']},
-    {id:'plumbing',name:'Plumbing',costs:[0,500,2000,5000,12000],labels:['Good','Fix Leaks','Fixtures','Partial Repipe','Full Repipe']},
-    {id:'water_heater',name:'Water Heater',costs:[0,0,500,1200,2500],labels:['Good','Good','Repair','Standard','Tankless']},
+    {id:'kitchen',name:'Kitchen',costs:[0,5000,12000,22000,35000],psf:null,labels:['Good','Cosmetic','Partial Remodel','Full Remodel','Gut+Custom']},
+    {id:'bathrooms',name:'Bathrooms (all)',costs:[0,3000,8000,15000,25000],psf:null,labels:['Good','Cosmetic','1 Full Reno','2 Full Reno','3+ Full Reno']},
+    {id:'hvac',name:'HVAC System',costs:[0,500,2000,5000,10000],psf:null,labels:['Good','Service','Repair','Replace 1 Unit','Full System']},
+    {id:'electrical',name:'Electrical',psf:[0,0,0.75,1.75,4],costs:null,labels:['Good','Outlets/Switches','Partial Rewire','Panel Upgrade','Full Rewire'],psfLabels:['Good','Outlets','$0.75/sf','$1.75/sf','$4/sf']},
+    {id:'plumbing',name:'Plumbing',psf:[0,0,1,2.5,6],costs:null,labels:['Good','Fix Leaks','Fixtures','Partial Repipe','Full Repipe'],psfLabels:['Good','Fix Leaks','$1/sf','$2.50/sf','$6/sf']},
+    {id:'water_heater',name:'Water Heater',costs:[0,0,500,1200,2500],psf:null,labels:['Good','Good','Repair','Standard','Tankless']},
   ]},
   {cat:'Interior — Cosmetic',items:[
-    {id:'flooring',name:'Flooring',costs:[0,1000,3000,6000,12000],labels:['Good','Patch/Clean','1-2 Rooms','Most Rooms','Whole House']},
-    {id:'paint_int',name:'Interior Paint',costs:[0,500,1500,3000,5000],labels:['Good','Touch Up','2-3 Rooms','Full Interior','Texture+Paint']},
-    {id:'doors_trim',name:'Doors & Trim',costs:[0,300,800,2000,4000],labels:['Good','Hardware','Some Doors','All Doors','All+Crown']},
-    {id:'windows',name:'Windows',costs:[0,0,1500,4000,10000],labels:['Good','Good','2-3 Windows','Half House','All Windows']},
-    {id:'lighting',name:'Light Fixtures',costs:[0,200,500,1200,2500],labels:['Good','1-2 Fixtures','Some Rooms','All Rooms','All+Recessed']},
-    {id:'appliances',name:'Appliances',costs:[0,0,1000,2500,5000],labels:['Good','Good','1-2 Items','Full Set','Premium Set']},
+    {id:'flooring',name:'Flooring',psf:[0,0.5,2,4,7],costs:null,labels:['Good','Patch/Clean','1-2 Rooms','Most Rooms','Whole House'],psfLabels:['Good','$0.50/sf','$2/sf','$4/sf','$7/sf']},
+    {id:'paint_int',name:'Interior Paint',psf:[0,0.25,0.75,1.5,2.5],costs:null,labels:['Good','Touch Up','2-3 Rooms','Full Interior','Texture+Paint'],psfLabels:['Good','$0.25/sf','$0.75/sf','$1.50/sf','$2.50/sf']},
+    {id:'doors_trim',name:'Doors & Trim',costs:[0,300,800,2000,4000],psf:null,labels:['Good','Hardware','Some Doors','All Doors','All+Crown']},
+    {id:'windows',name:'Windows',costs:[0,0,1500,4000,10000],psf:null,labels:['Good','Good','2-3 Windows','Half House','All Windows']},
+    {id:'lighting',name:'Light Fixtures',costs:[0,200,500,1200,2500],psf:null,labels:['Good','1-2 Fixtures','Some Rooms','All Rooms','All+Recessed']},
+    {id:'appliances',name:'Appliances',costs:[0,0,1000,2500,5000],psf:null,labels:['Good','Good','1-2 Items','Full Set','Premium Set']},
   ]},
   {cat:'Foundation & Structure',items:[
-    {id:'foundation',name:'Foundation',costs:[0,0,2000,8000,20000],labels:['Good','Good','Minor Cracks','Piers/Support','Major Repair']},
-    {id:'termite',name:'Termite/Pest',costs:[0,0,500,1500,4000],labels:['Clear','Clear','Treatment','Treatment+Repair','Major Damage']},
-    {id:'mold',name:'Mold/Water Damage',costs:[0,0,1000,3000,10000],labels:['None','None','Minor','Moderate','Major Remediation']},
+    {id:'foundation',name:'Foundation',costs:[0,0,2000,8000,20000],psf:null,labels:['Good','Good','Minor Cracks','Piers/Support','Major Repair']},
+    {id:'termite',name:'Termite/Pest',costs:[0,0,500,1500,4000],psf:null,labels:['Clear','Clear','Treatment','Treatment+Repair','Major Damage']},
+    {id:'mold',name:'Mold/Water Damage',costs:[0,0,1000,3000,10000],psf:null,labels:['None','None','Minor','Moderate','Major Remediation']},
   ]},
 ];
+
+function getRehabSqft(){return +(document.getElementById('c-sqft')||{value:1600}).value||1600;}
+function getRehabCost(item,level){
+  if(item.psf&&item.psf[level]>0) return Math.round(item.psf[level]*getRehabSqft());
+  if(item.costs) return item.costs[level]||0;
+  return 0;
+}
+function getRehabLabel(item,level){
+  if(item.psf&&item.psf[level]>0){
+    const lbl=item.psfLabels?item.psfLabels[level]:item.labels[level];
+    return lbl+' · $'+getRehabCost(item,level).toLocaleString();
+  }
+  if(item.costs&&item.costs[level]>0) return item.labels[level]+' · $'+item.costs[level].toLocaleString();
+  return item.labels[level];
+}
 
 function openRehabEstimator(){
   const old=document.getElementById('rehab-modal');if(old)old.remove();
@@ -2950,7 +2966,7 @@ function openRehabEstimator(){
           <span id="rehab-cost-${item.id}" style="font-size:12px;font-weight:700;color:var(--amber)">$0</span>
         </div>
         <div style="display:flex;gap:4px;flex-wrap:wrap">
-          ${item.labels.map((lbl,j)=>`<button onclick="setRehabItem('${item.id}',${j})" id="rb-${item.id}-${j}" style="padding:4px 10px;font-size:10px;font-weight:600;border-radius:14px;border:1px solid ${j===0?'var(--green)':'var(--border)'};background:${j===0?'var(--greendim)':'transparent'};color:${j===0?'var(--green)':'var(--t3)'};cursor:pointer">${lbl}${j>0?' · $'+item.costs[j].toLocaleString():''}</button>`).join('')}
+          ${item.labels.map((lbl,j)=>{const cost=getRehabCost(item,j);return`<button onclick="setRehabItem('${item.id}',${j})" id="rb-${item.id}-${j}" style="padding:4px 10px;font-size:10px;font-weight:600;border-radius:14px;border:1px solid ${j===0?'var(--green)':'var(--border)'};background:${j===0?'var(--greendim)':'transparent'};color:${j===0?'var(--green)':'var(--t3)'};cursor:pointer">${item.psfLabels?item.psfLabels[j]:lbl}${cost>0&&!item.psf?' · $'+cost.toLocaleString():''}${item.psf&&item.psf[j]>0?' = $'+cost.toLocaleString():''}</button>`;}).join('')}
         </div>
       </div>`;
     });
@@ -2989,7 +3005,7 @@ function setRehabItem(id,level){
   });
   // Update cost display
   const costEl=document.getElementById('rehab-cost-'+id);
-  if(costEl)costEl.textContent='$'+item.costs[level].toLocaleString();
+  if(costEl)costEl.textContent='$'+getRehabCost(item,level).toLocaleString();
   // Recalculate total
   updateRehabTotal();
 }
@@ -2998,7 +3014,7 @@ function updateRehabTotal(){
   let total=0;
   REHAB_ITEMS.forEach(cat=>cat.items.forEach(item=>{
     const level=_rehabSelections[item.id]||0;
-    total+=item.costs[level];
+    total+=getRehabCost(item,level);
   }));
   const t1=document.getElementById('rehab-total');
   const t2=document.getElementById('rehab-total-bottom');
@@ -3010,7 +3026,7 @@ function applyRehabTotal(){
   let total=0;
   REHAB_ITEMS.forEach(cat=>cat.items.forEach(item=>{
     const level=_rehabSelections[item.id]||0;
-    total+=item.costs[level];
+    total+=getRehabCost(item,level);
   }));
   const overrideEl=document.getElementById('c-rep-override');
   if(overrideEl){overrideEl.value=total;syncOverrideToSlider();}
