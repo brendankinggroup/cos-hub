@@ -6,7 +6,7 @@ const AT_URL = `https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}`;
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
@@ -36,6 +36,16 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       const r = await fetch(url, {
         method: 'POST',
+        headers: atHeaders,
+        body: JSON.stringify(req.body),
+      });
+      const json = await r.json();
+      return res.status(r.status).json(json);
+    }
+
+    if (req.method === 'PATCH') {
+      const r = await fetch(url, {
+        method: 'PATCH',
         headers: atHeaders,
         body: JSON.stringify(req.body),
       });

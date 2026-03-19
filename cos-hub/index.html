@@ -2101,10 +2101,18 @@ async function saveDeal(){
   };
 
   try{
-    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{fields}]})});
+    let r;
+    if(window._editingAtId){
+      // Update existing record via PATCH
+      r=await fetch(API_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{id:window._editingAtId,fields}]})});
+    }else{
+      r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{fields}]})});
+    }
     const json=await r.json();
     if(json.records&&json.records.length){
-      btn.textContent='✓ Saved!';btn.style.background='var(--green)';btn.style.color='#fff';
+      btn.textContent=window._editingAtId?'✓ Updated!':'✓ Saved!';
+      btn.style.background='var(--green)';btn.style.color='#fff';
+      window._editingAtId=null;
       await loadSavedDeals();
     }else{
       btn.textContent='✗ Error';btn.style.color='var(--red)';
@@ -2113,7 +2121,7 @@ async function saveDeal(){
     console.error('Airtable save error:',e);
     btn.textContent='✗ Error';btn.style.color='var(--red)';
   }
-  setTimeout(()=>{btn.textContent='💾 Save Deal';btn.style.background='var(--greendim)';btn.style.color='var(--green)';btn.disabled=false;},2000);
+  setTimeout(()=>{updateSaveBtn();btn.disabled=false;},2000);
 }
 
 function renderSavedDeals(){
@@ -2159,9 +2167,14 @@ function renderSavedDeals(){
   }).join('');
 }
 
+window._editingAtId=null;
+
 function recalcDeal(idx){
   const d=savedDealsCache[idx];if(!d)return;
   nav('calc');
+
+  // Track that we're editing this record
+  window._editingAtId=d._atId||null;
 
   const set=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
   set('c-arv',d.arv);
@@ -2179,8 +2192,31 @@ function recalcDeal(idx){
   const propEl=document.getElementById('c-prop-addr');if(propEl)propEl.value=d.address||'';
   const bdAddr=document.getElementById('bd-address');if(bdAddr)bdAddr.value=d.address||'';
 
+  // Set deal type
+  setDealType(d.dealType==='MLS / Agent'?'agent':'seller');
+
+  // Update save button to show editing mode
+  updateSaveBtn();
+
   calcMAO();
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateSaveBtn(){
+  const btn=document.getElementById('save-deal-btn');
+  if(!btn)return;
+  if(window._editingAtId){
+    btn.textContent='💾 Update Deal';
+    btn.style.background='var(--amber)';btn.style.color='#000';btn.style.borderColor='var(--amber)';
+  }else{
+    btn.textContent='💾 Save Deal';
+    btn.style.background='var(--amber)';btn.style.color='#000';btn.style.borderColor='var(--amber)';
+  }
+}
+
+function clearEditing(){
+  window._editingAtId=null;
+  updateSaveBtn();
 }
 
 function viewDeal(idx){
