@@ -2255,26 +2255,40 @@ function renderSavedDeals(){
         </div>
       </div>
       <!-- Row 2: Numbers grid -->
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px">
-        <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px">
+        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">ARV</div>
-          <div style="font-size:15px;font-weight:800;color:var(--t1)">${fm(d.arv)}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--t1)">${fm(d.arv)}</div>
         </div>
-        <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
+        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Repairs</div>
-          <div style="font-size:15px;font-weight:800;color:var(--amber)">${fm(d.repairs)}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--amber)">${fm(d.repairs)}</div>
         </div>
-        <div style="text-align:center;padding:8px;background:var(--bluedim);border-radius:6px;border:1px solid var(--blue)33">
+        <div style="text-align:center;padding:10px;background:var(--bluedim);border-radius:6px;border:1px solid var(--blue)33">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">MAO</div>
-          <div style="font-size:15px;font-weight:800;color:var(--blue)">${fm(d.mao)}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--blue)">${fm(d.mao)}</div>
         </div>
-        <div style="text-align:center;padding:8px;background:var(--s2);border-radius:6px">
+        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Fee</div>
-          <div style="font-size:15px;font-weight:800;color:var(--green)">${fm(d.fee)}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green)">${fm(d.fee)}</div>
         </div>
-        <div style="text-align:center;padding:8px;background:${d.profit>0?'var(--greendim)':'#2a0a0a'};border-radius:6px;border:1px solid ${profitColor}33">
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
+        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Dispo</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green)">${fm(d.disposition)}</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">All-In</div>
+          <div style="font-size:16px;font-weight:800;color:var(--t1)">${fm(d.allin)}</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:${d.profit>0?'var(--greendim)':'#2a0a0a'};border-radius:6px;border:1px solid ${profitColor}33">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Profit</div>
-          <div style="font-size:15px;font-weight:800;color:${profitColor}">${fm(d.profit)}</div>
+          <div style="font-size:16px;font-weight:800;color:${profitColor}">${fm(d.profit)}</div>
+        </div>
+        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">ROI</div>
+          <div style="font-size:16px;font-weight:800;color:var(--amber)">${d.roi?d.roi.toFixed(1)+'%':'—'}</div>
         </div>
       </div>
       <!-- Row 3: Actions -->
