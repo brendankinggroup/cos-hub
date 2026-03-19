@@ -2198,6 +2198,12 @@ async function loadSavedDeals(){
       dealType:rec.fields['Deal Type']||'Seller Direct',
       compsLink:rec.fields['Comps Link']||'',
       priceOffered:rec.fields['Price Offered']||0,
+      sellerPhone:rec.fields['Seller Phone']||'',
+      sellerEmail:rec.fields['Seller Email']||'',
+      beds:rec.fields['Beds']||0,
+      baths:rec.fields['Baths']||0,
+      condition:rec.fields['Condition']||'',
+      timeline:rec.fields['Timeline']||'',
       pipeline:rec.fields['Pipeline']||'New',
       status:rec.fields['Status']||'New',
       notes:rec.fields['Notes']||'',
@@ -2214,15 +2220,21 @@ async function saveDeal(){
   const btn=document.getElementById('save-deal-btn');
   btn.textContent='Saving...';btn.disabled=true;
 
+  // Pull seller contact info from active lead if available
+  const ld=window._activeLeadData||{};
   const fields={
     'Address':d.propAddr||'Unknown',
     'Seller':d.sellerName||'',
+    'Seller Phone':ld.phone||'',
+    'Seller Email':ld.email||'',
     'ARV':d.arv,'Repairs':d.repairs,'MAO':d.mao,'Fee':d.fee,
     'Dispo':d.disposition,'Purchase Costs':d.purchaseCosts,'Selling Costs':d.sellingCosts,
     'All-In':d.allin,'Profit':d.profit,'ROI':d.roi/100,
     'Deal Score':d.score,'Score Label':d.scoreLbl,
     'Distress':d.distress||'','Neighborhood':d.hood||'',
     'SqFt':d.sqft||0,'Offer %':d.pct||70,'Close Days':d.closeDays||14,
+    'Beds':ld.beds||0,'Baths':ld.baths||0,
+    'Condition':ld.condition||'','Timeline':ld.timeline||'',
     'Deal Type':d.dealType==='agent'?'MLS / Agent':'Seller Direct',
     'Comps Link':d.compsLink||'',
     'Price Offered':d.priceOffered||0,
@@ -2247,6 +2259,7 @@ async function saveDeal(){
       if(window._activeLeadId){
         try{await fetch(LEADS_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{id:window._activeLeadId,fields:{'Status':'Converted'}}]})});}catch(e){}
         window._activeLeadId=null;
+        window._activeLeadData=null;
       }
       await loadSavedDeals();
     }else{
@@ -2289,7 +2302,7 @@ function renderSavedDeals(){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div style="flex:1;min-width:0">
           <div style="font-size:16px;font-weight:800;color:var(--t1);line-height:1.3">${esc(d.address||'No Address')}</div>
-          <div style="font-size:13px;color:var(--t2);margin-top:2px">${esc(d.seller||'—')} · ${esc(d.distress||'—')} · ${date}</div>
+          <div style="font-size:13px;color:var(--t2);margin-top:2px">${esc(d.seller||'—')}${d.sellerPhone?' · <a href="tel:'+esc(d.sellerPhone)+'" style="color:var(--blue);text-decoration:none">'+esc(d.sellerPhone)+'</a>':''} · ${esc(d.distress||'—')} · ${date}</div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:12px">
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:${pipeColor}18;color:${pipeColor};border:1px solid ${pipeColor}44">${d.pipeline||'New'}</span>
@@ -2424,7 +2437,8 @@ function viewDeal(idx){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
       <div>
         <div style="font-size:20px;font-weight:800;color:var(--t1);font-family:'Barlow Condensed',sans-serif;letter-spacing:.03em">${esc(d.address)||'[No Address]'}</div>
-        <div style="font-size:13px;color:var(--t2);margin-top:2px">Seller: <b>${esc(d.seller)||'—'}</b> · ${esc(d.distress)||'—'} · ${esc(d.hood)||'—'}</div>
+        <div style="font-size:13px;color:var(--t2);margin-top:2px">Seller: <b>${esc(d.seller)||'—'}</b>${d.sellerPhone?' · <a href="tel:'+esc(d.sellerPhone)+'" style="color:var(--blue);text-decoration:none">'+esc(d.sellerPhone)+'</a>':''}${d.sellerEmail?' · '+esc(d.sellerEmail):''}</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:3px">${esc(d.distress)||'—'} · ${esc(d.hood)||'—'}${d.beds?' · '+d.beds+'bd/'+d.baths+'ba':''}${d.condition?' · '+esc(d.condition):''}${d.timeline?' · '+esc(d.timeline):''}</div>
         <div style="font-size:11px;color:var(--t3);margin-top:4px">Saved ${date}</div>
       </div>
       <button onclick="document.getElementById('deal-modal').remove()" style="background:transparent;border:none;color:var(--t3);font-size:20px;cursor:pointer;padding:0 4px">✕</button>
@@ -2538,7 +2552,8 @@ function pdfDeal(idx){
 <div class="section">
   <div class="section-title">Property Information</div>
   <div class="prop-address">${d.address||'[Property Address]'}</div>
-  <div class="prop-sub">Seller: <b>${d.seller||'—'}</b> &nbsp;·&nbsp; Distress: <b>${d.distress||'—'}</b> &nbsp;·&nbsp; Neighborhood: <b>${d.hood||'—'}</b></div>
+  <div class="prop-sub">Seller: <b>${d.seller||'—'}</b>${d.sellerPhone?' &nbsp;·&nbsp; Phone: <b>'+d.sellerPhone+'</b>':''}${d.sellerEmail?' &nbsp;·&nbsp; Email: <b>'+d.sellerEmail+'</b>':''}</div>
+  <div class="prop-sub" style="margin-top:2px">Distress: <b>${d.distress||'—'}</b> &nbsp;·&nbsp; Neighborhood: <b>${d.hood||'—'}</b>${d.beds?' &nbsp;·&nbsp; <b>'+d.beds+'</b> bd / <b>'+d.baths+'</b> ba':''}${d.condition?' &nbsp;·&nbsp; Condition: <b>'+d.condition+'</b>':''}</div>
   <div class="prop-details">
     ${d.sqft?'<span>📐 <b>'+d.sqft.toLocaleString()+'</b> sqft</span>':''}
     ${arvPsf?'<span>💰 <b>'+arvPsf+'</b> (ARV)</span>':''}
@@ -3299,18 +3314,21 @@ function runNumbersFromLead(atId){
   // Pre-fill calculator fields
   const sqftEl=document.getElementById('c-sqft');
   if(sqftEl&&lead.sqft) sqftEl.value=lead.sqft;
-  // Pre-fill seller name in scripts
+  // Pre-fill seller name in calculator AND scripts
+  const calcSellerEl=document.getElementById('c-seller-name');
+  if(calcSellerEl&&lead.name) calcSellerEl.value=lead.name;
   const sellerEl=document.getElementById('s-seller');
   if(sellerEl&&lead.name) sellerEl.value=lead.name;
-  // Store lead ID so we can mark as converted when deal is saved
+  // Store lead ID + full lead data so we can attach seller details when saving deal
   window._activeLeadId=atId;
+  window._activeLeadData=lead;
   // Navigate to calculator
   nav('calc');
   // Trigger recalc
   if(typeof calcMAO==='function') calcMAO();
   // Show status message
   const status=document.getElementById('bd-status');
-  if(status){status.textContent='Lead loaded: '+lead.name+' — '+(lead.address||'');status.style.display='block';}
+  if(status){status.textContent='📨 Lead loaded: '+lead.name+(lead.phone?' · '+lead.phone:'')+' — '+(lead.address||'');status.style.display='block';status.style.color='var(--blue)';}
 }
 
 async function deleteLeadConfirm(atId){
