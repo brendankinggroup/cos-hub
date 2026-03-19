@@ -639,7 +639,6 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       <button onclick="exportSavedCSV()" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">📥 Export CSV</button>
       <button onclick="exportSavedPDF()" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">📄 Export PDF</button>
       <button onclick="clearSavedDeals()" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">🗑️ Clear All</button>
-      <button onclick="disconnectAt()" style="background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">🔌 Disconnect</button>
     </div>
   </div>
   <div id="saved-table-wrap" style="overflow-x:auto;border:1px solid var(--border);border-radius:var(--r2)">
@@ -2006,57 +2005,14 @@ document.addEventListener('keydown', function(e) {
   else if((e.ctrlKey || e.metaKey) && key === 'k') { e.preventDefault(); document.querySelector('[onclick*="copyScript"]')?.click(); }
   else if(key === 'escape') { e.preventDefault(); document.querySelectorAll('[onclick*="toggleSection"]').forEach(el => el.click()); }
 });
-// ── SAVED DEALS (Airtable-synced) ──────────────────────────────────────
-function getAtKey(){return localStorage.getItem('cos_at_key')||'';}
-function setAtKey(k){localStorage.setItem('cos_at_key',k);}
-const AT_BASE='app467uZVWGxnatwK';
-const AT_TABLE='tblizewxGfQJNuMZr';
-const AT_URL=`https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}`;
-function atHeaders(){return{'Authorization':`Bearer ${getAtKey()}`,'Content-Type':'application/json'};}
-
-function showAtConnect(msg){
-  let overlay=document.getElementById('at-connect-overlay');
-  if(overlay){overlay.style.display='flex';if(msg)overlay.querySelector('.at-msg').textContent=msg;return;}
-  overlay=document.createElement('div');overlay.id='at-connect-overlay';
-  overlay.style.cssText='position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;';
-  overlay.innerHTML=`<div style="background:var(--s1,#1a1a2e);border:1px solid var(--border,#333);border-radius:12px;padding:32px;max-width:420px;width:90%;text-align:center;font-family:inherit">
-    <div style="font-size:24px;margin-bottom:4px">🔗</div>
-    <h3 style="color:var(--t1,#fff);margin:0 0 8px">Connect to Airtable</h3>
-    <p class="at-msg" style="color:var(--t3,#999);font-size:13px;margin:0 0 16px">${msg||'Paste your team Airtable API key to sync deals across all devices.'}</p>
-    <input id="at-key-input" type="password" placeholder="pat..." style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border,#333);background:var(--s2,#222);color:var(--t1,#fff);font-size:14px;box-sizing:border-box;margin-bottom:12px">
-    <button onclick="connectAt()" style="width:100%;padding:10px;border-radius:8px;border:none;background:var(--blue,#4a7dff);color:#fff;font-weight:600;font-size:14px;cursor:pointer">Connect</button>
-    <p style="color:var(--t3,#999);font-size:11px;margin:12px 0 0">Key is stored in your browser only — never sent to our servers.</p>
-  </div>`;
-  document.body.appendChild(overlay);
-}
-async function connectAt(){
-  const input=document.getElementById('at-key-input');
-  const key=(input?input.value:'').trim();
-  if(!key||!key.startsWith('pat')){input.style.borderColor='var(--red,red)';return;}
-  // Test the key
-  try{
-    const r=await fetch(AT_URL+'?maxRecords=1',{headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'}});
-    if(!r.ok)throw new Error('Invalid key');
-    setAtKey(key);
-    const overlay=document.getElementById('at-connect-overlay');if(overlay)overlay.style.display='none';
-    loadSavedDeals();
-  }catch(e){
-    const msg=document.querySelector('#at-connect-overlay .at-msg');
-    if(msg){msg.textContent='Invalid key — check and try again.';msg.style.color='var(--red,#ff4444)';}
-    input.style.borderColor='var(--red,red)';
-  }
-}
-function disconnectAt(){
-  if(!confirm('Disconnect Airtable? Your deals stay in Airtable but won\'t show here until you reconnect.'))return;
-  localStorage.removeItem('cos_at_key');savedDealsCache=[];renderSavedDeals();showAtConnect();
-}
+// ── SAVED DEALS (Airtable-synced via Netlify proxy) ────────────────────
+const API_URL='/api/airtable';
 
 let savedDealsCache=[];
 
 async function loadSavedDeals(){
-  if(!getAtKey()){showAtConnect();return;}
   try{
-    const r=await fetch(AT_URL+'?sort%5B0%5D%5Bfield%5D=Saved+At&sort%5B0%5D%5Bdirection%5D=desc&maxRecords=100',{headers:atHeaders()});
+    const r=await fetch(API_URL+'?sort%5B0%5D%5Bfield%5D=Saved+At&sort%5B0%5D%5Bdirection%5D=desc&maxRecords=100');
     const json=await r.json();
     savedDealsCache=(json.records||[]).map(rec=>({
       _atId:rec.id,
@@ -2107,7 +2063,7 @@ async function saveDeal(){
   };
 
   try{
-    const r=await fetch(AT_URL,{method:'POST',headers:AT_HEADERS,body:JSON.stringify({records:[{fields}]})});
+    const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{fields}]})});
     const json=await r.json();
     if(json.records&&json.records.length){
       btn.textContent='✓ Saved!';btn.style.background='var(--green)';btn.style.color='#fff';
@@ -2190,7 +2146,7 @@ async function deleteDeal(idx){
   const d=savedDealsCache[idx];if(!d||!d._atId)return;
   if(!confirm('Delete this deal?'))return;
   try{
-    await fetch(AT_URL+'/'+d._atId,{method:'DELETE',headers:AT_HEADERS});
+    await fetch(API_URL+'?id='+d._atId,{method:'DELETE'});
     await loadSavedDeals();
   }catch(e){console.error('Airtable delete error:',e);}
 }
@@ -2202,7 +2158,7 @@ async function clearSavedDeals(){
   for(let i=0;i<ids.length;i+=10){
     const batch=ids.slice(i,i+10);
     const params=batch.map(id=>'records[]='+id).join('&');
-    try{await fetch(AT_URL+'?'+params,{method:'DELETE',headers:AT_HEADERS});}catch(e){}
+    try{await fetch(API_URL+'?'+params,{method:'DELETE'});}catch(e){}
   }
   await loadSavedDeals();
 }
