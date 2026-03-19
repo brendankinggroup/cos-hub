@@ -446,9 +446,18 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       </div>
       </div>
 
+      <!-- Deal Type toggle -->
+      <div style="margin-bottom:10px">
+        <span class="label">Deal Type</span>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <button id="dt-seller" onclick="setDealType('seller')" style="padding:10px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--green);background:var(--greendim);color:var(--green);cursor:pointer">🏠 Seller Direct</button>
+          <button id="dt-agent" onclick="setDealType('agent')" style="padding:10px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">🤝 MLS / Agent</button>
+        </div>
+      </div>
+
       <!-- Seller / Property inputs -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px">
-        <div><span class="label">Seller Name</span><input id="c-seller-name" placeholder="e.g. John" oninput="calcMAO()" style="font-size:11px"/></div>
+        <div><span class="label" id="c-name-label">Seller Name</span><input id="c-seller-name" placeholder="e.g. John" oninput="calcMAO()" style="font-size:11px"/></div>
         <div><span class="label">Property Address</span><input id="c-prop-addr" placeholder="e.g. 4287 Carey Ave" oninput="calcMAO()" style="font-size:11px"/></div>
         <div><span class="label">Close in (days)</span>
           <select id="c-close-days" onchange="calcMAO()" style="font-size:11px">
@@ -645,7 +654,8 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       <thead>
         <tr style="background:var(--s1);border-bottom:2px solid var(--border)">
           <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em;white-space:nowrap">Address</th>
-          <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Seller</th>
+          <th style="padding:10px 8px;text-align:center;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Type</th>
+          <th style="padding:10px 8px;text-align:left;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Name</th>
           <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">ARV</th>
           <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">Repairs</th>
           <th style="padding:10px 8px;text-align:right;color:var(--t3);font-size:10px;text-transform:uppercase;letter-spacing:.07em">MAO</th>
@@ -1054,6 +1064,27 @@ function setCalcMode(m){
 }
 
 function updateCalcPct(v){const p=+v;const lbl=document.getElementById('c-pct-lbl');if(lbl)lbl.textContent=p+'% '+(p<=59?'Very Conservative':p<=65?'Conservative':p<=72?'Standard':p<=79?'Competitive':p<=89?'Aggressive':p<=94?'Very Aggressive':'Retail / Full Price');calcMAO();}
+
+let currentDealType='seller';
+function setDealType(type){
+  currentDealType=type;
+  const s=document.getElementById('dt-seller');
+  const a=document.getElementById('dt-agent');
+  const nameLabel=document.getElementById('c-name-label');
+  const nameInput=document.getElementById('c-seller-name');
+  if(type==='seller'){
+    s.style.background='var(--greendim)';s.style.color='var(--green)';s.style.borderColor='var(--green)';
+    a.style.background='transparent';a.style.color='var(--t3)';a.style.borderColor='var(--border)';
+    if(nameLabel)nameLabel.textContent='Seller Name';
+    if(nameInput)nameInput.placeholder='e.g. John';
+  }else{
+    a.style.background='var(--bluedim)';a.style.color='var(--blue)';a.style.borderColor='var(--blue)';
+    s.style.background='transparent';s.style.color='var(--t3)';s.style.borderColor='var(--border)';
+    if(nameLabel)nameLabel.textContent='Agent Name';
+    if(nameInput)nameInput.placeholder='e.g. Sarah Miller';
+  }
+  calcMAO();
+}
 
 function calcMAO(){
   const arv=+(document.getElementById('c-arv')||{value:0}).value||0;
@@ -1678,7 +1709,8 @@ function getDealSummaryData(){
 
   const scoreLbl=score>=80?'FIRE DEAL':score>=60?'SOLID DEAL':score>=40?'WORTH A LOOK':'PASS';
 
-  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script};
+  const dealType=currentDealType||'seller';
+  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script,dealType};
 }
 
 async function exportDealEmail(){
@@ -2039,6 +2071,7 @@ async function loadSavedDeals(){
       sqft:rec.fields['SqFt']||0,
       pct:rec.fields['Offer %']||70,
       closeDays:rec.fields['Close Days']||14,
+      dealType:rec.fields['Deal Type']||'Seller Direct',
       status:rec.fields['Status']||'New',
       notes:rec.fields['Notes']||'',
       savedAt:rec.fields['Saved At']||new Date().toISOString()
@@ -2063,6 +2096,7 @@ async function saveDeal(){
     'Deal Score':d.score,'Score Label':d.scoreLbl,
     'Distress':d.distress||'','Neighborhood':d.hood||'',
     'SqFt':d.sqft||0,'Offer %':d.pct||70,'Close Days':d.closeDays||14,
+    'Deal Type':d.dealType==='agent'?'MLS / Agent':'Seller Direct',
     'Status':'New','Saved At':new Date().toISOString()
   };
 
@@ -2102,6 +2136,7 @@ function renderSavedDeals(){
     const date=d.savedAt?new Date(d.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'—';
     return`<tr style="border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--s2)'" onmouseout="this.style.background='transparent'">
       <td style="padding:8px;font-weight:600;color:var(--t1);white-space:nowrap">${esc(d.address)}</td>
+      <td style="padding:8px;text-align:center"><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;${d.dealType==='MLS / Agent'?'background:var(--bluedim);color:var(--blue)':'background:var(--greendim);color:var(--green)'}">${d.dealType==='MLS / Agent'?'Agent':'Seller'}</span></td>
       <td style="padding:8px;color:var(--t2)">${esc(d.seller)}</td>
       <td style="padding:8px;text-align:right;font-weight:700;color:var(--t1)">${fm(d.arv)}</td>
       <td style="padding:8px;text-align:right;color:var(--amber)">${fm(d.repairs)}</td>
