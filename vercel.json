@@ -1,0 +1,6 @@
+{
+  "outputDirectory": "cos-hub",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" }
+  ]
+}
