@@ -738,8 +738,11 @@ async function uploadToCloudinary(blob, tag) {
 // ============================================
 // NAVIGATION & VALIDATION
 // ============================================
+let _applyAtId = null; // Track Airtable record ID for progressive save
+
 function goStep(n) {
     if (n > currentStep && !validateStep(currentStep)) return;
+    const leavingStep = currentStep;
     document.getElementById(`step${currentStep}`).classList.remove('active');
     currentStep = n;
     document.getElementById(`step${currentStep}`).classList.add('active');
@@ -752,6 +755,87 @@ function goStep(n) {
 
     // Pull BatchData when leaving Step 1 (address entered)
     if (n === 2 && batchEstValue === 0) batchLookup();
+
+    // Progressive save to Airtable
+    if (n > leavingStep) saveStepToAirtable(leavingStep);
+}
+
+async function saveStepToAirtable(step) {
+    let fields = {};
+
+    if (step === 1) {
+        fields = {
+            'Address': document.getElementById('f-address').value || '',
+            'City': document.getElementById('f-city').value || '',
+            'Zip': document.getElementById('f-zip').value || '',
+            'Property Type': getPillVal('f-proptype') || '',
+            'Beds': +(document.getElementById('f-beds').value) || 0,
+            'Baths': +(document.getElementById('f-baths').value) || 0,
+            'SqFt': +(document.getElementById('f-sqft').value) || 0,
+            'Year Built': +(document.getElementById('f-year').value) || 0,
+            'Lot Size': document.getElementById('f-lot').value || '',
+            'HOA': document.getElementById('f-hoa').value || '',
+            'Pool': document.getElementById('f-pool').value || '',
+            'Status': 'New',
+            'Submitted At': new Date().toISOString()
+        };
+    } else if (step === 2) {
+        let condSummary = '';
+        AREAS.forEach(a => {
+            const r = conditionRatings[a.id];
+            if (r) condSummary += `${a.label}: ${RATING_LABELS[r]} (${r}/5)\n`;
+        });
+        fields = {
+            'Condition Summary': condSummary,
+            'Solar': document.getElementById('f-solar').value || '',
+            'Unpermitted': document.getElementById('f-unpermit').value || '',
+            'Liens': document.getElementById('f-liens').value || ''
+        };
+    } else if (step === 3) {
+        let photoLinksStr = '';
+        Object.entries(photoUrls).forEach(([k,v]) => { photoLinksStr += `${k}: ${v}\n`; });
+        fields = {
+            'Photo Count': Object.keys(photos).length + Object.keys(conditionPhotos).length + extraPhotos.length,
+            'Photo Links': photoLinksStr || ''
+        };
+    } else if (step === 4) {
+        fields = {
+            'Mortgage': document.getElementById('f-mortgage').value || '',
+            'Asking Price': document.getElementById('f-asking').value || '',
+            'Reason': document.getElementById('f-reason').value || '',
+            'Timeline': getPillVal('f-timeline') || '',
+            'Occupancy': document.getElementById('f-occupancy').value || '',
+            'Notes': document.getElementById('f-notes').value || ''
+        };
+    }
+
+    if (!Object.keys(fields).length) return;
+
+    try {
+        if (!_applyAtId) {
+            // Create new record on first save (step 1)
+            const r = await fetch('/api/apply-leads', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({records: [{fields}]})
+            });
+            const json = await r.json();
+            if (json.records && json.records.length) {
+                _applyAtId = json.records[0].id;
+                console.log('Lead created in Airtable:', _applyAtId);
+            }
+        } else {
+            // Update existing record
+            await fetch('/api/apply-leads', {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({records: [{id: _applyAtId, fields}]})
+            });
+            console.log('Lead updated in Airtable (step '+step+')');
+        }
+    } catch(e) {
+        console.error('Airtable progressive save error:', e);
+    }
 }
 
 function validateStep(n) {
@@ -983,38 +1067,9 @@ async function sendLead(data, offer) {
         // Silent fail — data is already saved to localStorage
     }
 
-    // Also save to Airtable
+    // Final update to Airtable — add contact info + offer numbers
     try {
-        let condSummaryAT = '';
-        AREAS.forEach(a => {
-            const r = data.conditionRatings[a.id];
-            if (r) condSummaryAT += `${a.label}: ${RATING_LABELS[r]} (${r}/5)\n`;
-        });
-        let photoLinksAT = '';
-        Object.entries(data.photoUrls).forEach(([k,v]) => { photoLinksAT += `${k}: ${v}\n`; });
-
-        const atFields = {
-            'Address': data.address,
-            'City': data.city,
-            'Zip': data.zip,
-            'Property Type': data.propertyType,
-            'Beds': +data.beds || 0,
-            'Baths': +data.baths || 0,
-            'SqFt': +data.sqft || 0,
-            'Year Built': +data.yearBuilt || 0,
-            'Lot Size': data.lotSize,
-            'HOA': data.hoa,
-            'Pool': data.pool,
-            'Condition Summary': condSummaryAT,
-            'Solar': data.solar,
-            'Unpermitted': data.unpermitted,
-            'Liens': data.liens,
-            'Mortgage': data.mortgage,
-            'Asking Price': data.asking,
-            'Reason': data.reason,
-            'Timeline': data.timeline,
-            'Occupancy': data.occupancy,
-            'Notes': data.notes || '',
+        const finalFields = {
             'Seller Name': data.name,
             'Seller Phone': data.phone,
             'Seller Email': data.email,
@@ -1022,19 +1077,49 @@ async function sendLead(data, offer) {
             'Est Repairs': data.estimatedRepairs || 0,
             'Est Value': data.estimatedValue || 0,
             'Offer Low': offer.low || 0,
-            'Offer High': offer.high || 0,
-            'Photo Count': data.photoCount || 0,
-            'Photo Links': photoLinksAT || '',
-            'Status': 'New',
-            'Submitted At': new Date().toISOString()
+            'Offer High': offer.high || 0
         };
 
-        await fetch('/api/apply-leads', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({records: [{fields: atFields}]})
-        });
-        console.log('Lead saved to Airtable');
+        if (_applyAtId) {
+            // Update existing progressive record
+            await fetch('/api/apply-leads', {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({records: [{id: _applyAtId, fields: finalFields}]})
+            });
+            console.log('Lead finalized in Airtable:', _applyAtId);
+        } else {
+            // Fallback: create full record if progressive save didn't happen
+            let condSummaryAT = '';
+            AREAS.forEach(a => {
+                const r = data.conditionRatings[a.id];
+                if (r) condSummaryAT += `${a.label}: ${RATING_LABELS[r]} (${r}/5)\n`;
+            });
+            let photoLinksAT = '';
+            Object.entries(data.photoUrls).forEach(([k,v]) => { photoLinksAT += `${k}: ${v}\n`; });
+
+            const allFields = {
+                ...finalFields,
+                'Address': data.address, 'City': data.city, 'Zip': data.zip,
+                'Property Type': data.propertyType,
+                'Beds': +data.beds || 0, 'Baths': +data.baths || 0,
+                'SqFt': +data.sqft || 0, 'Year Built': +data.yearBuilt || 0,
+                'Lot Size': data.lotSize, 'HOA': data.hoa, 'Pool': data.pool,
+                'Condition Summary': condSummaryAT,
+                'Solar': data.solar, 'Unpermitted': data.unpermitted, 'Liens': data.liens,
+                'Mortgage': data.mortgage, 'Asking Price': data.asking,
+                'Reason': data.reason, 'Timeline': data.timeline,
+                'Occupancy': data.occupancy, 'Notes': data.notes || '',
+                'Photo Count': data.photoCount || 0, 'Photo Links': photoLinksAT || '',
+                'Status': 'New', 'Submitted At': new Date().toISOString()
+            };
+            await fetch('/api/apply-leads', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({records: [{fields: allFields}]})
+            });
+            console.log('Lead created (full) in Airtable');
+        }
     } catch(atErr) {
         console.error('Airtable save failed:', atErr);
     }
