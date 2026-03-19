@@ -1158,6 +1158,31 @@
             } catch (err) {
                 console.error('Failed to send lead:', err);
             }
+
+            // Save to Airtable
+            try {
+                await fetch('/api/applyleads', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({records: [{fields: {
+                        'Address': formData.address || '',
+                        'City': formData.city || '',
+                        'Beds': +(formData.bedrooms) || 0,
+                        'Baths': +(formData.bathrooms) || 0,
+                        'SqFt': +(formData.sqft) || 0,
+                        'Condition Summary': formData.condition || '',
+                        'Timeline': formData.timeline || '',
+                        'Seller Name': formData.name || '',
+                        'Seller Phone': formData.phone || '',
+                        'Seller Email': formData.email || '',
+                        'Offer Low': offer.low || 0,
+                        'Offer High': offer.high || 0,
+                        'Status': 'New',
+                        'Submitted At': new Date().toISOString()
+                    }}]})
+                });
+                console.log('Lead saved to Airtable');
+            } catch(atErr) { console.error('Airtable save failed:', atErr); }
         }
 
         // ============================================

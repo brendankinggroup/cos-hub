@@ -601,6 +601,31 @@ async function sendLeadEmail(d, offer) {
         const res=await r.json();
         if(res.success)console.log('Lead sent');else console.error('Web3Forms:',res);
     } catch(err){console.error('Lead send failed:',err);}
+
+    // Save to Airtable
+    try {
+        await fetch('/api/applyleads', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({records: [{fields: {
+                'Address': d.address || '',
+                'City': d.city || '',
+                'Beds': +(d.bedrooms) || 0,
+                'Baths': +(d.bathrooms) || 0,
+                'SqFt': +(d.sqft) || 0,
+                'Condition Summary': d.condition || '',
+                'Timeline': d.timeline || '',
+                'Seller Name': d.name || '',
+                'Seller Phone': d.phone || '',
+                'Seller Email': d.email || '',
+                'Offer Low': offer.low || 0,
+                'Offer High': offer.high || 0,
+                'Status': 'New',
+                'Submitted At': new Date().toISOString()
+            }}]})
+        });
+        console.log('Lead saved to Airtable');
+    } catch(atErr) { console.error('Airtable save failed:', atErr); }
 }
 
 // REAL-TIME CLEARING
