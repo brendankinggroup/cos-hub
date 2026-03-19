@@ -1114,37 +1114,31 @@
         // 2. Enter: info@cashofferspecialist.com
         // 3. They'll email you an access key
         // 4. Paste it below replacing YOUR_ACCESS_KEY_HERE
-        const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY_HERE';
-
         async function sendLeadEmail(formData, offer) {
             // Always save to localStorage as backup
             let leads = JSON.parse(localStorage.getItem('cosOfferLeads') || '[]');
             leads.push(formData);
             localStorage.setItem('cosOfferLeads', JSON.stringify(leads));
 
-            // Send via Web3Forms (stays in app — no mailto popup)
+            // Send via Web3Forms proxy (stays in app — no mailto popup)
             try {
-                const response = await fetch('https://api.web3forms.com/submit', {
+                const response = await fetch('/api/web3forms', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        access_key: WEB3FORMS_KEY === 'YOUR_ACCESS_KEY_HERE' ? '0a47fb7c-56cb-4696-8293-4dccbddfad27' : WEB3FORMS_KEY,
                         subject: `🏠 New Cash Offer Lead — ${formData.address}`,
                         from_name: 'COS Offer Page',
                         to: 'info@cashofferspecialist.com',
-                        // Property details
                         'Property Address': `${formData.address}, ${formData.city}`,
                         'Bedrooms': formData.bedrooms,
                         'Bathrooms': formData.bathrooms,
                         'Square Footage': formData.sqft,
                         'Condition': formData.condition,
                         'Timeline': formData.timeline,
-                        // Seller info
                         'Seller Name': formData.name,
                         'Phone': formData.phone,
                         'Email': formData.email || 'Not provided',
                         'Source': formData.source,
-                        // Offer range
                         'Offer Range': `${formatCurrency(offer.low)} — ${formatCurrency(offer.mid)} — ${formatCurrency(offer.high)}`,
                         'Submitted': new Date().toLocaleString()
                     })

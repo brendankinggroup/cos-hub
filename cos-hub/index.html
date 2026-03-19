@@ -1721,10 +1721,9 @@ d.script+'\n\n'+
   const origText=btn?btn.textContent:'';
   if(btn){btn.textContent='Sending...';btn.disabled=true;}
   try{
-    const r=await fetch('https://api.web3forms.com/submit',{
+    const r=await fetch('/api/web3forms',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        access_key:'0a47fb7c-56cb-4696-8293-4dccbddfad27',
         subject:'Cash Offer Summary — '+d.propAddr+' — '+fm(d.mao),
         from_name:'COS Hub Calculator',
         to:'info@cashofferspecialist.com',
@@ -2210,7 +2209,6 @@ function exportSavedPDF(){
 }
 
 // ── BATCHDATA PROPERTY LOOKUP ──────────────────────────────────────────
-const BATCHDATA_KEY='FUYAMVRI5mCePugUkFvKyM7Nq2eq32gGDcJDudxY';
 
 async function batchLookup(){
   const addrRaw=document.getElementById('bd-address').value.trim();
@@ -2271,11 +2269,9 @@ async function batchLookup(){
   }
 
   try{
-    const bdHeaders={'Authorization':'Bearer '+BATCHDATA_KEY,'Content-Type':'application/json'};
-
-    // Try exact lookup first
-    let resp=await fetch('https://api.batchdata.com/api/v1/property/lookup/all-attributes',{
-      method:'POST', headers:bdHeaders,
+    // Try exact lookup first (routed through serverless proxy)
+    let resp=await fetch('/api/batchdata?endpoint=lookup',{
+      method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({requests:[{address:{street,city,state,zip}}]})
     });
     let json=await resp.json();
@@ -2284,8 +2280,8 @@ async function batchLookup(){
     if(json.status?.code===200&&json.results?.properties?.length===0||
        (json.results?.meta?.results?.matchCount===0)){
       showBdStatus('Exact match not found, trying fuzzy search...','var(--amber)');
-      resp=await fetch('https://api.batchdata.com/api/v1/property/search',{
-        method:'POST', headers:bdHeaders,
+      resp=await fetch('/api/batchdata?endpoint=search',{
+        method:'POST', headers:{'Content-Type':'application/json'},
         body:JSON.stringify({searchCriteria:{address:{street,city,state,zip}}})
       });
       json=await resp.json();

@@ -482,10 +482,8 @@
 // ============================================
 // CONFIG
 // ============================================
-const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY_HERE';
 const CLOUDINARY_CLOUD = 'YOUR_CLOUD_NAME'; // Sign up free at cloudinary.com
 const CLOUDINARY_PRESET = 'YOUR_UPLOAD_PRESET'; // Create an unsigned upload preset
-const BATCHDATA_KEY = 'FUYAMVRI5mCePugUkFvKyM7Nq2eq32gGDcJDudxY';
 let batchEstValue = 0; // Stores real estimated value from BatchData
 
 // ============================================
@@ -941,7 +939,6 @@ async function sendLead(data, offer) {
 
     // Send via Web3Forms (stays in app — no mailto popup)
     const payload = {
-        access_key: WEB3FORMS_KEY === 'YOUR_ACCESS_KEY_HERE' ? '0a47fb7c-56cb-4696-8293-4dccbddfad27' : WEB3FORMS_KEY,
         subject: `🏠 New Property Submission — ${data.address}, ${data.zip}`,
         from_name: data.name || 'COS Apply Page',
         replyto: data.email || '',
@@ -970,7 +967,7 @@ async function sendLead(data, offer) {
     };
 
     try {
-        const r = await fetch('https://api.web3forms.com/submit', {
+        const r = await fetch('/api/web3forms', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
@@ -1089,9 +1086,9 @@ async function batchLookup() {
     if (!street || !zip) return;
 
     try {
-        const resp = await fetch('https://api.batchdata.com/api/v1/property/lookup/all-attributes', {
+        const resp = await fetch('/api/batchdata?endpoint=lookup', {
             method: 'POST',
-            headers: {'Authorization': 'Bearer ' + BATCHDATA_KEY, 'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({requests: [{address: {street, city, state: 'NV', zip}}]})
         });
         const json = await resp.json();

@@ -587,14 +587,12 @@ function resetForm() {
 }
 
 // LEAD DELIVERY
-const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY_HERE';
 async function sendLeadEmail(d, offer) {
     let leads = JSON.parse(localStorage.getItem('cosOfferLeads')||'[]');
     leads.push(d); localStorage.setItem('cosOfferLeads', JSON.stringify(leads));
     try {
-        const key=WEB3FORMS_KEY==='YOUR_ACCESS_KEY_HERE'?'0a47fb7c-56cb-4696-8293-4dccbddfad27':WEB3FORMS_KEY;
-        const r=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({access_key:key,subject:`New Cash Offer Lead — ${d.address}`,from_name:'COS Landing Page',to:'info@cashofferspecialist.com',
+        const r=await fetch('/api/web3forms',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({subject:`New Cash Offer Lead — ${d.address}`,from_name:'COS Landing Page',to:'info@cashofferspecialist.com',
                 'Property Address':`${d.address}, ${d.city}`,'Bedrooms':d.bedrooms,'Bathrooms':d.bathrooms,'Square Footage':d.sqft,
                 'Condition':d.condition,'Timeline':d.timeline,'Seller Name':d.name,'Phone':d.phone,'Email':d.email||'Not provided',
                 'Source':d.source,'Offer Range':`${fmt(offer.low)} — ${fmt(offer.mid)} — ${fmt(offer.high)}`,'Submitted':new Date().toLocaleString(),'Page':'sell.html'})});
