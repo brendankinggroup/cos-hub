@@ -2116,6 +2116,8 @@ function renderSavedDeals(){
       <td style="padding:8px;color:var(--t3);font-size:11px">${esc(d.distress||'—')}</td>
       <td style="padding:8px;color:var(--t3);font-size:11px;white-space:nowrap">${date}</td>
       <td style="padding:8px;text-align:center;white-space:nowrap">
+        <button onclick="viewDeal(${i})" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="View deal info">👁️ View</button>
+        <button onclick="pdfDeal(${i})" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Export PDF">📄 PDF</button>
         <button onclick="recalcDeal(${i})" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;margin-right:4px" title="Load into calculator">🧮 Recalc</button>
         <button onclick="deleteDeal(${i})" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:4px;padding:4px 8px;font-size:10px;font-weight:700" title="Delete">✕</button>
       </td>
@@ -2145,6 +2147,181 @@ function recalcDeal(idx){
 
   calcMAO();
   window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function viewDeal(idx){
+  const d=savedDealsCache[idx];if(!d)return;
+  const sc=d.score>=80?'var(--red)':d.score>=60?'var(--green)':d.score>=40?'var(--amber)':'var(--t3)';
+  const profitColor=d.profit>0?'var(--green)':'var(--red)';
+  const date=d.savedAt?new Date(d.savedAt).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}):'—';
+  const repPsf=d.sqft>0?'$'+Math.round(d.repairs/d.sqft)+'/sqft':'';
+  const arvPsf=d.sqft&&d.arv?'$'+Math.round(d.arv/d.sqft)+'/sqft':'';
+
+  // Remove any existing modal
+  const old=document.getElementById('deal-modal');if(old)old.remove();
+
+  const modal=document.createElement('div');modal.id='deal-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.onclick=e=>{if(e.target===modal)modal.remove();};
+
+  modal.innerHTML=`<div style="background:var(--s1);border:1px solid var(--border2);border-radius:12px;padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;animation:fadeUp .2s ease">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:var(--t1);font-family:'Barlow Condensed',sans-serif;letter-spacing:.03em">${esc(d.address)||'[No Address]'}</div>
+        <div style="font-size:13px;color:var(--t2);margin-top:2px">Seller: <b>${esc(d.seller)||'—'}</b> · ${esc(d.distress)||'—'} · ${esc(d.hood)||'—'}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:4px">Saved ${date}</div>
+      </div>
+      <button onclick="document.getElementById('deal-modal').remove()" style="background:transparent;border:none;color:var(--t3);font-size:20px;cursor:pointer;padding:0 4px">✕</button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <span style="background:${sc}18;border:1px solid ${sc};color:${sc};border-radius:20px;padding:4px 14px;font-size:13px;font-weight:700">Score: ${d.score}/100 — ${d.scoreLbl||'—'}</span>
+      <span style="font-size:12px;color:var(--t3)">${d.pct}% of ARV · ${d.closeDays} day close</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">ARV</div>
+        <div style="font-size:18px;font-weight:800;color:var(--t1)">${fm(d.arv)}</div>
+        ${arvPsf?'<div style="font-size:10px;color:var(--t3)">'+arvPsf+'</div>':''}
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">Repairs</div>
+        <div style="font-size:18px;font-weight:800;color:var(--amber)">${fm(d.repairs)}</div>
+        ${repPsf?'<div style="font-size:10px;color:var(--t3)">'+repPsf+'</div>':''}
+      </div>
+      <div style="background:var(--bluedim);border:1px solid var(--blue);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">MAO</div>
+        <div style="font-size:18px;font-weight:800;color:var(--blue)">${fm(d.mao)}</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--t3)">Your Fee</span><span style="color:var(--green);font-weight:700">${fm(d.fee)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--t3)">Dispo Price</span><span style="font-weight:700">${fm(d.disposition)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--t3)">All-In</span><span style="font-weight:700">${fm(d.allin)}</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0"><span style="color:var(--t3)">SqFt</span><span style="font-weight:700">${d.sqft?d.sqft.toLocaleString():'—'}</span></div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Net Profit</div>
+        <div style="font-size:26px;font-weight:900;color:${profitColor}">${fm(d.profit)}</div>
+        <div style="font-size:13px;color:var(--amber);font-weight:700;margin-top:2px">${d.roi?d.roi.toFixed(1)+'% ROI':'—'}</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button onclick="document.getElementById('deal-modal').remove();pdfDeal(${idx})" style="flex:1;background:#1a0a2e;color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">📄 Export PDF</button>
+      <button onclick="document.getElementById('deal-modal').remove();recalcDeal(${idx})" style="flex:1;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">🧮 Recalculate</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function pdfDeal(idx){
+  const d=savedDealsCache[idx];if(!d)return;
+  const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  const repPsf=d.sqft>0?'$'+Math.round(d.repairs/d.sqft)+'/sqft':'';
+  const arvPsf=d.sqft&&d.arv?'$'+Math.round(d.arv/d.sqft)+'/sqft':'';
+  const sc=d.score>=80?'#dc2626':d.score>=60?'#059669':d.score>=40?'#d97706':'#6b7280';
+  const profitColor=d.profit>0?'#059669':'#dc2626';
+  const win=window.open('','_blank','width=800,height=1100');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Deal Summary — ${d.address}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--bg:#ffffff;--card:#f8f9fa;--border:#e5e7eb;--t1:#111;--t2:#555;--t3:#888;--blue:#4f8ef7;--green:#059669;--amber:#d97706;--purple:#7c3aed;--red:#dc2626;--bluebg:#f0f9ff;--greenbg:#f0fdf4;--amberbg:#fffbeb;--redbg:#fef2f2}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--t1);padding:40px;font-size:14px;line-height:1.6}
+  .header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid var(--t1);padding-bottom:16px;margin-bottom:24px}
+  .logo{font-size:28px;font-weight:900;letter-spacing:.04em}
+  .logo span{color:var(--blue)}
+  .meta{text-align:right;font-size:12px;color:var(--t3)}
+  .section{margin-bottom:20px}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--t3);border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:12px}
+  .prop-address{font-size:22px;font-weight:700;margin-bottom:4px}
+  .prop-sub{font-size:13px;color:var(--t2)}
+  .prop-details{display:flex;gap:20px;margin-top:8px;font-size:12px;color:var(--t2);flex-wrap:wrap}
+  .prop-details b{color:var(--t1)}
+  .numbers-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .num-cell{border:1px solid var(--border);border-radius:8px;padding:12px;background:var(--card)}
+  .num-cell.blue-hl{background:var(--bluebg);border-color:var(--blue)}
+  .num-cell.green-hl{background:var(--greenbg);border-color:var(--green)}
+  .num-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+  .num-value{font-size:18px;font-weight:800;color:var(--t1)}
+  .num-value.blue{color:var(--blue)}
+  .num-value.green{color:var(--green)}
+  .num-value.amber{color:var(--amber)}
+  .num-value.red{color:var(--red)}
+  .num-sub{font-size:10px;color:var(--t3);margin-top:2px}
+  .formula-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+  .formula-row .fl{color:var(--t3)}
+  .formula-row.total{font-weight:800;font-size:13px;border-bottom:2px solid var(--blue)}
+  .formula-row.total .fv{color:var(--blue)}
+  .footer{margin-top:24px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:11px;color:var(--t3)}
+  .score-badge{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:5px 14px;font-weight:700;font-size:13px}
+  .toolbar{display:flex;gap:8px;justify-content:center;margin-bottom:20px}
+  .toolbar button{border:none;border-radius:6px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer}
+  @media print{.toolbar{display:none}body{padding:20px}}
+</style>
+</head><body>
+<div class="toolbar">
+  <button onclick="window.print()" style="background:#4f8ef7;color:#fff">Print / Save as PDF</button>
+</div>
+<div class="header">
+  <div>
+    <div class="logo">COS <span>HUB</span></div>
+    <div style="font-size:11px;color:var(--t3);margin-top:2px">CASH OFFER SPECIALIST · LAS VEGAS, NV</div>
+  </div>
+  <div class="meta">
+    <div style="font-weight:700;color:var(--t1)">DEAL ANALYSIS SUMMARY</div>
+    <div>${today}</div>
+    <div style="margin-top:6px"><span class="score-badge" style="background:${sc}18;border:1px solid ${sc};color:${sc}">Deal Score: ${d.score}/100 — ${d.scoreLbl||'—'}</span></div>
+  </div>
+</div>
+<div class="section">
+  <div class="section-title">Property Information</div>
+  <div class="prop-address">${d.address||'[Property Address]'}</div>
+  <div class="prop-sub">Seller: <b>${d.seller||'—'}</b> &nbsp;·&nbsp; Distress: <b>${d.distress||'—'}</b> &nbsp;·&nbsp; Neighborhood: <b>${d.hood||'—'}</b></div>
+  <div class="prop-details">
+    ${d.sqft?'<span>📐 <b>'+d.sqft.toLocaleString()+'</b> sqft</span>':''}
+    ${arvPsf?'<span>💰 <b>'+arvPsf+'</b> (ARV)</span>':''}
+    ${repPsf?'<span>🔧 <b>'+repPsf+'</b> (repairs)</span>':''}
+    <span>📅 Close in <b>${d.closeDays}</b> days</span>
+    <span>📊 Offer at <b>${d.pct}%</b> of ARV</span>
+  </div>
+</div>
+<div class="section">
+  <div class="section-title">Deal Numbers</div>
+  <div class="numbers-grid">
+    <div class="num-cell"><div class="num-label">ARV</div><div class="num-value">$${d.arv.toLocaleString()}</div></div>
+    <div class="num-cell"><div class="num-label">Repairs</div><div class="num-value amber">$${d.repairs.toLocaleString()}</div></div>
+    <div class="num-cell blue-hl"><div class="num-label">Your Offer (MAO)</div><div class="num-value blue">$${d.mao.toLocaleString()}</div></div>
+    <div class="num-cell"><div class="num-label">Your Fee</div><div class="num-value green">$${d.fee.toLocaleString()}</div></div>
+    <div class="num-cell"><div class="num-label">Dispo Price</div><div class="num-value">$${d.disposition.toLocaleString()}</div></div>
+    <div class="num-cell"><div class="num-label">All-In Cost</div><div class="num-value">$${d.allin.toLocaleString()}</div></div>
+  </div>
+</div>
+<div class="section">
+  <div class="section-title">Profitability</div>
+  <div class="numbers-grid" style="grid-template-columns:1fr 1fr">
+    <div class="num-cell ${d.profit>0?'green-hl':''}"><div class="num-label">Net Profit</div><div class="num-value" style="color:${profitColor};font-size:24px">$${d.profit.toLocaleString()}</div></div>
+    <div class="num-cell"><div class="num-label">ROI</div><div class="num-value amber" style="font-size:24px">${d.roi?d.roi.toFixed(1)+'%':'—'}</div></div>
+  </div>
+</div>
+<div class="section">
+  <div class="section-title">MAO Formula Breakdown</div>
+  <div class="formula-row"><span class="fl">ARV</span><span class="fv">$${d.arv.toLocaleString()}</span></div>
+  <div class="formula-row"><span class="fl">× Offer %</span><span class="fv">${d.pct}%</span></div>
+  <div class="formula-row"><span class="fl">− Repairs</span><span class="fv">$${d.repairs.toLocaleString()}</span></div>
+  <div class="formula-row"><span class="fl">− Your Fee</span><span class="fv">$${d.fee.toLocaleString()}</span></div>
+  <div class="formula-row total"><span class="fl">= MAO (Your Offer)</span><span class="fv">$${d.mao.toLocaleString()}</span></div>
+</div>
+<div class="footer">
+  <span>COS Hub · Cash Offer Specialist</span>
+  <span>Generated ${today}</span>
+</div>
+</body></html>`);
+  win.document.close();
 }
 
 async function deleteDeal(idx){
