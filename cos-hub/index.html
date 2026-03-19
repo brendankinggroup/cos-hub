@@ -50,7 +50,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 <!-- TOP NAV -->
 <div style="display:flex;align-items:center;gap:6px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)">
   <div style="margin-right:8px">
-    <div class="hdr" style="font-size:32px;color:var(--t1)">COS <span style="color:var(--blue)">HUB</span></div>
+    <div class="hdr" style="font-size:32px;color:var(--t1);cursor:pointer" onclick="nav('home')">COS <span style="color:var(--blue)">HUB</span></div>
     <div style="font-size:11px;color:var(--t3);letter-spacing:.1em;margin-top:-2px">WHOLESALE OPERATIONS · LAS VEGAS</div>
   </div>
   <div style="display:flex;gap:5px;flex-wrap:wrap">
@@ -62,6 +62,45 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <button id="theme-btn" onclick="toggleTheme()" style="padding:8px 12px;font-size:14px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer" title="Toggle Light/Dark Mode">🌙</button>
   </div>
   <div style="margin-left:auto;font-size:13px;color:var(--t3)" id="list-counter">No list loaded</div>
+</div>
+
+<!-- HOME -->
+<div id="p-home" class="panel" style="display:none">
+  <div style="text-align:center;padding:40px 20px 20px">
+    <div class="hdr" style="font-size:48px;color:var(--t1);line-height:1.1">COS <span style="color:var(--blue)">HUB</span></div>
+    <div style="font-size:14px;color:var(--t3);margin-top:6px;letter-spacing:.08em">CASH OFFER SPECIALIST · LAS VEGAS</div>
+  </div>
+  <div class="card" style="text-align:center;margin:20px 0;padding:30px">
+    <div style="font-size:13px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px" id="home-date"></div>
+    <div style="font-size:22px;font-weight:700;color:var(--t1);line-height:1.4" id="home-greeting"></div>
+    <div style="font-size:15px;color:var(--t2);margin-top:12px;line-height:1.6" id="home-message"></div>
+  </div>
+  <div class="card" style="text-align:center;margin:20px 0;padding:24px">
+    <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Daily Laugh</div>
+    <div style="font-size:16px;color:var(--t1);line-height:1.5" id="home-joke"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px">
+    <div class="card" onclick="nav('calc')" style="cursor:pointer;text-align:center;padding:24px;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+      <div style="font-size:28px;margin-bottom:8px">🧮</div>
+      <div style="font-size:14px;font-weight:700;color:var(--t1)">Calculator</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px">Run your numbers</div>
+    </div>
+    <div class="card" onclick="nav('scripts')" style="cursor:pointer;text-align:center;padding:24px;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+      <div style="font-size:28px;margin-bottom:8px">📝</div>
+      <div style="font-size:14px;font-weight:700;color:var(--t1)">Scripts</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px">Call scripts & objections</div>
+    </div>
+    <div class="card" onclick="nav('analyzer')" style="cursor:pointer;text-align:center;padding:24px;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+      <div style="font-size:28px;margin-bottom:8px">📊</div>
+      <div style="font-size:14px;font-weight:700;color:var(--t1)">Deal Analyzer</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px">Load & score leads</div>
+    </div>
+    <div class="card" onclick="nav('saved')" style="cursor:pointer;text-align:center;padding:24px;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+      <div style="font-size:28px;margin-bottom:8px">💾</div>
+      <div style="font-size:14px;font-weight:700;color:var(--t1)">Saved Deals</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px">View & export deals</div>
+    </div>
+  </div>
 </div>
 
 <!-- DEAL ANALYZER -->
@@ -731,18 +770,22 @@ const STACK_FILTERS=[
 ];
 
 function nav(p, skipHash){
-  ['analyzer','calc','scripts','saved'].forEach(id=>{
-    document.getElementById('p-'+id).style.display=id===p?'block':'none';
+  ['home','analyzer','calc','scripts','saved'].forEach(id=>{
+    const panel=document.getElementById('p-'+id);
+    if(panel) panel.style.display=id===p?'block':'none';
     const n=document.getElementById('n-'+id);
-    n.style.background=id===p?'var(--bluedim)':'transparent';
-    n.style.color=id===p?'var(--blue)':'var(--t3)';
-    n.style.borderColor=id===p?'var(--blue)':'var(--border)';
+    if(n){
+      n.style.background=id===p?'var(--bluedim)':'transparent';
+      n.style.color=id===p?'var(--blue)':'var(--t3)';
+      n.style.borderColor=id===p?'var(--blue)':'var(--border)';
+    }
   });
+  if(p==='home') renderHome();
   if(!skipHash) history.pushState(null,'','#'+p);
 }
 window.addEventListener('hashchange',()=>{
   const h=(location.hash||'').replace('#','');
-  if(['analyzer','calc','scripts','saved'].includes(h)) nav(h,true);
+  if(['home','analyzer','calc','scripts','saved'].includes(h)) nav(h,true);
 });
 
 function initStackFilters(){
@@ -2664,9 +2707,101 @@ function initTheme(){
     if(saved==='light'){document.body.classList.add('light');document.getElementById('theme-btn').textContent='☀️';}
   }catch(e){}
 }
+// ── HOME PAGE ──────────────────────────────────────────────────────────
+function renderHome(){
+  const now=new Date();
+  const hour=now.getHours();
+  const dayOfYear=Math.floor((now-new Date(now.getFullYear(),0,0))/(1000*60*60*24));
+
+  // Date display
+  const dateEl=document.getElementById('home-date');
+  if(dateEl) dateEl.textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+  // Greeting based on time
+  const greetEl=document.getElementById('home-greeting');
+  const greet=hour<12?'Good Morning':'Good Afternoon';
+  if(greetEl) greetEl.textContent=greet+'!';
+
+  // Daily motivational messages — rotates by day of year
+  const messages=[
+    "Every door you knock, every call you make — you're one step closer to the deal that changes everything.",
+    "The seller who needs you most is waiting for your call today. Go find them.",
+    "Cash is king. Speed is queen. You bring both to the table.",
+    "Most people quit right before the breakthrough. Not you. Keep dialing.",
+    "The best wholesalers aren't the smartest — they're the most consistent. Show up today.",
+    "Somewhere in Vegas right now, a homeowner is hoping someone like you calls them today.",
+    "You don't need 100 deals. You need 1 great one this month. Go find it.",
+    "Every 'no' gets you closer to the 'yes' that pays your bills for the month.",
+    "The fortune is in the follow-up. Who haven't you called back yet?",
+    "Your competition is scrolling social media. You're out here building a business.",
+    "One signed contract can change your whole month. Stay locked in.",
+    "The market doesn't care about feelings. It rewards action. Take action today.",
+    "Speed to lead wins. The first person to call gets the deal.",
+    "You're not just buying houses — you're solving problems for people who need help.",
+    "Discipline today. Deals tomorrow. Legacy forever.",
+    "The best deal you'll ever do is the next one you haven't found yet.",
+    "Stop overthinking. Start calling. The numbers always work themselves out.",
+    "Today's hustle is tomorrow's passive income. Put in the work.",
+    "You miss 100% of the offers you don't make. Send it.",
+    "Be so good they can't ignore you. Then make the offer.",
+    "The pain of discipline weighs ounces. The pain of regret weighs tons.",
+    "Wholesale is simple. Not easy. Simple. Trust the process.",
+    "Your phone is a money printer. Pick it up.",
+    "The difference between you and the next guy? You showed up today.",
+    "Every deal starts with a conversation. Start more conversations.",
+    "ARV minus repairs minus your fee. That's it. Keep it simple.",
+    "The seller doesn't care about your problems. Solve theirs first.",
+    "Consistency beats talent when talent doesn't show up.",
+    "Lock in. Laser focus. Let's get this bread.",
+    "Today is day one or one day. You decide.",
+    "Real estate is a contact sport. Make more contacts."
+  ];
+
+  const msgEl=document.getElementById('home-message');
+  if(msgEl) msgEl.textContent=messages[dayOfYear%messages.length];
+
+  // Daily jokes — rotates by day of year
+  const jokes=[
+    "Why did the house go to the doctor? It had a window pane.",
+    "What did the real estate agent say to the buyer? 'I've got a lot to offer.'",
+    "Why don't homes ever win at poker? They always fold.",
+    "I told my wife I was going to flip a house. She said, 'You can't even flip a pancake.'",
+    "What's a real estate investor's favorite type of music? Cash flow.",
+    "Why did the seller cry at closing? They were moved.",
+    "What do you call a fake house? A sham-ble.",
+    "Why did the mortgage break up with the house? Too much interest.",
+    "I asked a foreclosure if it was OK. It said, 'I'm under a lot of pressure.'",
+    "What do houses wear? An address.",
+    "Why don't wholesalers play hide and seek? Good luck hiding when you're always making offers.",
+    "My ARV calculation was wrong once. Once.",
+    "What's a home inspector's favorite dessert? Layer cake.",
+    "I used to be a banker but I lost interest. Now I wholesale.",
+    "Why did the investor bring a ladder? To check the comps upstairs.",
+    "What did the house say to the wholesaler? 'You had me at cash offer.'",
+    "I'm not saying my rehab budget was off, but the contractor just bought a new truck.",
+    "How does a house get in shape? It does a few reps on the market.",
+    "What's a title company's favorite song? 'Closing Time.'",
+    "Why did the wholesaler go to therapy? Too many assignments.",
+    "I tried to sell a haunted house. The ghost kept raising the asking price.",
+    "What do you call a house that's not selling? A stay-on-the-market.",
+    "Why was the open house so awkward? Too many strangers in the living room.",
+    "The contractor said he'd be done in 2 weeks. That was 3 months ago.",
+    "What do you get when you cross an investor with a comedian? A funny closing.",
+    "I wholesaled a house so fast, even the GPS couldn't keep up.",
+    "Why did the buyer bring a blanket to the showing? They heard it was a cold market.",
+    "My first deal made me $500. My ego told everyone it was $50,000.",
+    "What's the difference between a wholesaler and a magician? The magician tells you it's an illusion.",
+    "I just closed a deal in 7 days. My barber takes longer.",
+    "Why do real estate investors make great friends? They always have equity in the relationship."
+  ];
+
+  const jokeEl=document.getElementById('home-joke');
+  if(jokeEl) jokeEl.textContent=jokes[dayOfYear%jokes.length];
+}
+
 initTheme();
 loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();loadSavedDeals();
-(function(){const h=(location.hash||'').replace('#','');nav(['analyzer','calc','scripts','saved'].includes(h)?h:'calc');})();
+(function(){const h=(location.hash||'').replace('#','');nav(['home','analyzer','calc','scripts','saved'].includes(h)?h:'home');})();
 </script>
 </body>
 </html>
