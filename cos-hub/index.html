@@ -387,7 +387,10 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       </div>
     </div>
     <div class="card">
-      <span class="label">Repairs</span>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <span class="label" style="margin-bottom:0">Repairs</span>
+        <button onclick="openRehabEstimator()" style="background:var(--amber);color:#000;border:none;border-radius:6px;padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer">🔨 Rehab Estimator</button>
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div>
           <span class="label">$/sqft scope</span>
@@ -2841,6 +2844,139 @@ function initTheme(){
     if(saved==='light'){document.body.classList.add('light');document.getElementById('theme-btn').textContent='☀️';}
   }catch(e){}
 }
+// ── REHAB ESTIMATOR ──────────────────────────────────────────────────
+const REHAB_ITEMS=[
+  {cat:'Exterior',items:[
+    {id:'roof',name:'Roof',costs:[0,2500,5000,10000,16000],labels:['Good','Patch Only','Partial','Full Reshingle','Full Replacement']},
+    {id:'exterior_paint',name:'Exterior Paint',costs:[0,1500,3500,6000,9000],labels:['Good','Touch Up','1 Side','Full Paint','Stucco Repair+Paint']},
+    {id:'landscaping',name:'Landscaping',costs:[0,500,1500,3000,6000],labels:['Good','Trim/Clean','Rock/Mulch','New Plants+Rock','Full Redo']},
+    {id:'garage',name:'Garage Door',costs:[0,300,800,1500,3000],labels:['Good','Adjust/Lube','Opener','Single Door','Double Door']},
+    {id:'fencing',name:'Fencing',costs:[0,500,1500,3000,6000],labels:['Good','Patch','Partial','Full Back','Full Property']},
+    {id:'pool',name:'Pool (if applicable)',costs:[0,500,2000,5000,15000],labels:['N/A or Good','Clean+Chemical','Resurface','Equipment','Full Reno']},
+    {id:'driveway',name:'Driveway/Concrete',costs:[0,500,1500,3000,6000],labels:['Good','Crack Fill','Partial','Overlay','Replace']},
+  ]},
+  {cat:'Interior — Big Ticket',items:[
+    {id:'kitchen',name:'Kitchen',costs:[0,5000,12000,22000,35000],labels:['Good','Cosmetic','Partial Remodel','Full Remodel','Gut+Custom']},
+    {id:'bathrooms',name:'Bathrooms (all)',costs:[0,3000,8000,15000,25000],labels:['Good','Cosmetic','1 Full Reno','2 Full Reno','3+ Full Reno']},
+    {id:'hvac',name:'HVAC System',costs:[0,500,2000,5000,10000],labels:['Good','Service','Repair','Replace 1 Unit','Full System']},
+    {id:'electrical',name:'Electrical Panel',costs:[0,500,1500,3500,8000],labels:['Good','Outlets/Switches','Partial Rewire','Panel Upgrade','Full Rewire']},
+    {id:'plumbing',name:'Plumbing',costs:[0,500,2000,5000,12000],labels:['Good','Fix Leaks','Fixtures','Partial Repipe','Full Repipe']},
+    {id:'water_heater',name:'Water Heater',costs:[0,0,500,1200,2500],labels:['Good','Good','Repair','Standard','Tankless']},
+  ]},
+  {cat:'Interior — Cosmetic',items:[
+    {id:'flooring',name:'Flooring',costs:[0,1000,3000,6000,12000],labels:['Good','Patch/Clean','1-2 Rooms','Most Rooms','Whole House']},
+    {id:'paint_int',name:'Interior Paint',costs:[0,500,1500,3000,5000],labels:['Good','Touch Up','2-3 Rooms','Full Interior','Texture+Paint']},
+    {id:'doors_trim',name:'Doors & Trim',costs:[0,300,800,2000,4000],labels:['Good','Hardware','Some Doors','All Doors','All+Crown']},
+    {id:'windows',name:'Windows',costs:[0,0,1500,4000,10000],labels:['Good','Good','2-3 Windows','Half House','All Windows']},
+    {id:'lighting',name:'Light Fixtures',costs:[0,200,500,1200,2500],labels:['Good','1-2 Fixtures','Some Rooms','All Rooms','All+Recessed']},
+    {id:'appliances',name:'Appliances',costs:[0,0,1000,2500,5000],labels:['Good','Good','1-2 Items','Full Set','Premium Set']},
+  ]},
+  {cat:'Foundation & Structure',items:[
+    {id:'foundation',name:'Foundation',costs:[0,0,2000,8000,20000],labels:['Good','Good','Minor Cracks','Piers/Support','Major Repair']},
+    {id:'termite',name:'Termite/Pest',costs:[0,0,500,1500,4000],labels:['Clear','Clear','Treatment','Treatment+Repair','Major Damage']},
+    {id:'mold',name:'Mold/Water Damage',costs:[0,0,1000,3000,10000],labels:['None','None','Minor','Moderate','Major Remediation']},
+  ]},
+];
+
+function openRehabEstimator(){
+  const old=document.getElementById('rehab-modal');if(old)old.remove();
+  const modal=document.createElement('div');modal.id='rehab-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.onclick=e=>{if(e.target===modal)modal.remove();};
+
+  let html=`<div style="background:var(--s1);border:1px solid var(--border2);border-radius:12px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;animation:fadeUp .2s ease">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--s1);z-index:1;border-radius:12px 12px 0 0">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--t1);font-family:'Barlow Condensed',sans-serif">REHAB ESTIMATOR</div>
+        <div style="font-size:11px;color:var(--t3)">Select condition for each item — costs auto-calculate</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--t3)">TOTAL</div>
+          <div id="rehab-total" style="font-size:22px;font-weight:900;color:var(--amber)">$0</div>
+        </div>
+        <button onclick="document.getElementById('rehab-modal').remove()" style="background:transparent;border:none;color:var(--t3);font-size:20px;cursor:pointer">✕</button>
+      </div>
+    </div>
+    <div style="padding:20px 24px">`;
+
+  REHAB_ITEMS.forEach(cat=>{
+    html+=`<div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)">${cat.cat}</div>`;
+    cat.items.forEach(item=>{
+      html+=`<div style="margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:600;color:var(--t1)">${item.name}</span>
+          <span id="rehab-cost-${item.id}" style="font-size:12px;font-weight:700;color:var(--amber)">$0</span>
+        </div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          ${item.labels.map((lbl,j)=>`<button onclick="setRehabItem('${item.id}',${j})" id="rb-${item.id}-${j}" style="padding:4px 10px;font-size:10px;font-weight:600;border-radius:14px;border:1px solid ${j===0?'var(--green)':'var(--border)'};background:${j===0?'var(--greendim)':'transparent'};color:${j===0?'var(--green)':'var(--t3)'};cursor:pointer">${lbl}${j>0?' · $'+item.costs[j].toLocaleString():''}</button>`).join('')}
+        </div>
+      </div>`;
+    });
+  });
+
+  html+=`</div>
+    <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;bottom:0;background:var(--s1);border-radius:0 0 12px 12px">
+      <div style="font-size:13px;color:var(--t2)">Total: <b id="rehab-total-bottom" style="color:var(--amber);font-size:16px">$0</b></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="document.getElementById('rehab-modal').remove()" style="background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer">Cancel</button>
+        <button onclick="applyRehabTotal()" style="background:var(--amber);color:#000;border:none;border-radius:6px;padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer">Apply to Calculator</button>
+      </div>
+    </div>
+  </div>`;
+
+  modal.innerHTML=html;
+  document.body.appendChild(modal);
+}
+
+const _rehabSelections={};
+function setRehabItem(id,level){
+  _rehabSelections[id]=level;
+  // Find item
+  let item;
+  REHAB_ITEMS.forEach(cat=>cat.items.forEach(it=>{if(it.id===id)item=it;}));
+  if(!item)return;
+  // Update button styles
+  item.labels.forEach((_,j)=>{
+    const btn=document.getElementById(`rb-${id}-${j}`);
+    if(!btn)return;
+    const active=j===level;
+    const color=j===0?'var(--green)':j<=2?'var(--amber)':'var(--red)';
+    btn.style.background=active?(j===0?'var(--greendim)':j<=2?'#2a1f0a':'#2a0a0a'):'transparent';
+    btn.style.color=active?color:'var(--t3)';
+    btn.style.borderColor=active?color:'var(--border)';
+  });
+  // Update cost display
+  const costEl=document.getElementById('rehab-cost-'+id);
+  if(costEl)costEl.textContent='$'+item.costs[level].toLocaleString();
+  // Recalculate total
+  updateRehabTotal();
+}
+
+function updateRehabTotal(){
+  let total=0;
+  REHAB_ITEMS.forEach(cat=>cat.items.forEach(item=>{
+    const level=_rehabSelections[item.id]||0;
+    total+=item.costs[level];
+  }));
+  const t1=document.getElementById('rehab-total');
+  const t2=document.getElementById('rehab-total-bottom');
+  if(t1)t1.textContent='$'+total.toLocaleString();
+  if(t2)t2.textContent='$'+total.toLocaleString();
+}
+
+function applyRehabTotal(){
+  let total=0;
+  REHAB_ITEMS.forEach(cat=>cat.items.forEach(item=>{
+    const level=_rehabSelections[item.id]||0;
+    total+=item.costs[level];
+  }));
+  const overrideEl=document.getElementById('c-rep-override');
+  if(overrideEl){overrideEl.value=total;syncOverrideToSlider();}
+  calcMAO();
+  document.getElementById('rehab-modal').remove();
+}
+
 // ── HOME PAGE ──────────────────────────────────────────────────────────
 function renderHome(){
   const now=new Date();
