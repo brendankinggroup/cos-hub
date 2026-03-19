@@ -721,7 +721,7 @@ const STACK_FILTERS=[
   {id:'sf-motivated',label:'Score 75+',key:'motivated',color:'#f04060'},
 ];
 
-function nav(p){
+function nav(p, skipHash){
   ['analyzer','calc','scripts','saved'].forEach(id=>{
     document.getElementById('p-'+id).style.display=id===p?'block':'none';
     const n=document.getElementById('n-'+id);
@@ -729,7 +729,12 @@ function nav(p){
     n.style.color=id===p?'var(--blue)':'var(--t3)';
     n.style.borderColor=id===p?'var(--blue)':'var(--border)';
   });
+  if(!skipHash) history.pushState(null,'','#'+p);
 }
+window.addEventListener('hashchange',()=>{
+  const h=(location.hash||'').replace('#','');
+  if(['analyzer','calc','scripts','saved'].includes(h)) nav(h,true);
+});
 
 function initStackFilters(){
   document.getElementById('stack-filters').innerHTML=STACK_FILTERS.map(f=>`
@@ -2433,6 +2438,7 @@ function initTheme(){
 }
 initTheme();
 loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();loadSavedDeals();
+(function(){const h=(location.hash||'').replace('#','');nav(['analyzer','calc','scripts','saved'].includes(h)?h:'analyzer');})();
 </script>
 </body>
 </html>
