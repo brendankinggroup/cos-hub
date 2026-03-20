@@ -34,20 +34,22 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'POST') {
+      const postBody = { ...req.body, typecast: true };
       const r = await fetch(url, {
         method: 'POST',
         headers: atHeaders,
-        body: JSON.stringify(req.body),
+        body: JSON.stringify(postBody),
       });
       const json = await r.json();
       return res.status(r.status).json(json);
     }
 
     if (req.method === 'PATCH') {
+      const patchBody = { ...req.body, typecast: true };
       const r = await fetch(url, {
         method: 'PATCH',
         headers: atHeaders,
-        body: JSON.stringify(req.body),
+        body: JSON.stringify(patchBody),
       });
       const json = await r.json();
       return res.status(r.status).json(json);

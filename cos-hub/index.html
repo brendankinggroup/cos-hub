@@ -2487,6 +2487,7 @@ function recalcDeal(idx){
   set('c-sqft',d.sqft);
   set('c-rep-override',d.repairs||'');
   set('c-pct',d.pct||70);
+  updateCalcPct(d.pct||70);
   set('c-fee',d.fee||13000);
   set('c-close-days',d.closeDays||14);
   const feeLbl=document.getElementById('c-fee-lbl');if(feeLbl)feeLbl.textContent='$'+(d.fee||13000).toLocaleString();
@@ -2889,14 +2890,17 @@ async function updatePipeline(idx, status){
   const d=savedDealsCache[idx];if(!d||!d._atId)return;
   d.pipeline=status;
   try{
-    await fetch(API_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},
+    const r=await fetch(API_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({records:[{id:d._atId,fields:{'Pipeline':status}}]})});
-    console.log('Pipeline updated:',status);
-  }catch(e){console.error('Pipeline update error:',e);}
+    const json=await r.json();
+    if(json.error){console.error('Airtable PATCH error:',json.error);showBdStatus('Failed to update pipeline in Airtable','var(--red)');}
+    else{console.log('Pipeline updated in Airtable:',d.address,'→',status);}
+  }catch(e){console.error('Pipeline update error:',e);showBdStatus('Network error updating pipeline','var(--red)');}
 }
 
 async function updatePipelineAndRefresh(idx, status){
   await updatePipeline(idx, status);
+  await loadSavedDeals();
   if(savedViewMode==='board') renderKanban();
 }
 
