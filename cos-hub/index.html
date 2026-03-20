@@ -734,7 +734,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 </div>
 
 <!-- INCOMING LEADS -->
-<div id="p-leads" class="panel" style="display:none;padding:0 20px;max-width:900px;margin:0 auto">
+<div id="p-leads" class="panel" style="display:none;padding:20px 24px;max-width:900px;margin:0 auto">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
     <div>
       <div class="hdr" style="font-size:22px;color:var(--t1)">INCOMING LEADS</div>
@@ -778,6 +778,28 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <button onclick="filterPipeline('Assigned')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Assigned</button>
     <button onclick="filterPipeline('Closed')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Closed</button>
     <button onclick="filterPipeline('Dead')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Dead</button>
+  </div>
+  <!-- Bulk Action Bar -->
+  <div id="bulk-bar" style="display:none;position:sticky;top:0;z-index:100;background:var(--blue);border-radius:8px;padding:10px 16px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;gap:12px;animation:fadeUp .15s ease">
+    <div style="display:flex;align-items:center;gap:10px">
+      <input type="checkbox" id="bulk-select-all" onclick="toggleSelectAll(this.checked)" style="width:16px;height:16px;cursor:pointer">
+      <span id="bulk-count" style="color:#fff;font-size:13px;font-weight:700">0 selected</span>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="bulk-pipeline-select" style="padding:5px 10px;font-size:12px;border-radius:6px;font-weight:600;border:none">
+        <option value="">Change Status...</option>
+        <option value="New">New</option>
+        <option value="Contacted">Contacted</option>
+        <option value="Offer Made">Offer Made</option>
+        <option value="Under Contract">Under Contract</option>
+        <option value="Assigned">Assigned</option>
+        <option value="Closed">Closed</option>
+        <option value="Dead">Dead</option>
+      </select>
+      <button onclick="bulkUpdatePipeline()" style="padding:6px 14px;font-size:12px;font-weight:700;border-radius:6px;border:none;background:#fff;color:var(--blue);cursor:pointer">Apply</button>
+      <button onclick="bulkDelete()" style="padding:6px 14px;font-size:12px;font-weight:700;border-radius:6px;border:none;background:var(--red);color:#fff;cursor:pointer">Delete</button>
+      <button onclick="clearBulkSelection()" style="padding:6px 10px;font-size:12px;font-weight:700;border-radius:6px;border:1px solid #fff4;background:transparent;color:#fff;cursor:pointer">Cancel</button>
+    </div>
   </div>
   <div id="saved-table-wrap">
     <div id="saved-cards" style="display:flex;flex-direction:column;gap:10px"></div>
@@ -2207,6 +2229,12 @@ async function loadSavedDeals(){
       pipeline:rec.fields['Pipeline']||'New',
       status:rec.fields['Status']||'New',
       notes:rec.fields['Notes']||'',
+      askingPrice:rec.fields['Asking Price']||0,
+      mortgage:rec.fields['Mortgage']||0,
+      reason:rec.fields['Reason']||'',
+      propType:rec.fields['Property Type']||'',
+      yearBuilt:rec.fields['Year Built']||0,
+      lotSize:rec.fields['Lot Size']||'',
       savedAt:rec.fields['Saved At']||new Date().toISOString()
     }));
     renderSavedDeals();
@@ -2235,6 +2263,9 @@ async function saveDeal(){
     'SqFt':d.sqft||0,'Offer %':d.pct||70,'Close Days':d.closeDays||14,
     'Beds':ld.beds||0,'Baths':ld.baths||0,
     'Condition':ld.condition||'','Timeline':ld.timeline||'',
+    'Reason':ld.reason||'','Property Type':ld.propType||'',
+    'Year Built':ld.yearBuilt||0,'Lot Size':ld.lotSize||'',
+    'Asking Price':ld.askingPrice||0,'Mortgage':ld.mortgage||0,
     'Deal Type':d.dealType==='agent'?'MLS / Agent':'Seller Direct',
     'Comps Link':d.compsLink||'',
     'Price Offered':d.priceOffered||0,
@@ -2300,9 +2331,14 @@ function renderSavedDeals(){
     return`<div class="card" style="padding:16px">
       <!-- Row 1: Address + Pipeline + Score -->
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:16px;font-weight:800;color:var(--t1);line-height:1.3">${esc(d.address||'No Address')}</div>
-          <div style="font-size:13px;color:var(--t2);margin-top:2px">${esc(d.seller||'—')}${d.sellerPhone?' · <a href="tel:'+esc(d.sellerPhone)+'" style="color:var(--blue);text-decoration:none">'+esc(d.sellerPhone)+'</a>':''} · ${esc(d.distress||'—')} · ${date}</div>
+        <div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0">
+          <input type="checkbox" class="bulk-check" data-idx="${realIdx}" onclick="event.stopPropagation();updateBulkBar()" style="margin-top:4px;width:16px;height:16px;cursor:pointer;accent-color:var(--blue);flex-shrink:0">
+          <div style="min-width:0">
+            <div style="font-size:16px;font-weight:800;color:var(--t1);line-height:1.3">${esc(d.address||'No Address')}</div>
+            <div style="font-size:13px;color:var(--t2);margin-top:2px">${esc(d.seller||'—')}${d.sellerPhone?' · <a href="tel:'+esc(d.sellerPhone)+'" style="color:var(--blue);text-decoration:none">'+esc(d.sellerPhone)+'</a>':''} · ${esc(d.distress||'—')} · ${date}</div>
+            ${d.notes?'<div style="font-size:11px;color:var(--amber);margin-top:3px;font-style:italic">📝 '+esc(d.notes)+'</div>':''}
+            ${d.reason?'<div style="font-size:11px;color:var(--t3);margin-top:2px">Reason: '+esc(d.reason)+'</div>':''}
+          </div>
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:12px">
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:${pipeColor}18;color:${pipeColor};border:1px solid ${pipeColor}44">${d.pipeline||'New'}</span>
@@ -2347,6 +2383,7 @@ function renderSavedDeals(){
           <div style="font-size:16px;font-weight:800;color:var(--amber)">${d.roi?d.roi.toFixed(1)+'%':'—'}</div>
         </div>
       </div>
+      ${d.compsLink?'<div style="margin-bottom:8px"><a href="'+esc(d.compsLink)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--blue);text-decoration:none;font-weight:600">🔗 View Comps</a></div>':''}
       <!-- Row 3: Actions -->
       <div style="display:flex;justify-content:space-between;align-items:center">
         <select onchange="updatePipeline(${realIdx},this.value)" style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-weight:600;cursor:pointer">
@@ -2365,6 +2402,68 @@ function renderSavedDeals(){
 }
 
 window._editingAtId=null;
+
+// ── BULK ACTIONS ──────────────────────────────────────────────────────
+function getSelectedIdxs(){
+  return [...document.querySelectorAll('.bulk-check:checked')].map(cb=>parseInt(cb.dataset.idx));
+}
+
+function updateBulkBar(){
+  const sel=getSelectedIdxs();
+  const bar=document.getElementById('bulk-bar');
+  if(sel.length>0){
+    bar.style.display='flex';
+    document.getElementById('bulk-count').textContent=sel.length+' selected';
+  }else{
+    bar.style.display='none';
+  }
+}
+
+function toggleSelectAll(checked){
+  document.querySelectorAll('.bulk-check').forEach(cb=>{cb.checked=checked;});
+  updateBulkBar();
+}
+
+function clearBulkSelection(){
+  document.querySelectorAll('.bulk-check').forEach(cb=>{cb.checked=false;});
+  document.getElementById('bulk-select-all').checked=false;
+  document.getElementById('bulk-bar').style.display='none';
+}
+
+async function bulkUpdatePipeline(){
+  const sel=getSelectedIdxs();
+  const newStatus=document.getElementById('bulk-pipeline-select').value;
+  if(!newStatus){alert('Select a status first');return;}
+  if(!sel.length)return;
+  if(!confirm('Change '+sel.length+' deal(s) to "'+newStatus+'"?'))return;
+
+  const records=sel.map(idx=>({id:savedDealsCache[idx]._atId,fields:{'Pipeline':newStatus}}));
+  for(let i=0;i<records.length;i+=10){
+    const batch=records.slice(i,i+10);
+    try{
+      await fetch(API_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:batch})});
+    }catch(e){console.error('Bulk update error:',e);}
+  }
+  clearBulkSelection();
+  await loadSavedDeals();
+}
+
+async function bulkDelete(){
+  const sel=getSelectedIdxs();
+  if(!sel.length)return;
+  if(!confirm('Delete '+sel.length+' deal(s)? This cannot be undone.'))return;
+
+  const ids=sel.map(idx=>savedDealsCache[idx]._atId).filter(Boolean);
+  for(let i=0;i<ids.length;i+=10){
+    const batch=ids.slice(i,i+10);
+    const params=batch.map(id=>'records[]='+id).join('&');
+    try{
+      await fetch(API_URL+'?'+params,{method:'DELETE'});
+    }catch(e){console.error('Bulk delete error:',e);}
+  }
+  clearBulkSelection();
+  await loadSavedDeals();
+}
 
 function recalcDeal(idx){
   const d=savedDealsCache[idx];if(!d)return;
@@ -2479,6 +2578,26 @@ function viewDeal(idx){
         <div style="font-size:13px;color:var(--amber);font-weight:700;margin-top:2px">${d.roi?d.roi.toFixed(1)+'% ROI':'—'}</div>
       </div>
     </div>
+
+    ${d.askingPrice||d.mortgage?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      ${d.askingPrice?'<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">Asking Price</div><div style="font-size:18px;font-weight:800;color:var(--t1)">'+fm(d.askingPrice)+'</div></div>':''}
+      ${d.mortgage?'<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">Mortgage</div><div style="font-size:18px;font-weight:800;color:var(--red)">'+fm(d.mortgage)+'</div></div>':''}
+    </div>`:''}
+
+    ${d.reason||d.propType||d.yearBuilt?`<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Property Details</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;font-size:12px">
+        ${d.propType?'<div><span style="color:var(--t3)">Type:</span> <span style="color:var(--t1);font-weight:600">'+esc(d.propType)+'</span></div>':''}
+        ${d.yearBuilt?'<div><span style="color:var(--t3)">Year Built:</span> <span style="color:var(--t1);font-weight:600">'+d.yearBuilt+'</span></div>':''}
+        ${d.lotSize?'<div><span style="color:var(--t3)">Lot:</span> <span style="color:var(--t1);font-weight:600">'+esc(d.lotSize)+'</span></div>':''}
+        ${d.reason?'<div style="grid-column:1/-1"><span style="color:var(--t3)">Motivation:</span> <span style="color:var(--amber);font-weight:600">'+esc(d.reason)+'</span></div>':''}
+      </div>
+    </div>`:''}
+
+    ${d.notes?`<div style="background:var(--card);border:1px solid var(--amber)44;border-radius:8px;padding:12px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">📝 Notes</div>
+      <div style="font-size:13px;color:var(--t1);white-space:pre-wrap">${esc(d.notes)}</div>
+    </div>`:''}
 
     ${d.compsLink?`<div style="margin-bottom:10px"><a href="${esc(d.compsLink)}" target="_blank" style="display:block;text-align:center;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:8px;font-size:12px;font-weight:700;text-decoration:none">🔗 View Comps</a></div>`:''}
     <div style="display:flex;gap:8px">
@@ -3214,20 +3333,38 @@ async function loadLeads(){
       _atId:rec.id,
       address:rec.fields['Address']||'',
       city:rec.fields['City']||'',
+      zip:rec.fields['Zip']||'',
       name:rec.fields['Seller Name']||'',
       phone:rec.fields['Seller Phone']||'',
       email:rec.fields['Seller Email']||'',
+      contactPref:rec.fields['Contact Pref']||'',
       beds:rec.fields['Beds']||0,
       baths:rec.fields['Baths']||0,
       sqft:rec.fields['SqFt']||0,
+      propType:rec.fields['Property Type']||'',
+      yearBuilt:rec.fields['Year Built']||0,
+      lotSize:rec.fields['Lot Size']||'',
       condition:rec.fields['Condition Summary']||'',
       timeline:rec.fields['Timeline']||'',
+      reason:rec.fields['Reason']||'',
+      occupancy:rec.fields['Occupancy']||'',
+      askingPrice:rec.fields['Asking Price']||'',
+      mortgage:rec.fields['Mortgage']||'',
+      liens:rec.fields['Liens']||'',
+      hoa:rec.fields['HOA']||'',
+      pool:rec.fields['Pool']||'',
+      solar:rec.fields['Solar']||'',
+      unpermitted:rec.fields['Unpermitted']||'',
+      estRepairs:rec.fields['Est Repairs']||0,
+      estValue:rec.fields['Est Value']||0,
       source:rec.fields['Source Page']||'',
       status:rec.fields['Status']||'New',
       offerLow:rec.fields['Offer Low']||0,
       offerHigh:rec.fields['Offer High']||0,
       submitted:rec.fields['Submitted At']||'',
-      notes:rec.fields['Notes']||''
+      notes:rec.fields['Notes']||'',
+      photoLinks:rec.fields['Photo Links']||'',
+      driveFolder:rec.fields['Drive Folder']||''
     }));
     renderLeads();
   }catch(e){
@@ -3259,11 +3396,11 @@ function renderLeads(){
     const sc=statusColors[l.status]||'var(--t3)';
     const date=l.submitted?new Date(l.submitted).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
     const sourceLabel=l.source||'Unknown';
-    return `<div class="card" style="margin-bottom:10px;padding:16px">
+    return `<div class="card" style="margin-bottom:10px;padding:16px;cursor:pointer" onclick="viewLead('${l._atId}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div>
           <div style="font-size:15px;font-weight:700;color:var(--t1)">${l.address||'No address'}${l.city?', '+l.city:''}</div>
-          <div style="font-size:12px;color:var(--t3);margin-top:2px">${l.name||'Unknown seller'}${l.phone?' · <a href="tel:'+l.phone+'" style="color:var(--blue);text-decoration:none">'+l.phone+'</a>':''}${l.email?' · '+l.email:''}</div>
+          <div style="font-size:12px;color:var(--t3);margin-top:2px">${l.name||'Unknown seller'}${l.phone?' · <a href="tel:'+l.phone+'" onclick="event.stopPropagation()" style="color:var(--blue);text-decoration:none">'+l.phone+'</a>':''}${l.email?' · '+l.email:''}</div>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:10px;color:var(--t3)">${date}</span>
@@ -3280,12 +3417,12 @@ function renderLeads(){
       </div>
       ${l.condition?'<div style="font-size:11px;color:var(--t2);margin-bottom:10px;white-space:pre-wrap;max-height:60px;overflow:hidden">'+l.condition+'</div>':''}
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-        <button onclick="runNumbersFromLead('${l._atId}')" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:none;background:var(--blue);color:#fff;cursor:pointer">🧮 Run Numbers</button>
-        <select onchange="updateLeadStatus('${l._atId}',this.value)" style="padding:5px 8px;font-size:11px;font-weight:600;border-radius:6px;width:auto">
+        <button onclick="event.stopPropagation();runNumbersFromLead('${l._atId}')" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:none;background:var(--blue);color:#fff;cursor:pointer">🧮 Run Numbers</button>
+        <select onclick="event.stopPropagation()" onchange="event.stopPropagation();updateLeadStatus('${l._atId}',this.value)" style="padding:5px 8px;font-size:11px;font-weight:600;border-radius:6px;width:auto">
           ${['New','Contacted','Offer Made','Converted','Dead'].map(s=>'<option value="'+s+'"'+(s===l.status?' selected':'')+'>'+s+'</option>').join('')}
         </select>
-        ${l.phone?'<a href="tel:'+l.phone+'" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid var(--green);background:var(--greendim);color:var(--green);cursor:pointer;text-decoration:none">📞 Call</a>':''}
-        <button onclick="deleteLeadConfirm('${l._atId}')" style="padding:6px 10px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer;margin-left:auto">🗑️</button>
+        ${l.phone?'<a href="tel:'+l.phone+'" onclick="event.stopPropagation()" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid var(--green);background:var(--greendim);color:var(--green);cursor:pointer;text-decoration:none">📞 Call</a>':''}
+        <button onclick="event.stopPropagation();deleteLeadConfirm('${l._atId}')" style="padding:6px 10px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer;margin-left:auto">🗑️</button>
       </div>
     </div>`;
   }).join('');
@@ -3329,6 +3466,95 @@ function runNumbersFromLead(atId){
   // Show status message
   const status=document.getElementById('bd-status');
   if(status){status.textContent='📨 Lead loaded: '+lead.name+(lead.phone?' · '+lead.phone:'')+' — '+(lead.address||'');status.style.display='block';status.style.color='var(--blue)';}
+}
+
+function viewLead(atId){
+  const l=leadsCache.find(x=>x._atId===atId);if(!l)return;
+  const old=document.getElementById('lead-modal');if(old)old.remove();
+  const statusColors={'New':'var(--blue)','Contacted':'var(--amber)','Offer Made':'var(--purple)','Converted':'var(--green)','Dead':'var(--red)'};
+  const sc=statusColors[l.status]||'var(--t3)';
+  const date=l.submitted?new Date(l.submitted).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'—';
+
+  const modal=document.createElement('div');modal.id='lead-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.onclick=e=>{if(e.target===modal)modal.remove();};
+
+  modal.innerHTML=`<div style="background:var(--s1);border:1px solid var(--border2);border-radius:12px;padding:28px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;animation:fadeUp .2s ease">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:var(--t1);font-family:'Barlow Condensed',sans-serif;letter-spacing:.03em">${l.address||'[No Address]'}${l.city?', '+l.city:''}</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:4px">Submitted ${date} · Source: <b>${l.source||'Unknown'}</b></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:700;padding:4px 12px;border-radius:12px;background:${sc}22;color:${sc}">${l.status}</span>
+        <button onclick="document.getElementById('lead-modal').remove()" style="background:transparent;border:none;color:var(--t3);font-size:20px;cursor:pointer;padding:0 4px">✕</button>
+      </div>
+    </div>
+
+    <!-- Seller Contact -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Seller Contact</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px">
+        <div><span style="color:var(--t3)">Name:</span> <span style="color:var(--t1);font-weight:600">${l.name||'—'}</span></div>
+        <div><span style="color:var(--t3)">Phone:</span> ${l.phone?'<a href="tel:'+l.phone+'" style="color:var(--blue);text-decoration:none;font-weight:600">'+l.phone+'</a>':'—'}</div>
+        <div><span style="color:var(--t3)">Email:</span> <span style="color:var(--t1)">${l.email||'—'}</span></div>
+        <div><span style="color:var(--t3)">Pref:</span> <span style="color:var(--t1)">${l.contactPref||'—'}</span></div>
+      </div>
+    </div>
+
+    <!-- Property Details -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Property Details</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px 16px;font-size:13px">
+        ${l.propType?'<div><span style="color:var(--t3)">Type:</span> <span style="color:var(--t1);font-weight:600">'+l.propType+'</span></div>':''}
+        ${l.beds?'<div><span style="color:var(--t3)">Beds:</span> <span style="color:var(--t1);font-weight:600">'+l.beds+'</span></div>':''}
+        ${l.baths?'<div><span style="color:var(--t3)">Baths:</span> <span style="color:var(--t1);font-weight:600">'+l.baths+'</span></div>':''}
+        ${l.sqft?'<div><span style="color:var(--t3)">SqFt:</span> <span style="color:var(--t1);font-weight:600">'+l.sqft.toLocaleString()+'</span></div>':''}
+        ${l.yearBuilt?'<div><span style="color:var(--t3)">Year:</span> <span style="color:var(--t1);font-weight:600">'+l.yearBuilt+'</span></div>':''}
+        ${l.lotSize?'<div><span style="color:var(--t3)">Lot:</span> <span style="color:var(--t1);font-weight:600">'+l.lotSize+'</span></div>':''}
+        ${l.pool?'<div><span style="color:var(--t3)">Pool:</span> <span style="color:var(--t1)">'+l.pool+'</span></div>':''}
+        ${l.solar?'<div><span style="color:var(--t3)">Solar:</span> <span style="color:var(--t1)">'+l.solar+'</span></div>':''}
+        ${l.hoa?'<div><span style="color:var(--t3)">HOA:</span> <span style="color:var(--t1)">'+l.hoa+'</span></div>':''}
+      </div>
+    </div>
+
+    <!-- Financials -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      ${l.askingPrice?'<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--t3);text-transform:uppercase">Asking Price</div><div style="font-size:18px;font-weight:800;color:var(--t1)">$'+Number(l.askingPrice).toLocaleString()+'</div></div>':''}
+      ${l.mortgage?'<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--t3);text-transform:uppercase">Mortgage</div><div style="font-size:18px;font-weight:800;color:var(--red)">$'+Number(l.mortgage).toLocaleString()+'</div></div>':''}
+      ${l.estValue?'<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--t3);text-transform:uppercase">Est Value</div><div style="font-size:18px;font-weight:800;color:var(--green)">$'+Number(l.estValue).toLocaleString()+'</div></div>':''}
+      ${l.estRepairs?'<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--t3);text-transform:uppercase">Est Repairs</div><div style="font-size:18px;font-weight:800;color:var(--amber)">$'+Number(l.estRepairs).toLocaleString()+'</div></div>':''}
+      ${l.offerLow||l.offerHigh?'<div style="background:var(--greendim);border:1px solid var(--green)44;border-radius:8px;padding:10px;text-align:center;grid-column:1/-1"><div style="font-size:10px;color:var(--t3);text-transform:uppercase">Offer Range</div><div style="font-size:18px;font-weight:800;color:var(--green)">$'+(l.offerLow||0).toLocaleString()+' – $'+(l.offerHigh||0).toLocaleString()+'</div></div>':''}
+    </div>
+
+    <!-- Situation -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Seller Situation</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px">
+        ${l.timeline?'<div><span style="color:var(--t3)">Timeline:</span> <span style="color:var(--amber);font-weight:600">'+l.timeline+'</span></div>':''}
+        ${l.reason?'<div><span style="color:var(--t3)">Reason:</span> <span style="color:var(--amber);font-weight:600">'+l.reason+'</span></div>':''}
+        ${l.occupancy?'<div><span style="color:var(--t3)">Occupancy:</span> <span style="color:var(--t1)">'+l.occupancy+'</span></div>':''}
+        ${l.liens?'<div><span style="color:var(--t3)">Liens:</span> <span style="color:var(--red);font-weight:600">'+l.liens+'</span></div>':''}
+        ${l.unpermitted?'<div><span style="color:var(--t3)">Unpermitted:</span> <span style="color:var(--red)">'+l.unpermitted+'</span></div>':''}
+      </div>
+    </div>
+
+    <!-- Condition -->
+    ${l.condition?'<div style="background:var(--card);border:1px solid var(--amber)44;border-radius:8px;padding:14px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Condition Notes</div><div style="font-size:13px;color:var(--t1);white-space:pre-wrap">'+l.condition+'</div></div>':''}
+
+    <!-- Notes -->
+    ${l.notes?'<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Notes</div><div style="font-size:13px;color:var(--t1);white-space:pre-wrap">'+l.notes+'</div></div>':''}
+
+    <!-- Actions -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="document.getElementById('lead-modal').remove();runNumbersFromLead('${l._atId}')" style="flex:1;background:var(--blue);color:#fff;border:none;border-radius:6px;padding:10px;font-size:13px;font-weight:700;cursor:pointer">🧮 Run Numbers</button>
+      ${l.phone?'<a href="tel:'+l.phone+'" style="flex:1;background:var(--greendim);color:var(--green);border:1px solid var(--green);border-radius:6px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center">📞 Call Seller</a>':''}
+      <select onchange="updateLeadStatus(\''+l._atId+'\',this.value);document.getElementById(\'lead-modal\').remove()" style="padding:8px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border)">
+        ${['New','Contacted','Offer Made','Converted','Dead'].map(s=>'<option value="'+s+'"'+(s===l.status?' selected':'')+'>'+s+'</option>').join('')}
+      </select>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
 }
 
 async function deleteLeadConfirm(atId){
