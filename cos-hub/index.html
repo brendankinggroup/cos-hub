@@ -448,6 +448,13 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
           <button onclick="var u=document.getElementById('c-comps-link').value;if(u)window.open(u,'_blank')" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">Open</button>
         </div>
       </div>
+      <div>
+        <span class="label">Tax Records <span style="color:var(--t3);font-weight:400">(PDF link — Google Drive, Dropbox, etc.)</span></span>
+        <div style="display:flex;gap:6px">
+          <input id="c-tax-records" type="url" placeholder="https://drive.google.com/..." style="flex:1;font-size:12px"/>
+          <button onclick="var u=document.getElementById('c-tax-records').value;if(u)window.open(u,'_blank')" style="background:var(--s2);color:var(--t2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">Open</button>
+        </div>
+      </div>
     </div>
     <div class="card">
       <span class="label">Settings</span>
@@ -1855,8 +1862,9 @@ function getDealSummaryData(){
 
   const dealType=currentDealType||'seller';
   const compsLink=(document.getElementById('c-comps-link')||{value:''}).value.trim();
+  const taxRecords=(document.getElementById('c-tax-records')||{value:''}).value.trim();
   const priceOffered=+(document.getElementById('c-price-offered')||{value:''}).value||0;
-  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script,dealType,compsLink,priceOffered};
+  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script,dealType,compsLink,taxRecords,priceOffered};
 }
 
 async function exportDealEmail(){
@@ -2219,6 +2227,7 @@ async function loadSavedDeals(){
       closeDays:rec.fields['Close Days']||14,
       dealType:rec.fields['Deal Type']||'Seller Direct',
       compsLink:rec.fields['Comps Link']||'',
+      taxRecords:rec.fields['Tax Records']||'',
       priceOffered:rec.fields['Price Offered']||0,
       sellerPhone:rec.fields['Seller Phone']||'',
       sellerEmail:rec.fields['Seller Email']||'',
@@ -2268,6 +2277,7 @@ async function saveDeal(){
     'Asking Price':ld.askingPrice||0,'Mortgage':ld.mortgage||0,
     'Deal Type':d.dealType==='agent'?'MLS / Agent':'Seller Direct',
     'Comps Link':d.compsLink||'',
+    'Tax Records':d.taxRecords||'',
     'Price Offered':d.priceOffered||0,
     'Pipeline':'New',
     'Status':'New','Saved At':new Date().toISOString()
@@ -2383,7 +2393,7 @@ function renderSavedDeals(){
           <div style="font-size:16px;font-weight:800;color:var(--amber)">${d.roi?d.roi.toFixed(1)+'%':'—'}</div>
         </div>
       </div>
-      ${d.compsLink?'<div style="margin-bottom:8px"><a href="'+esc(d.compsLink)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--blue);text-decoration:none;font-weight:600">🔗 View Comps</a></div>':''}
+      ${d.compsLink||d.taxRecords?'<div style="display:flex;gap:12px;margin-bottom:8px">'+(d.compsLink?'<a href="'+esc(d.compsLink)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--blue);text-decoration:none;font-weight:600">🔗 View Comps</a>':'')+(d.taxRecords?'<a href="'+esc(d.taxRecords)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--t2);text-decoration:none;font-weight:600">📋 Tax Records</a>':'')+'</div>':''}
       <!-- Row 3: Actions -->
       <div style="display:flex;justify-content:space-between;align-items:center">
         <select onchange="updatePipeline(${realIdx},this.value)" style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-weight:600;cursor:pointer">
@@ -2488,6 +2498,7 @@ function recalcDeal(idx){
   const propEl=document.getElementById('c-prop-addr');if(propEl)propEl.value=d.address||'';
   const bdAddr=document.getElementById('bd-address');if(bdAddr)bdAddr.value=d.address||'';
   const compsEl=document.getElementById('c-comps-link');if(compsEl)compsEl.value=d.compsLink||'';
+  const taxEl=document.getElementById('c-tax-records');if(taxEl)taxEl.value=d.taxRecords||'';
   const priceEl=document.getElementById('c-price-offered');if(priceEl)priceEl.value=d.priceOffered||'';
 
   // Set deal type
@@ -2599,7 +2610,10 @@ function viewDeal(idx){
       <div style="font-size:13px;color:var(--t1);white-space:pre-wrap">${esc(d.notes)}</div>
     </div>`:''}
 
-    ${d.compsLink?`<div style="margin-bottom:10px"><a href="${esc(d.compsLink)}" target="_blank" style="display:block;text-align:center;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:8px;font-size:12px;font-weight:700;text-decoration:none">🔗 View Comps</a></div>`:''}
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      ${d.compsLink?`<a href="${esc(d.compsLink)}" target="_blank" style="flex:1;text-align:center;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:8px;font-size:12px;font-weight:700;text-decoration:none">🔗 View Comps</a>`:''}
+      ${d.taxRecords?`<a href="${esc(d.taxRecords)}" target="_blank" style="flex:1;text-align:center;background:var(--s2);color:var(--t1);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;font-weight:700;text-decoration:none">📋 Tax Records</a>`:''}
+    </div>
     <div style="display:flex;gap:8px">
       <button onclick="document.getElementById('deal-modal').remove();pdfDeal(${idx})" style="flex:1;background:#1a0a2e;color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">📄 Export PDF</button>
       <button onclick="document.getElementById('deal-modal').remove();recalcDeal(${idx})" style="flex:1;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">🧮 Recalculate</button>
