@@ -2509,6 +2509,10 @@ function recalcDeal(idx){
   updateSaveBtn();
 
   calcMAO();
+  // Force label to match input after all values are set
+  const finalPct=+(document.getElementById('c-pct')||{value:70}).value||70;
+  const pctLbl=document.getElementById('c-pct-lbl');
+  if(pctLbl)pctLbl.textContent=finalPct+'% '+(finalPct<=59?'Very Conservative':finalPct<=65?'Conservative':finalPct<=72?'Standard':finalPct<=79?'Competitive':finalPct<=89?'Aggressive':finalPct<=94?'Very Aggressive':'Retail / Full Price');
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
