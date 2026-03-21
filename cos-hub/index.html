@@ -1249,7 +1249,7 @@ function calcMAO(){
   const hood=(document.getElementById('c-hood')||{value:'Enterprise'}).value;
   let mao;
   if(calcMode==='quick'){mao=arv*pct-repairs-fee;}
-  else{const bp=(+(document.getElementById('c-bp')||{value:20}).value||20)/100;const hm=+(document.getElementById('c-hm')||{value:3}).value||3;const ac=(+(document.getElementById('c-ac')||{value:6}).value||6)/100;const fc=arv*0.03+arv*ac+800*hm+1800+(arv/500)*1.95;mao=arv-repairs-fc-arv*bp-fee;}
+  else{const bp=(+(document.getElementById('c-bp')||{value:20}).value||20)/100;const hm=+(document.getElementById('c-hm')||{value:3}).value||3;const ac=(+(document.getElementById('c-ac')||{value:6}).value||6)/100;const fc=arv*0.03+arv*ac+800*hm+1800+(arv/500)*1.95;const fullMao=arv-repairs-fc-arv*bp-fee;const quickCap=arv*pct-repairs-fee;mao=Math.min(fullMao,quickCap);}
   const distressVal=(document.getElementById('c-distress')||{value:''}).value;
   document.getElementById('c-mao').textContent=fm(mao);
   document.getElementById('c-mao-lo').textContent=fm(mao*.95);document.getElementById('c-mao-mi').textContent=fm(mao);document.getElementById('c-mao-hi').textContent=fm(mao*1.03);
