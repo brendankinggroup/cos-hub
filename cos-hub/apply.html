@@ -727,6 +727,7 @@ async function uploadToCloudinary(blob, tag) {
         fd.append('file', blob, `${tag}.jpg`);
         fd.append('upload_preset', CLOUDINARY_PRESET);
         fd.append('folder', folder);
+        fd.append('public_id', `${folder}/${tag}_${Date.now()}`);
         fd.append('tags', tag);
         const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {method:'POST', body:fd});
         const data = await r.json();
