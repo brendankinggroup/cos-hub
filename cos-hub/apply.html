@@ -451,9 +451,8 @@
             <div class="results-sub">Thank you for submitting your property details. Our team is reviewing your information right now.</div>
 
             <div class="results-offer">
-                <div class="results-offer-label">Your Preliminary Offer Range</div>
-                <div class="results-offer-range" id="resRange">$0 — $0</div>
-                <div class="results-offer-note">Final offer may be adjusted after our review</div>
+                <div class="results-offer-label">What happens next?</div>
+                <div class="results-offer-note" style="font-size:15px;margin-top:8px">We'll review your property and get back to you within 24 hours with a cash offer.</div>
             </div>
 
             <div class="results-timeline">
@@ -1008,7 +1007,7 @@ async function submitForm() {
 
     // Show results
     document.getElementById('step5').classList.remove('active');
-    document.getElementById('resRange').textContent = `$${offer.low.toLocaleString()} — $${offer.high.toLocaleString()}`;
+    // Offer range calculated internally but not shown to seller
     document.getElementById('results').classList.add('show');
     document.getElementById('progFill').style.width = '100%';
     document.getElementById('progLabel').textContent = 'Complete!';
@@ -1053,9 +1052,7 @@ async function sendLead(data, offer) {
         'Seller Phone': data.phone,
         'Seller Email': data.email,
         'Contact Preference': data.contactPref,
-        'Estimated Value': `$${data.estimatedValue.toLocaleString()}`,
         'Estimated Repairs': `$${data.estimatedRepairs.toLocaleString()}`,
-        'Offer Range': `$${offer.low.toLocaleString()} — $${offer.high.toLocaleString()}`,
         'Photos Uploaded': data.photoCount + ' photos',
         'Photo Links': photoLinks || 'No photos uploaded',
         'Photo Folder': window._photoFolder ? `https://console.cloudinary.com/console/media_library/folders/${encodeURIComponent(window._photoFolder)}` : 'No photos',
@@ -1263,7 +1260,7 @@ async function batchLookup() {
 
         // Show verified badge
         badge.style.color = 'var(--green)';
-        badge.textContent = '✓ Address verified' + (v.estimatedValue ? ' — Est. value: $' + v.estimatedValue.toLocaleString() : '');
+        badge.textContent = '✓ Address verified';
 
         // Store real estimated value for offer calculation
         if (v.estimatedValue > 0) {
