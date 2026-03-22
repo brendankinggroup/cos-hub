@@ -212,10 +212,10 @@
     <!-- PROGRESS -->
     <div class="progress-wrap">
         <div class="progress-info">
-            <span class="progress-step" id="progLabel">Step 1 of 5</span>
+            <span class="progress-step" id="progLabel">Step 1 of 6</span>
             <span id="progTime">~4 min remaining</span>
         </div>
-        <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:20%"></div></div>
+        <div class="progress-bar"><div class="progress-fill" id="progFill" style="width:17%"></div></div>
     </div>
 
     <!-- BODY -->
@@ -223,8 +223,8 @@
 
         <!-- ========== STEP 1: PROPERTY BASICS ========== -->
         <div class="step active" id="step1">
-            <div class="step-title">Property Details</div>
-            <div class="step-sub">Start with the basics about your property.</div>
+            <div class="step-title">Property Basics</div>
+            <div class="step-sub">Start with the basics — this takes about 30 seconds.</div>
 
             <div class="field">
                 <label>Property Address<span class="req">*</span></label>
@@ -246,11 +246,11 @@
             <div class="field">
                 <label>Property Type<span class="req">*</span></label>
                 <div class="pill-group" id="f-proptype">
-                    <div class="pill" data-val="Single Family">Single Family</div>
-                    <div class="pill" data-val="Condo">Condo</div>
-                    <div class="pill" data-val="Townhouse">Townhouse</div>
-                    <div class="pill" data-val="Mobile Home">Mobile Home</div>
-                    <div class="pill" data-val="Multi-Family">Multi-Family</div>
+                    <div class="pill" data-val="Single Family" onclick="toggleLotSize()">Single Family</div>
+                    <div class="pill" data-val="Condo" onclick="toggleLotSize()">Condo</div>
+                    <div class="pill" data-val="Townhouse" onclick="toggleLotSize()">Townhouse</div>
+                    <div class="pill" data-val="Mobile Home" onclick="toggleLotSize()">Mobile Home</div>
+                    <div class="pill" data-val="Multi-Family" onclick="toggleLotSize()">Multi-Family</div>
                 </div>
                 <div class="err-msg" id="e-proptype">Please select property type</div>
             </div>
@@ -266,37 +266,49 @@
                     <div class="err-msg" id="e-baths">Required</div>
                 </div>
             </div>
-            <div class="row">
-                <div class="field">
-                    <label>Approx. Sq Ft<span class="req">*</span></label>
-                    <input type="number" id="f-sqft" placeholder="2000" inputmode="numeric">
-                    <div class="err-msg" id="e-sqft">Required</div>
-                </div>
-                <div class="field">
-                    <label>Year Built</label>
-                    <input type="number" id="f-year" placeholder="1998" inputmode="numeric">
-                </div>
-            </div>
-            <div class="row">
-                <div class="field">
-                    <label>Lot Size (sq ft)</label>
-                    <input type="number" id="f-lot" placeholder="6000" inputmode="numeric">
-                </div>
-                <div class="field">
-                    <label>HOA?</label>
-                    <select id="f-hoa"><option value="">Select</option><option value="No">No</option><option value="Yes">Yes</option><option value="Not Sure">Not Sure</option></select>
-                </div>
-            </div>
             <div class="field">
-                <label>Pool?</label>
-                <select id="f-pool"><option value="">Select</option><option value="No">No</option><option value="Yes - Working">Yes — Working</option><option value="Yes - Needs Repair">Yes — Needs Repair</option></select>
+                <label>Approx. Sq Ft<span class="req">*</span></label>
+                <input type="number" id="f-sqft" placeholder="2000" inputmode="numeric">
+                <div class="err-msg" id="e-sqft">Required</div>
             </div>
 
             <div class="btn-row"><div class="btn btn-next" onclick="goStep(2)">Next →</div></div>
         </div>
 
-        <!-- ========== STEP 2: CONDITION ========== -->
+        <!-- ========== STEP 2: PROPERTY DETAILS ========== -->
         <div class="step" id="step2">
+            <div class="step-title">A Few More Details</div>
+            <div class="step-sub">These are optional — fill in what you know.</div>
+
+            <div class="row">
+                <div class="field">
+                    <label>Year Built <span style="font-weight:400;color:var(--muted)">(estimate is fine)</span></label>
+                    <input type="number" id="f-year" placeholder="e.g. 1998" inputmode="numeric">
+                </div>
+                <div class="field" id="lot-field">
+                    <label>Lot Size (sq ft)</label>
+                    <input type="number" id="f-lot" placeholder="e.g. 6000" inputmode="numeric">
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label>HOA? <span style="font-weight:400;color:var(--muted)">(monthly)</span></label>
+                    <select id="f-hoa"><option value="">Select</option><option value="No">No</option><option value="Yes">Yes</option><option value="Not Sure">Not Sure</option></select>
+                </div>
+                <div class="field">
+                    <label>Pool?</label>
+                    <select id="f-pool"><option value="">Select</option><option value="No">No</option><option value="Yes - Working">Yes — Working</option><option value="Yes - Needs Repair">Yes — Needs Repair</option></select>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <div class="btn btn-back" onclick="goStep(1)">← Back</div>
+                <div class="btn btn-next" onclick="goStep(3)">Next →</div>
+            </div>
+        </div>
+
+        <!-- ========== STEP 3: CONDITION ========== -->
+        <div class="step" id="step3">
             <div class="step-title">Property Condition</div>
             <div class="step-sub">Rate each area from 1 (needs replacement) to 5 (great shape). Add a photo if you can — it helps us give a more accurate offer.</div>
 
@@ -318,13 +330,13 @@
             </div>
 
             <div class="btn-row">
-                <div class="btn btn-back" onclick="goStep(1)">← Back</div>
-                <div class="btn btn-next" onclick="goStep(3)">Next →</div>
+                <div class="btn btn-back" onclick="goStep(2)">← Back</div>
+                <div class="btn btn-next" onclick="goStep(4)">Next →</div>
             </div>
         </div>
 
-        <!-- ========== STEP 3: PHOTOS ========== -->
-        <div class="step" id="step3">
+        <!-- ========== STEP 4: PHOTOS ========== -->
+        <div class="step" id="step4">
             <div class="step-title">Property Photos</div>
             <div class="step-sub">Photos help us make a stronger offer faster. Snap a few with your phone — the more the better.</div>
 
@@ -339,13 +351,13 @@
             <input type="file" id="bulkInput" accept="image/*" multiple capture="environment" style="display:none" onchange="handleBulkPhotos(this)">
 
             <div class="btn-row">
-                <div class="btn btn-back" onclick="goStep(2)">← Back</div>
-                <div class="btn btn-next" onclick="goStep(4)">Next →</div>
+                <div class="btn btn-back" onclick="goStep(3)">← Back</div>
+                <div class="btn btn-next" onclick="goStep(5)">Next →</div>
             </div>
         </div>
 
-        <!-- ========== STEP 4: FINANCIALS ========== -->
-        <div class="step" id="step4">
+        <!-- ========== STEP 5: SITUATION ========== -->
+        <div class="step" id="step5">
             <div class="step-title">Your Situation</div>
             <div class="step-sub">This helps us tailor the best offer for you. All information is confidential.</div>
 
@@ -354,8 +366,8 @@
                 <input type="text" id="f-mortgage" placeholder="$250,000" inputmode="numeric" oninput="formatMoney(this)">
             </div>
             <div class="field">
-                <label>What are you hoping to get for the property?</label>
-                <input type="text" id="f-asking" placeholder="$400,000 or 'Make me an offer'" oninput="formatMoney(this)">
+                <label>What are you hoping to get? <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
+                <input type="text" id="f-asking" placeholder="$400,000 or leave blank" inputmode="numeric" oninput="formatMoney(this)">
             </div>
             <div class="field">
                 <label>Why are you considering selling?<span class="req">*</span></label>
@@ -403,13 +415,13 @@
             </div>
 
             <div class="btn-row">
-                <div class="btn btn-back" onclick="goStep(3)">← Back</div>
-                <div class="btn btn-next" onclick="goStep(5)">Next →</div>
+                <div class="btn btn-back" onclick="goStep(4)">← Back</div>
+                <div class="btn btn-next" onclick="goStep(6)">Next →</div>
             </div>
         </div>
 
-        <!-- ========== STEP 5: CONTACT ========== -->
-        <div class="step" id="step5">
+        <!-- ========== STEP 6: CONTACT ========== -->
+        <div class="step" id="step6">
             <div class="step-title">Almost Done!</div>
             <div class="step-sub">Tell us how to reach you and we'll have an offer ready fast.</div>
 
@@ -420,7 +432,7 @@
             </div>
             <div class="field">
                 <label>Phone Number<span class="req">*</span></label>
-                <input type="tel" id="f-phone" placeholder="(702) 555-1234" autocomplete="tel">
+                <input type="tel" id="f-phone" placeholder="(702) 555-1234" autocomplete="tel" oninput="formatPhone(this)" maxlength="14">
                 <div class="err-msg" id="e-phone">Please enter your phone number</div>
             </div>
             <div class="field">
@@ -439,7 +451,7 @@
             <div id="repairPreview"></div>
 
             <div class="btn-row">
-                <div class="btn btn-back" onclick="goStep(4)">← Back</div>
+                <div class="btn btn-back" onclick="goStep(5)">← Back</div>
                 <div class="btn btn-submit" onclick="submitForm()">Submit for My Cash Offer</div>
             </div>
         </div>
@@ -756,8 +768,8 @@ function goStep(n) {
     autoSave();
     window.scrollTo({top:0,behavior:'smooth'});
 
-    // Show repair preview on step 5
-    if (n === 5) showRepairPreview();
+    // Show repair preview on step 6
+    if (n === 6) showRepairPreview();
 
     // Address verification without BatchData API call
     if (n === 2) { const badge = document.getElementById('addr-verify'); if (badge) { badge.style.display = 'block'; badge.style.color = 'var(--green)'; badge.textContent = '✓ Address received'; } }
@@ -778,15 +790,18 @@ async function saveStepToAirtable(step) {
             'Beds': +(document.getElementById('f-beds').value) || 0,
             'Baths': +(document.getElementById('f-baths').value) || 0,
             'SqFt': +(document.getElementById('f-sqft').value) || 0,
-            'Year Built': +(document.getElementById('f-year').value) || 0,
-            'Lot Size': document.getElementById('f-lot').value || '',
-            'HOA': document.getElementById('f-hoa').value || '',
-            'Pool': document.getElementById('f-pool').value || '',
             'Source Page': 'Apply Page',
             'Status': 'New',
             'Submitted At': new Date().toISOString()
         };
     } else if (step === 2) {
+        fields = {
+            'Year Built': +(document.getElementById('f-year').value) || 0,
+            'Lot Size': document.getElementById('f-lot').value || '',
+            'HOA': document.getElementById('f-hoa').value || '',
+            'Pool': document.getElementById('f-pool').value || ''
+        };
+    } else if (step === 3) {
         let condSummary = '';
         AREAS.forEach(a => {
             const r = conditionRatings[a.id];
@@ -798,14 +813,14 @@ async function saveStepToAirtable(step) {
             'Unpermitted': document.getElementById('f-unpermit').value || '',
             'Liens': document.getElementById('f-liens').value || ''
         };
-    } else if (step === 3) {
+    } else if (step === 4) {
         let photoLinksStr = '';
         Object.entries(photoUrls).forEach(([k,v]) => { photoLinksStr += `${k}: ${v}\n`; });
         fields = {
             'Photo Count': Object.keys(photos).length + Object.keys(conditionPhotos).length + extraPhotos.length,
             'Photo Links': photoLinksStr || ''
         };
-    } else if (step === 4) {
+    } else if (step === 5) {
         fields = {
             'Mortgage': document.getElementById('f-mortgage').value || '',
             'Asking Price': document.getElementById('f-asking').value || '',
@@ -869,17 +884,17 @@ function validateStep(n) {
     };
 
     if (n === 1) { check('f-address'); check('f-zip'); checkPill('f-proptype'); check('f-beds'); check('f-baths'); check('f-sqft'); }
-    if (n === 4) { check('f-reason'); checkPill('f-timeline'); }
-    if (n === 5) { check('f-name'); check('f-phone'); }
+    if (n === 5) { check('f-reason'); checkPill('f-timeline'); }
+    if (n === 6) { check('f-name'); check('f-phone'); }
     return ok;
 }
 
 function updateProgress() {
-    const pct = currentStep * 20;
+    const pct = Math.round(currentStep / 6 * 100);
     document.getElementById('progFill').style.width = pct + '%';
-    document.getElementById('progLabel').textContent = `Step ${currentStep} of 5`;
-    const mins = Math.max(1, (5 - currentStep) * 1);
-    document.getElementById('progTime').textContent = currentStep < 5 ? `~${mins} min remaining` : 'Last step!';
+    document.getElementById('progLabel').textContent = `Step ${currentStep} of 6`;
+    const mins = Math.max(1, Math.ceil((6 - currentStep) * 0.75));
+    document.getElementById('progTime').textContent = currentStep < 6 ? `~${mins} min remaining` : 'Last step!';
 }
 
 // ============================================
@@ -954,7 +969,7 @@ function calcOffer() {
 // SUBMIT
 // ============================================
 async function submitForm() {
-    if (!validateStep(5)) return;
+    if (!validateStep(6)) return;
 
     const offer = calcOffer();
     const data = {
@@ -1006,7 +1021,7 @@ async function submitForm() {
     await sendLead(data, offer);
 
     // Show results
-    document.getElementById('step5').classList.remove('active');
+    document.getElementById('step6').classList.remove('active');
     // Offer range calculated internally but not shown to seller
     document.getElementById('results').classList.add('show');
     document.getElementById('progFill').style.width = '100%';
@@ -1216,6 +1231,23 @@ function formatMoney(el) {
     let v = el.value.replace(/[^0-9]/g, '');
     if (v) el.value = '$' + parseInt(v).toLocaleString();
     else el.value = '';
+}
+
+function formatPhone(el) {
+    let v = el.value.replace(/\D/g, '');
+    if (v.length > 10) v = v.substring(0, 10);
+    if (v.length >= 7) el.value = '(' + v.substring(0,3) + ') ' + v.substring(3,6) + '-' + v.substring(6);
+    else if (v.length >= 4) el.value = '(' + v.substring(0,3) + ') ' + v.substring(3);
+    else if (v.length > 0) el.value = '(' + v;
+    else el.value = '';
+}
+
+function toggleLotSize() {
+    setTimeout(() => {
+        const type = getPillVal('f-proptype');
+        const lotField = document.getElementById('lot-field');
+        if (lotField) lotField.style.display = (type === 'Condo' || type === 'Townhouse') ? 'none' : 'block';
+    }, 50);
 }
 
 // Clear error on input
