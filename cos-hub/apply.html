@@ -714,21 +714,27 @@ function updatePhotoCount() {
     document.getElementById('photoCount').textContent = total;
 }
 
+function getPhotoFolder() {
+    const addr = (document.getElementById('f-address').value || 'unknown').trim();
+    const zip = (document.getElementById('f-zip').value || '').trim();
+    const slug = (addr + (zip ? '-' + zip : '')).replace(/[^a-zA-Z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').substring(0, 60);
+    return `cos-apply/${slug}`;
+}
+
 async function uploadToCloudinary(blob, tag) {
-    if (CLOUDINARY_CLOUD === 'YOUR_CLOUD_NAME') {
-        console.log(`Cloudinary not configured. Photo "${tag}" stored locally only.`);
-        return;
-    }
     try {
+        const folder = getPhotoFolder();
         const fd = new FormData();
         fd.append('file', blob, `${tag}.jpg`);
         fd.append('upload_preset', CLOUDINARY_PRESET);
+        fd.append('folder', folder);
         fd.append('tags', tag);
         const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`, {method:'POST', body:fd});
         const data = await r.json();
         if (data.secure_url) {
             photoUrls[tag] = data.secure_url;
-            console.log(`Uploaded ${tag}:`, data.secure_url);
+            window._photoFolder = folder;
+            console.log(`Uploaded ${tag} to ${folder}:`, data.secure_url);
         }
     } catch(err) {
         console.error(`Upload failed for ${tag}:`, err);
@@ -1051,6 +1057,7 @@ async function sendLead(data, offer) {
         'Offer Range': `$${offer.low.toLocaleString()} — $${offer.high.toLocaleString()}`,
         'Photos Uploaded': data.photoCount + ' photos',
         'Photo Links': photoLinks || 'No photos uploaded',
+        'Photo Folder': window._photoFolder ? `https://console.cloudinary.com/console/media_library/folders/${encodeURIComponent(window._photoFolder)}` : 'No photos',
         'Submitted At': new Date().toLocaleString()
     };
 
@@ -1078,7 +1085,8 @@ async function sendLead(data, offer) {
             'Est Repairs': data.estimatedRepairs || 0,
             'Est Value': data.estimatedValue || 0,
             'Offer Low': offer.low || 0,
-            'Offer High': offer.high || 0
+            'Offer High': offer.high || 0,
+            'Drive Folder': window._photoFolder ? `https://console.cloudinary.com/console/media_library/folders/${encodeURIComponent(window._photoFolder)}` : ''
         };
 
         if (_applyAtId) {
