@@ -485,8 +485,7 @@
 const WEB3FORMS_KEY = '1e19b12f-24fe-476a-8526-1ddff342a022';
 const CLOUDINARY_CLOUD = 'dzve75on0';
 const CLOUDINARY_PRESET = 'cos_apply_photos';
-const BATCHDATA_KEY = 'FUYAMVRI5mCePugUkFvKyM7Nq2eq32gGDcJDudxY';
-let batchEstValue = 0; // Stores real estimated value from BatchData
+let batchEstValue = 0;
 
 // ============================================
 // CONDITION AREAS
@@ -759,8 +758,8 @@ function goStep(n) {
     // Show repair preview on step 5
     if (n === 5) showRepairPreview();
 
-    // Pull BatchData when leaving Step 1 (address entered)
-    if (n === 2 && batchEstValue === 0) batchLookup();
+    // Address verification without BatchData API call
+    if (n === 2) { const badge = document.getElementById('addr-verify'); if (badge) { badge.style.display = 'block'; badge.style.color = 'var(--green)'; badge.textContent = '✓ Address received'; } }
 
     // Progressive save to Airtable
     if (n > leavingStep) saveStepToAirtable(leavingStep);
