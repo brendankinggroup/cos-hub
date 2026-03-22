@@ -482,7 +482,7 @@
 // ============================================
 // CONFIG
 // ============================================
-const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY_HERE';
+const WEB3FORMS_KEY = '1e19b12f-24fe-476a-8526-1ddff342a022';
 const CLOUDINARY_CLOUD = 'dzve75on0';
 const CLOUDINARY_PRESET = 'cos_apply_photos';
 const BATCHDATA_KEY = 'FUYAMVRI5mCePugUkFvKyM7Nq2eq32gGDcJDudxY';
@@ -1026,7 +1026,7 @@ async function sendLead(data, offer) {
 
     // Send via Web3Forms (stays in app — no mailto popup)
     const payload = {
-        access_key: WEB3FORMS_KEY === 'YOUR_ACCESS_KEY_HERE' ? '0a47fb7c-56cb-4696-8293-4dccbddfad27' : WEB3FORMS_KEY,
+        access_key: WEB3FORMS_KEY,
         subject: `🏠 New Property Submission — ${data.address}, ${data.zip}`,
         from_name: data.name || 'COS Apply Page',
         replyto: data.email || '',
