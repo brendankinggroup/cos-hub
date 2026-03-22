@@ -3497,6 +3497,21 @@ function viewLead(atId){
   const sc=statusColors[l.status]||'var(--t3)';
   const date=l.submitted?new Date(l.submitted).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}):'—';
 
+  // Build photo gallery HTML
+  let photoHtml='';
+  if(l.photoLinks){
+    const photos=l.photoLinks.split('\n').filter(x=>x.trim()).map(line=>{
+      const idx=line.indexOf(': http');
+      if(idx<0)return null;
+      const label=line.substring(0,idx).replace('cond_','').replace(/_/g,' ');
+      const url=line.substring(idx+2).trim();
+      return url?{label,url}:null;
+    }).filter(Boolean);
+    if(photos.length){
+      photoHtml='<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📸 Photos ('+photos.length+')</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">'+photos.map(p=>'<div><a href="'+p.url+'" target="_blank"><img src="'+p.url+'" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;border:1px solid var(--border);cursor:pointer" loading="lazy"></a><div style="font-size:9px;color:var(--t3);text-align:center;margin-top:2px;text-transform:capitalize">'+p.label+'</div></div>').join('')+'</div></div>';
+    }
+  }
+
   const modal=document.createElement('div');modal.id='lead-modal';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
   modal.onclick=e=>{if(e.target===modal)modal.remove();};
@@ -3566,6 +3581,9 @@ function viewLead(atId){
 
     <!-- Notes -->
     ${l.notes?'<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Notes</div><div style="font-size:13px;color:var(--t1);white-space:pre-wrap">'+l.notes+'</div></div>':''}
+
+    <!-- Photos -->
+    ${photoHtml}
 
     <!-- Actions -->
     <div style="display:flex;gap:8px;flex-wrap:wrap">
