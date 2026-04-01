@@ -763,7 +763,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 </div>
 
 <!-- SAVED DEALS -->
-<div id="p-saved" class="panel" style="display:none;max-width:860px;margin:0 auto;padding:20px 24px">
+<div id="p-saved" class="panel" style="display:none;max-width:1100px;margin:0 auto;padding:20px 24px">
   <div class="saved-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
     <div>
       <div style="font-size:18px;font-weight:700;color:var(--t1)" class="hdr">SAVED DEALS</div>
@@ -2362,39 +2362,39 @@ function renderSavedDeals(){
       </div>
       <!-- Row 2: Numbers grid -->
       <div class="saved-nums" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:8px">
-        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
+        <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">ARV</div>
-          <div style="font-size:14px;font-weight:800;color:var(--t1);white-space:nowrap">${fm(d.arv)}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--t1);white-space:nowrap">${fm(d.arv)}</div>
         </div>
-        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
+        <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Repairs</div>
-          <div style="font-size:14px;font-weight:800;color:var(--amber);white-space:nowrap">${fm(d.repairs)}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--amber);white-space:nowrap">${fm(d.repairs)}</div>
         </div>
-        <div style="text-align:center;padding:8px 4px;background:var(--bluedim);border-radius:6px;border:1px solid var(--blue)33;overflow:hidden">
+        <div style="text-align:center;padding:10px 6px;background:var(--bluedim);border-radius:6px;border:1px solid var(--blue)33;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">MAO</div>
-          <div style="font-size:14px;font-weight:800;color:var(--blue);white-space:nowrap">${fm(d.mao)}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--blue);white-space:nowrap">${fm(d.mao)}</div>
         </div>
-        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
+        <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Fee</div>
-          <div style="font-size:14px;font-weight:800;color:var(--green);white-space:nowrap">${fm(d.fee)}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green);white-space:nowrap">${fm(d.fee)}</div>
         </div>
       </div>
       <div class="saved-nums" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px">
-        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
+        <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Dispo</div>
-          <div style="font-size:14px;font-weight:800;color:var(--green);white-space:nowrap">${fm(d.disposition)}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--green);white-space:nowrap">${fm(d.disposition)}</div>
         </div>
-        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
+        <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">All-In</div>
-          <div style="font-size:14px;font-weight:800;color:var(--t1);white-space:nowrap">${fm(d.allin)}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--t1);white-space:nowrap">${fm(d.allin)}</div>
         </div>
-        <div style="text-align:center;padding:8px 4px;background:${d.profit>0?'var(--greendim)':'#2a0a0a'};border-radius:6px;border:1px solid ${profitColor}33;overflow:hidden">
+        <div style="text-align:center;padding:10px 6px;background:${d.profit>0?'var(--greendim)':'#2a0a0a'};border-radius:6px;border:1px solid ${profitColor}33;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Profit</div>
-          <div style="font-size:14px;font-weight:800;color:${profitColor};white-space:nowrap">${fm(d.profit)}</div>
+          <div style="font-size:16px;font-weight:800;color:${profitColor};white-space:nowrap">${fm(d.profit)}</div>
         </div>
-        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
+        <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">ROI</div>
-          <div style="font-size:14px;font-weight:800;color:var(--amber);white-space:nowrap">${d.roi?d.roi.toFixed(1)+'%':'—'}</div>
+          <div style="font-size:16px;font-weight:800;color:var(--amber);white-space:nowrap">${d.roi?d.roi.toFixed(1)+'%':'—'}</div>
         </div>
       </div>
       ${d.compsLink||d.taxRecords?'<div style="display:flex;gap:12px;margin-bottom:8px">'+(d.compsLink?'<a href="'+esc(d.compsLink)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--blue);text-decoration:none;font-weight:600">🔗 View Comps</a>':'')+(d.taxRecords?'<a href="'+esc(d.taxRecords)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--t2);text-decoration:none;font-weight:600">📋 Tax Records</a>':'')+'</div>':''}
