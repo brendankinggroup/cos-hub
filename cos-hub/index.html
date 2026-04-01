@@ -25,7 +25,7 @@ body.light input,body.light select,body.light textarea{background:#fff;border-co
 body.light input[type=range]{accent-color:#4f8ef7}
 body.light .card{background:#fff;border-color:#e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.06)}
 body.light ::-webkit-scrollbar-thumb{background:#c8cdd6}
-body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;min-height:100vh;font-size:15px}
+body{background:var(--bg);color:var(--t1);font-family:'DM Sans',sans-serif;min-height:100vh;font-size:15px;overflow-x:hidden}
 input,select,textarea{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--t1);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;width:100%}
 input:focus,select:focus,textarea:focus{border-color:var(--blue)}
 select option{background:var(--card);color:var(--t1)}
@@ -38,10 +38,10 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 .panel{animation:fadeUp .2s ease}
 .hdr{font-family:'Barlow Condensed',sans-serif;font-weight:900;letter-spacing:.04em}
 .label{font-size:12px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;display:block}
-.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:20px;max-width:100%;overflow:hidden}
 .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
 .tag-pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;margin:3px}
-@media (max-width:860px){#analyzer-cards{grid-template-columns:1fr 1fr !important}#filter-grid{grid-template-columns:repeat(4,1fr) !important}#leads-grid{grid-template-columns:1fr !important}#calc-top{grid-template-columns:1fr !important}#scripts-grid{grid-template-columns:1fr !important}#exit-grid{grid-template-columns:repeat(2,1fr) !important}#calc-stats{grid-template-columns:1fr 1fr !important}}@media (max-width:600px){#analyzer-cards{grid-template-columns:1fr !important}#filter-grid{grid-template-columns:repeat(3,1fr) !important}#leads-grid{grid-template-columns:1fr !important}#calc-top{grid-template-columns:1fr !important}#scripts-grid{grid-template-columns:1fr !important}#exit-grid{grid-template-columns:1fr !important}#calc-stats{grid-template-columns:1fr 1fr !important}button{padding:8px 12px !important;font-size:11px !important}}
+@media (max-width:860px){#analyzer-cards{grid-template-columns:1fr 1fr !important}#filter-grid{grid-template-columns:repeat(4,1fr) !important}#leads-grid{grid-template-columns:1fr !important}#calc-top{grid-template-columns:1fr !important}#scripts-grid{grid-template-columns:1fr !important}#exit-grid{grid-template-columns:repeat(2,1fr) !important}#calc-stats{grid-template-columns:1fr 1fr !important}.saved-actions{flex-wrap:wrap !important}.saved-header-btns{flex-wrap:wrap !important}}@media (max-width:600px){#analyzer-cards{grid-template-columns:1fr !important}#filter-grid{grid-template-columns:repeat(3,1fr) !important}#leads-grid{grid-template-columns:1fr !important}#calc-top{grid-template-columns:1fr !important}#scripts-grid{grid-template-columns:1fr !important}#exit-grid{grid-template-columns:1fr !important}#calc-stats{grid-template-columns:1fr 1fr !important}button{padding:8px 12px !important;font-size:11px !important}.saved-header{flex-direction:column !important;align-items:flex-start !important;gap:10px !important}.saved-header-btns{width:100%}.saved-card-top{flex-direction:column !important;gap:8px !important}.saved-card-badges{margin-left:0 !important;flex-wrap:wrap !important}.saved-actions{flex-direction:column !important;gap:8px !important}.saved-action-btns{width:100%}.saved-nums{grid-template-columns:repeat(2,1fr) !important}}
 </style>
 </head>
 <body>
@@ -60,7 +60,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
   </div>
 </div>
 
-<div id="app-wrap" style="display:none;max-width:860px;margin:0 auto;padding:20px 24px">
+<div id="app-wrap" style="display:none;max-width:860px;margin:0 auto;padding:20px 24px;overflow-x:hidden">
 
 <!-- TOP NAV -->
 <div style="display:flex;align-items:center;gap:6px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)">
@@ -439,7 +439,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
       <div>
         <span class="label">Price Offered <span style="color:var(--t3);font-weight:400">(actual offer to seller)</span></span>
-        <input id="c-price-offered" type="number" placeholder="e.g. 245000" style="font-size:13px;font-weight:700;color:var(--green);text-align:right"/>
+        <input id="c-price-offered" type="number" placeholder="e.g. 245000" oninput="calcMAO()" style="font-size:13px;font-weight:700;color:var(--green);text-align:right"/>
       </div>
       <div>
         <span class="label">Comps Link <span style="color:var(--t3);font-weight:400">(MLS, Zillow, etc.)</span></span>
@@ -763,13 +763,13 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 </div>
 
 <!-- SAVED DEALS -->
-<div id="p-saved" class="panel" style="display:none">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+<div id="p-saved" class="panel" style="display:none;max-width:860px;margin:0 auto;padding:20px 24px">
+  <div class="saved-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
     <div>
       <div style="font-size:18px;font-weight:700;color:var(--t1)" class="hdr">SAVED DEALS</div>
       <div style="font-size:12px;color:var(--t3)" id="saved-count">0 deals saved</div>
     </div>
-    <div style="display:flex;gap:8px">
+    <div class="saved-header-btns" style="display:flex;gap:8px;flex-wrap:wrap">
       <button onclick="toggleSavedView()" id="view-toggle-btn" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">📋 Board View</button>
       <button onclick="exportSavedCSV()" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">📥 Export CSV</button>
       <button onclick="exportSavedPDF()" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700">📄 Export PDF</button>
@@ -787,7 +787,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <button onclick="filterPipeline('Dead')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Dead</button>
   </div>
   <!-- Bulk Action Bar -->
-  <div id="bulk-bar" style="display:none;position:sticky;top:0;z-index:100;background:var(--blue);border-radius:8px;padding:10px 16px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;gap:12px;animation:fadeUp .15s ease">
+  <div id="bulk-bar" style="display:none;position:sticky;top:0;z-index:100;background:var(--blue);border-radius:8px;padding:10px 16px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;gap:12px;animation:fadeUp .15s ease;flex-wrap:wrap">
     <div style="display:flex;align-items:center;gap:10px">
       <input type="checkbox" id="bulk-select-all" onclick="toggleSelectAll(this.checked)" style="width:16px;height:16px;cursor:pointer">
       <span id="bulk-count" style="color:#fff;font-size:13px;font-weight:700">0 selected</span>
@@ -1265,7 +1265,10 @@ function calcMAO(){
   const roEl=document.getElementById('c-rep-override');
   if(roEl){roEl.style.borderColor=repOverride>0?'var(--blue)':'var(--border2)';roEl.style.color=repOverride>0?'var(--blue)':'var(--amber)';}
   // ── BUYER ECONOMICS (matching COS spreadsheet) ──
-  const disposition=mao+fee; // Rehabber's Price
+  const priceOffered=+(document.getElementById('c-price-offered')||{value:''}).value||0;
+  // If a real offer price is entered, use it as contract price; otherwise fall back to MAO
+  const contractPrice=priceOffered>0?priceOffered:mao;
+  const disposition=contractPrice+fee; // Rehabber's Price
   const purchaseCosts=Math.round(disposition*0.01); // ~1% of dispo (title, escrow, etc.)
   const sellingCosts=Math.round(arv*0.065); // 6.5% of ARV (agent commissions + seller closing)
   const allin=disposition+purchaseCosts+repairs+sellingCosts; // TRUE all-in for buyer
@@ -1350,7 +1353,8 @@ function calcMAO(){
     ['− Wholesale Fee','−'+fm(fee),'var(--red)',false],
     ['= Contract Price (MAO)',fm(mao),'var(--blue)',true],
     ['','','',false],
-    ['Rehabber\'s Price (dispo)',fm(disposition),'var(--green)',false],
+    ...(priceOffered>0?[['Price Offered (override)',fm(priceOffered),'var(--green)',false]]:[] ),
+    [`Rehabber's Price (dispo)${priceOffered>0?' ★':''}`,fm(disposition),'var(--green)',false],
     ['+ Purchase Costs (1%)',fm(purchaseCosts),'var(--amber)',false],
     ['+ Rehab Cost',fm(repairs),'var(--amber)',false],
     ['+ Selling Costs (6.5%)',fm(sellingCosts),'var(--amber)',false],
@@ -2340,66 +2344,66 @@ function renderSavedDeals(){
     const pipeColor=PIPELINE_COLORS[d.pipeline||'New']||'var(--blue)';
     return`<div class="card" style="padding:16px">
       <!-- Row 1: Address + Pipeline + Score -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+      <div class="saved-card-top" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
         <div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0">
           <input type="checkbox" class="bulk-check" data-idx="${realIdx}" onclick="event.stopPropagation();updateBulkBar()" style="margin-top:4px;width:16px;height:16px;cursor:pointer;accent-color:var(--blue);flex-shrink:0">
           <div style="min-width:0">
-            <div style="font-size:16px;font-weight:800;color:var(--t1);line-height:1.3">${esc(d.address||'No Address')}</div>
-            <div style="font-size:13px;color:var(--t2);margin-top:2px">${esc(d.seller||'—')}${d.sellerPhone?' · <a href="tel:'+esc(d.sellerPhone)+'" style="color:var(--blue);text-decoration:none">'+esc(d.sellerPhone)+'</a>':''} · ${esc(d.distress||'—')} · ${date}</div>
+            <div style="font-size:16px;font-weight:800;color:var(--t1);line-height:1.3;word-break:break-word">${esc(d.address||'No Address')}</div>
+            <div style="font-size:13px;color:var(--t2);margin-top:2px;word-break:break-word">${esc(d.seller||'—')}${d.sellerPhone?' · <a href="tel:'+esc(d.sellerPhone)+'" style="color:var(--blue);text-decoration:none">'+esc(d.sellerPhone)+'</a>':''} · ${esc(d.distress||'—')} · ${date}</div>
             ${d.notes?'<div style="font-size:11px;color:var(--amber);margin-top:3px;font-style:italic">📝 '+esc(d.notes)+'</div>':''}
             ${d.reason?'<div style="font-size:11px;color:var(--t3);margin-top:2px">Reason: '+esc(d.reason)+'</div>':''}
           </div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:12px">
+        <div class="saved-card-badges" style="display:flex;gap:6px;align-items:center;flex-shrink:0;margin-left:12px;flex-wrap:wrap">
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:${pipeColor}18;color:${pipeColor};border:1px solid ${pipeColor}44">${d.pipeline||'New'}</span>
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:${sc}18;color:${sc}">${d.score||0} ${scoreLbl}</span>
           <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;${d.dealType==='MLS / Agent'?'background:var(--bluedim);color:var(--blue)':'background:var(--greendim);color:var(--green)'}">${d.dealType==='MLS / Agent'?'Agent':'Seller'}</span>
         </div>
       </div>
       <!-- Row 2: Numbers grid -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px">
-        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
+      <div class="saved-nums" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:8px">
+        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">ARV</div>
-          <div style="font-size:16px;font-weight:800;color:var(--t1)">${fm(d.arv)}</div>
+          <div style="font-size:14px;font-weight:800;color:var(--t1);white-space:nowrap">${fm(d.arv)}</div>
         </div>
-        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
+        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Repairs</div>
-          <div style="font-size:16px;font-weight:800;color:var(--amber)">${fm(d.repairs)}</div>
+          <div style="font-size:14px;font-weight:800;color:var(--amber);white-space:nowrap">${fm(d.repairs)}</div>
         </div>
-        <div style="text-align:center;padding:10px;background:var(--bluedim);border-radius:6px;border:1px solid var(--blue)33">
+        <div style="text-align:center;padding:8px 4px;background:var(--bluedim);border-radius:6px;border:1px solid var(--blue)33;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">MAO</div>
-          <div style="font-size:16px;font-weight:800;color:var(--blue)">${fm(d.mao)}</div>
+          <div style="font-size:14px;font-weight:800;color:var(--blue);white-space:nowrap">${fm(d.mao)}</div>
         </div>
-        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
+        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Fee</div>
-          <div style="font-size:16px;font-weight:800;color:var(--green)">${fm(d.fee)}</div>
+          <div style="font-size:14px;font-weight:800;color:var(--green);white-space:nowrap">${fm(d.fee)}</div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px">
-        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
+      <div class="saved-nums" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px">
+        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Dispo</div>
-          <div style="font-size:16px;font-weight:800;color:var(--green)">${fm(d.disposition)}</div>
+          <div style="font-size:14px;font-weight:800;color:var(--green);white-space:nowrap">${fm(d.disposition)}</div>
         </div>
-        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
+        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">All-In</div>
-          <div style="font-size:16px;font-weight:800;color:var(--t1)">${fm(d.allin)}</div>
+          <div style="font-size:14px;font-weight:800;color:var(--t1);white-space:nowrap">${fm(d.allin)}</div>
         </div>
-        <div style="text-align:center;padding:10px;background:${d.profit>0?'var(--greendim)':'#2a0a0a'};border-radius:6px;border:1px solid ${profitColor}33">
+        <div style="text-align:center;padding:8px 4px;background:${d.profit>0?'var(--greendim)':'#2a0a0a'};border-radius:6px;border:1px solid ${profitColor}33;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Profit</div>
-          <div style="font-size:16px;font-weight:800;color:${profitColor}">${fm(d.profit)}</div>
+          <div style="font-size:14px;font-weight:800;color:${profitColor};white-space:nowrap">${fm(d.profit)}</div>
         </div>
-        <div style="text-align:center;padding:10px;background:var(--s2);border-radius:6px">
+        <div style="text-align:center;padding:8px 4px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">ROI</div>
-          <div style="font-size:16px;font-weight:800;color:var(--amber)">${d.roi?d.roi.toFixed(1)+'%':'—'}</div>
+          <div style="font-size:14px;font-weight:800;color:var(--amber);white-space:nowrap">${d.roi?d.roi.toFixed(1)+'%':'—'}</div>
         </div>
       </div>
       ${d.compsLink||d.taxRecords?'<div style="display:flex;gap:12px;margin-bottom:8px">'+(d.compsLink?'<a href="'+esc(d.compsLink)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--blue);text-decoration:none;font-weight:600">🔗 View Comps</a>':'')+(d.taxRecords?'<a href="'+esc(d.taxRecords)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--t2);text-decoration:none;font-weight:600">📋 Tax Records</a>':'')+'</div>':''}
       <!-- Row 3: Actions -->
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <select onchange="updatePipeline(${realIdx},this.value)" style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-weight:600;cursor:pointer">
+      <div class="saved-actions" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <select onchange="updatePipeline(${realIdx},this.value)" style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-weight:600;cursor:pointer;width:auto">
           ${['New','Contacted','Offer Approved','Offer Made','Under Contract','Assigned','Closed','Dead'].map(s=>`<option value="${s}"${d.pipeline===s?' selected':''}>${s}</option>`).join('')}
         </select>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <div class="saved-action-btns" style="display:flex;gap:6px;flex-wrap:wrap">
           <button onclick="viewDeal(${realIdx})" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="View">👁️ View</button>
           <button onclick="pdfDeal(${realIdx})" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="PDF">📄 PDF</button>
           <button onclick="buyerPdf(${realIdx})" style="background:#f25116;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Buyer Sheet">🏷️ Buyer</button>
