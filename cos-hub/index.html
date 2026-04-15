@@ -3730,13 +3730,13 @@ async function loadLeads(){
       photoLinks:rec.fields['Photo Links']||'',
       driveFolder:rec.fields['Drive Folder']||''
     }));
-    renderLeads();
+    renderIncomingLeads();
   }catch(e){
     el.innerHTML='<div style="text-align:center;padding:40px;color:var(--red)">Error loading leads: '+e.message+'</div>';
   }
 }
 
-function renderLeads(){
+function renderIncomingLeads(){
   const el=document.getElementById('leads-list');
   const filtered=leadFilter==='all'?leadsCache:leadsCache.filter(l=>l.status===leadFilter);
   document.getElementById('leads-count').textContent=filtered.length+' of '+leadsCache.length+' leads';
@@ -3794,7 +3794,7 @@ function renderLeads(){
 
 function filterLeads(f){
   leadFilter=f;
-  renderLeads();
+  renderIncomingLeads();
 }
 
 async function updateLeadStatus(atId, newStatus){
@@ -3802,7 +3802,7 @@ async function updateLeadStatus(atId, newStatus){
     await fetch(LEADS_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{id:atId,fields:{'Status':newStatus}}]})});
     const lead=leadsCache.find(l=>l._atId===atId);
     if(lead)lead.status=newStatus;
-    renderLeads();
+    renderIncomingLeads();
   }catch(e){console.error('Lead status update failed:',e);}
 }
 
@@ -3944,7 +3944,7 @@ async function deleteLeadConfirm(atId){
   try{
     await fetch(LEADS_URL+'?id='+atId,{method:'DELETE'});
     leadsCache=leadsCache.filter(l=>l._atId!==atId);
-    renderLeads();
+    renderIncomingLeads();
   }catch(e){console.error('Delete lead failed:',e);}
 }
 
