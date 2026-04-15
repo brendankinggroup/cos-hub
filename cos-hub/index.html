@@ -1228,7 +1228,7 @@ function parseCSV(){
       agentname:{exact:[],contains:['listing agent','mls listing agent','agent fullname','agent full']},
       agentphone:{exact:[],contains:['agent primary phone','agent phone','mls agent primary']},
       agentemail:{exact:[],contains:['agent email','mls agent email']},
-      brokerage: {exact:[],contains:['brokerage name','mls agent brokerage name','agent brokerage']},
+      brokerage: {exact:['brokerage'],contains:['brokerage name','mls agent brokerage name','agent brokerage','brokerage'],excludes:['brokerage phone']},
       brokeragephone:{exact:[],contains:['brokerage phone','mls agent brokerage phone']},
       office:    {exact:['office'],contains:['office']},
       // Property details
@@ -1324,7 +1324,7 @@ function parseCSV(){
       repairs:+(sg(cols,'repairs')||0),
       dom:+(sg(cols,'dom')||0),
       pricecuts:+(sg(cols,'pricecuts')||0),
-      distress:sg(cols,'distress')||'Distressed (Landvoice)',
+      distress:sg(cols,'distress')||'',
       source:sg(cols,'source')||'Imported',
       notes, agentName:sg(cols,'agentname')||'',
       agentPhone:sg(cols,'agentphone')||'',
