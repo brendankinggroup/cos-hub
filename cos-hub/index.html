@@ -1051,6 +1051,7 @@ function nav(p, skipHash){
   if(p==='home') renderHome();
   if(p==='leads') loadLeads();
   if(p==='agents') loadBuyers();
+  if(p==='analyzer'&&!leads.length) loadProspectsFromAirtable();
   if(!skipHash) history.pushState(null,'','#'+p);
 }
 window.addEventListener('hashchange',()=>{
@@ -1375,6 +1376,8 @@ function parseCSV(){
   document.getElementById('list-counter').textContent=leads.length+' leads imported';
   document.getElementById('list-counter').style.color='var(--green)';
   saveState();
+  // Sync to Airtable
+  saveProspectsToAirtable();
 }
 
 function applyFilters(){
@@ -1549,6 +1552,11 @@ function keepLead(filteredIdx){
 function dropLead(filteredIdx){
   const l=filteredLeads[filteredIdx];
   if(!l) return;
+  if(!confirm('Drop "'+( l.name||l.address||'this lead')+ '"?')) return;
+  // Delete from Airtable if it has a record ID
+  if(l._atId){
+    fetch(PROSPECTS_URL+'?id='+l._atId,{method:'DELETE'}).catch(e=>console.error('Prospect delete error:',e));
+  }
   // Remove from both arrays
   const mainIdx=leads.indexOf(l);
   if(mainIdx>=0) leads.splice(mainIdx,1);
@@ -1560,7 +1568,10 @@ function dropLead(filteredIdx){
 
 function bulkDropAll(){
   if(!leads.length) return;
-  if(!confirm('Clear the entire prospect list? ('+leads.length+' leads will be removed)')) return;
+  if(!confirm('Clear the entire prospect list? ('+leads.length+' leads will be permanently removed)')) return;
+  // Delete all from Airtable in batches of 10
+  const atIds=leads.filter(l=>l._atId).map(l=>l._atId);
+  deleteProspectsFromAirtable(atIds);
   leads=[];
   filteredLeads=[];
   renderLeads();
@@ -1580,10 +1591,112 @@ function updateProspectBar(){
   document.getElementById('prospect-count').textContent=filteredLeads.length+' of '+leads.length+' prospects showing';
 }
 
-// Patch renderLeads to update prospect bar
-const _origRenderLeads=renderLeads;
-// We'll call updateProspectBar after each render via a wrapper approach —
-// or simpler: just add the call directly
+// ── PROSPECT AIRTABLE SYNC ────────────────────────────────────────────
+async function saveProspectsToAirtable(){
+  if(!leads.length) return;
+  // First clear any existing prospects in Airtable
+  try{
+    let existing=[],offset='';
+    do{
+      const url=PROSPECTS_URL+(offset?'?offset='+offset:'');
+      const r=await fetch(url);
+      const json=await r.json();
+      if(json.records) existing=existing.concat(json.records);
+      offset=json.offset||'';
+    }while(offset);
+    if(existing.length>0){
+      await deleteProspectsFromAirtable(existing.map(r=>r.id));
+    }
+  }catch(e){console.error('Clear prospects error:',e);}
+
+  // Save new leads in batches of 10 (Airtable limit)
+  const now=new Date().toISOString();
+  for(let i=0;i<leads.length;i+=10){
+    const batch=leads.slice(i,i+10);
+    const records=batch.map(l=>{
+      const extra={agentPhone:l.agentPhone,agentEmail:l.agentEmail,brokerage:l.brokerage,propType:l.propType,yearBuilt:l.yearBuilt,lotSize:l.lotSize,vacancy:l.vacancy,ownerOccupied:l.ownerOccupied,zoning:l.zoning,mlsStatus:l.mlsStatus,batchRank:l.batchRank,listNames:l.listNames,tagNames:l.tagNames,foreclosure:l.foreclosure,dom:l.dom,pricecuts:l.pricecuts,apn:l.apn};
+      return{fields:{
+        'Name':l.name||'','Address':l.address||'','City':l.city||'','Zip':l.zip||'',
+        'Phone':l.phone||'','Email':l.email||null,
+        'ARV':l.arv||0,'Asking':l.asking||0,'Debt':l.debt||0,'Equity':l.equity||0,'Repairs':l.repairs||0,
+        'SqFt':l.sqft||0,'Beds':(l.beds||'').toString(),'Baths':(l.baths||'').toString(),
+        'Property Type':l.propType||'','Year Built':l.yearBuilt||'',
+        'Distress':l.distress||'','Score':l.score||0,
+        'Agent Name':l.agentName||'','Agent Phone':l.agentPhone||'',
+        'Agent Email':l.agentEmail||null,'Brokerage':l.brokerage||'',
+        'Source':l.source||'','Notes':l.notes||'',
+        'Extra Data':JSON.stringify(extra),
+        'Uploaded At':now
+      }};
+    });
+    try{
+      const r=await fetch(PROSPECTS_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({records})});
+      const json=await r.json();
+      // Store Airtable IDs back on the leads
+      if(json.records){
+        json.records.forEach((rec,j)=>{
+          if(batch[j]) batch[j]._atId=rec.id;
+        });
+      }
+    }catch(e){console.error('Save prospects batch error:',e);}
+  }
+  saveState();
+}
+
+async function deleteProspectsFromAirtable(ids){
+  if(!ids||!ids.length) return;
+  // Airtable allows max 10 deletes per request
+  for(let i=0;i<ids.length;i+=10){
+    const batch=ids.slice(i,i+10);
+    const params=batch.map(id=>'records[]='+id).join('&');
+    try{
+      await fetch(PROSPECTS_URL+'?'+params,{method:'DELETE'});
+    }catch(e){console.error('Delete prospects batch error:',e);}
+  }
+}
+
+async function loadProspectsFromAirtable(){
+  try{
+    let all=[],offset='';
+    do{
+      const url=PROSPECTS_URL+(offset?'?offset='+offset:'?')+'&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=asc';
+      const r=await fetch(url);
+      const json=await r.json();
+      if(json.records) all=all.concat(json.records);
+      offset=json.offset||'';
+    }while(offset);
+    if(all.length>0){
+      leads=all.map(rec=>{
+        const f=rec.fields||{};
+        let extra={};
+        try{extra=JSON.parse(f['Extra Data']||'{}');}catch(e){}
+        return{
+          _atId:rec.id,id:Math.random()*100000|0,
+          name:f.Name||'',address:f.Address||'',city:f.City||'',zip:f.Zip||'',
+          phone:f.Phone||'',email:f.Email||'',
+          arv:f.ARV||0,asking:f.Asking||0,debt:f.Debt||0,equity:f.Equity||0,repairs:f.Repairs||0,
+          sqft:f.SqFt||0,beds:f.Beds||'',baths:f.Baths||'',
+          propType:f['Property Type']||'',yearBuilt:f['Year Built']||'',
+          distress:f.Distress||'',score:f.Score||0,
+          agentName:f['Agent Name']||'',agentPhone:extra.agentPhone||f['Agent Phone']||'',
+          agentEmail:extra.agentEmail||f['Agent Email']||'',
+          brokerage:f.Brokerage||'',
+          source:f.Source||'',notes:f.Notes||'',
+          dom:extra.dom||0,pricecuts:extra.pricecuts||0,
+          mlsStatus:extra.mlsStatus||'',batchRank:extra.batchRank||'',
+          vacancy:extra.vacancy||'',ownerOccupied:extra.ownerOccupied||'',
+          zoning:extra.zoning||'',apn:extra.apn||'',
+          listNames:extra.listNames||'',tagNames:extra.tagNames||'',
+          flags:scoreFlags({distress:f.Distress||'',dom:extra.dom||0,pricecuts:extra.pricecuts||0,debt:f.Debt||0,arv:f.ARV||0}),
+        };
+      });
+      filteredLeads=[...leads];
+      renderLeads();
+      document.getElementById('list-counter').textContent=leads.length+' prospects loaded';
+      document.getElementById('list-counter').style.color='var(--green)';
+    }
+  }catch(e){console.error('Load prospects error:',e);}
+}
 
 function setCalcMode(m){
   calcMode=m;
@@ -2620,6 +2733,7 @@ document.addEventListener('keydown', function(e) {
 });
 // ── SAVED DEALS (Airtable-synced via Netlify proxy) ────────────────────
 const API_URL='/api/airtable';
+const PROSPECTS_URL='/api/prospects';
 
 let savedDealsCache=[];
 
