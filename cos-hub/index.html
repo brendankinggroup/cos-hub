@@ -3788,8 +3788,8 @@ async function loadBuyers(){
         Company:f.Company||'',
         Email:f.Email||'',
         Phone:f.Phone||'',
-        // Handle both old "Type" (singleSelect object) and new "Types" (multipleSelects array of objects)
-        Types:(f.Types||[]).map(t=>typeof t==='object'?t.name:t),
+        // Handle both old "Type" (single) and new "Types" (multi-select), and Airtable object vs string formats
+        Types:(f.Types&&f.Types.length>0)?(f.Types.map(t=>typeof t==='object'?t.name:t)):(f.Type?[typeof f.Type==='object'?f.Type.name:f.Type]:[]),
         Status:typeof f.Status==='object'?f.Status.name:f.Status||'Active',
         Tags:(f.Tags||[]).map(t=>typeof t==='object'?t.name:t),
         'Buy Box':f['Buy Box']||'',
