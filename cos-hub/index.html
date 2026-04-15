@@ -43,6 +43,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 .tag-pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;margin:3px}
 @media (max-width:860px){#analyzer-cards{grid-template-columns:1fr 1fr !important}#filter-grid{grid-template-columns:repeat(4,1fr) !important}#leads-grid{grid-template-columns:1fr !important}#calc-top{grid-template-columns:1fr !important}#scripts-grid{grid-template-columns:1fr !important}#exit-grid{grid-template-columns:repeat(2,1fr) !important}#calc-stats{grid-template-columns:1fr 1fr !important}.saved-actions{flex-wrap:wrap !important}.saved-header-btns{flex-wrap:wrap !important}}@media (max-width:600px){#analyzer-cards{grid-template-columns:1fr !important}#filter-grid{grid-template-columns:repeat(3,1fr) !important}#leads-grid{grid-template-columns:1fr !important}#calc-top{grid-template-columns:1fr !important}#scripts-grid{grid-template-columns:1fr !important}#exit-grid{grid-template-columns:1fr !important}#calc-stats{grid-template-columns:1fr 1fr !important}button{padding:8px 12px !important;font-size:11px !important}.saved-header{flex-direction:column !important;align-items:flex-start !important;gap:10px !important}.saved-header-btns{width:100%}.saved-card-top{flex-direction:column !important;gap:8px !important}.saved-card-badges{margin-left:0 !important;flex-wrap:wrap !important}.saved-actions{flex-direction:column !important;gap:8px !important}.saved-action-btns{width:100%}.saved-nums{grid-template-columns:repeat(2,1fr) !important}}
 </style>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -197,10 +198,10 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
         style="border:1.5px dashed var(--border2);border-radius:8px;padding:14px 10px;text-align:center;cursor:pointer;margin-bottom:8px;transition:all .15s">
         <div style="font-size:18px;margin-bottom:4px">📂</div>
         <div style="font-size:11px;font-weight:700;color:var(--t2)">Click to upload or drag & drop</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:3px">CSV files · any size · PropStream, REsimpli, BatchLeads, custom</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:3px">CSV or Excel files · any size · PropStream, REsimpli, BatchLeads, Landvoice</div>
         <div id="file-name-display" style="font-size:10px;color:var(--green);margin-top:5px;display:none"></div>
       </div>
-      <input type="file" id="file-upload" accept=".csv,.txt" style="display:none" onchange="handleFileUpload(this)"/>
+      <input type="file" id="file-upload" accept=".csv,.txt,.xlsx,.xls" style="display:none" onchange="handleFileUpload(this)"/>
 
       <!-- Divider -->
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -2053,19 +2054,40 @@ function copyScript(){const txt=document.getElementById('sc-content').textConten
 function handleFileUpload(input){
   const file=input.files[0];
   if(!file) return;
-  if(!file.name.match(/\.(csv|txt)$/i)){
-    showFileStatus('❌ Please upload a .csv or .txt file','var(--red)');
+  const isExcel=file.name.match(/\.xlsx?$/i);
+  const isCsv=file.name.match(/\.(csv|txt)$/i);
+  if(!isExcel&&!isCsv){
+    showFileStatus('❌ Please upload a .csv, .txt, or .xlsx file','var(--red)');
     return;
   }
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const text=e.target.result;
-    document.getElementById('csv-input').value=text;
-    showFileStatus('✓ '+file.name+' loaded ('+text.split('\n').filter(r=>r.trim()).length+' rows)','var(--green)');
-    parseCSV();
-  };
-  reader.onerror=function(){showFileStatus('❌ Error reading file','var(--red)');};
-  reader.readAsText(file);
+  if(isExcel){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const text=XLSX.utils.sheet_to_csv(ws);
+        document.getElementById('csv-input').value=text;
+        const rows=text.split('\n').filter(r=>r.trim()).length;
+        showFileStatus('✓ '+file.name+' loaded ('+rows+' rows from Excel)','var(--green)');
+        parseCSV();
+      }catch(err){
+        showFileStatus('❌ Error reading Excel file: '+err.message,'var(--red)');
+      }
+    };
+    reader.onerror=function(){showFileStatus('❌ Error reading file','var(--red)');};
+    reader.readAsArrayBuffer(file);
+  }else{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const text=e.target.result;
+      document.getElementById('csv-input').value=text;
+      showFileStatus('✓ '+file.name+' loaded ('+text.split('\n').filter(r=>r.trim()).length+' rows)','var(--green)');
+      parseCSV();
+    };
+    reader.onerror=function(){showFileStatus('❌ Error reading file','var(--red)');};
+    reader.readAsText(file);
+  }
   input.value='';
 }
 
@@ -2076,18 +2098,38 @@ function handleFileDrop(event){
   dz.style.background='transparent';
   const file=event.dataTransfer.files[0];
   if(!file) return;
-  if(!file.name.match(/\.(csv|txt)$/i)){
-    showFileStatus('❌ Please drop a .csv or .txt file','var(--red)');
+  const isExcel=file.name.match(/\.xlsx?$/i);
+  const isCsv=file.name.match(/\.(csv|txt)$/i);
+  if(!isExcel&&!isCsv){
+    showFileStatus('❌ Please drop a .csv, .txt, or .xlsx file','var(--red)');
     return;
   }
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const text=e.target.result;
-    document.getElementById('csv-input').value=text;
-    showFileStatus('✓ '+file.name+' loaded ('+text.split('\n').filter(r=>r.trim()).length+' rows)','var(--green)');
-    parseCSV();
-  };
-  reader.readAsText(file);
+  if(isExcel){
+    const reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const text=XLSX.utils.sheet_to_csv(ws);
+        document.getElementById('csv-input').value=text;
+        const rows=text.split('\n').filter(r=>r.trim()).length;
+        showFileStatus('✓ '+file.name+' loaded ('+rows+' rows from Excel)','var(--green)');
+        parseCSV();
+      }catch(err){
+        showFileStatus('❌ Error reading Excel file: '+err.message,'var(--red)');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }else{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const text=e.target.result;
+      document.getElementById('csv-input').value=text;
+      showFileStatus('✓ '+file.name+' loaded ('+text.split('\n').filter(r=>r.trim()).length+' rows)','var(--green)');
+      parseCSV();
+    };
+    reader.readAsText(file);
+  }
 }
 
 function showFileStatus(msg,color){
