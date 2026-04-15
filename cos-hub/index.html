@@ -3780,7 +3780,25 @@ async function loadBuyers(){
       if(json.records) all=all.concat(json.records);
       offset=json.offset||'';
     }while(offset);
-    buyersCache=all.map(r=>({id:r.id,...r.fields}));
+    buyersCache=all.map(r=>{
+      const f=r.fields||{};
+      return{
+        id:r.id,
+        Name:f.Name||'',
+        Company:f.Company||'',
+        Email:f.Email||'',
+        Phone:f.Phone||'',
+        // Handle both old "Type" (singleSelect object) and new "Types" (multipleSelects array of objects)
+        Types:(f.Types||[]).map(t=>typeof t==='object'?t.name:t),
+        Status:typeof f.Status==='object'?f.Status.name:f.Status||'Active',
+        Tags:(f.Tags||[]).map(t=>typeof t==='object'?t.name:t),
+        'Buy Box':f['Buy Box']||'',
+        Notes:f.Notes||'',
+        'Deals Closed':f['Deals Closed']||0,
+        'Last Contact':f['Last Contact']||'',
+        'Added At':f['Added At']||'',
+      };
+    });
     renderBuyers();
   }catch(e){
     console.error('Buyers load error:',e);
