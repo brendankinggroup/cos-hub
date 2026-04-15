@@ -497,7 +497,7 @@
 const WEB3FORMS_KEY = '1e19b12f-24fe-476a-8526-1ddff342a022';
 const CLOUDINARY_CLOUD = 'dzve75on0';
 const CLOUDINARY_PRESET = 'cos_apply_photos';
-let batchEstValue = 0;
+// batchEstValue removed — BatchData API no longer used
 
 // ============================================
 // CONDITION AREAS
@@ -940,16 +940,10 @@ function calcOffer() {
     // Rating 5 (excellent) = +5%, Rating 4 = +8%, Rating 3 (avg) = +12%, Rating 2 = +16%, Rating 1 (poor) = +20%
     const rehabPremium = {5: 0.05, 4: 0.08, 3: 0.12, 2: 0.16, 1: 0.20}[avgRating] || 0.12;
 
-    let estValue;
-    if (batchEstValue > 0) {
-        // BatchData gives current as-is value — add rehab premium to estimate ARV
-        estValue = Math.round(batchEstValue * (1 + rehabPremium));
-    } else {
-        // Fallback: $/sqft estimate when no API data
-        const rates = {5:230, 4:200, 3:170, 2:130, 1:90};
-        estValue = sqft * (rates[avgRating] || 170);
-        if (beds >= 4) estValue *= 1.05;
-    }
+    // Estimate value from $/sqft based on condition rating
+    const rates = {5:230, 4:200, 3:170, 2:130, 1:90};
+    let estValue = sqft * (rates[avgRating] || 170);
+    if (beds >= 4) estValue *= 1.05;
 
     const repairs = calcRepairs().total;
     const fee = 10000; // assignment fee
@@ -1259,67 +1253,7 @@ document.addEventListener('input', (e) => {
         if (err) err.classList.remove('show');
     }
 });
-// ============================================
-// BATCHDATA PROPERTY LOOKUP — Real Estimated Value
-// ============================================
-async function batchLookup() {
-    const street = (document.getElementById('f-address').value || '').trim();
-    const city = (document.getElementById('f-city').value || 'Las Vegas').trim();
-    const zip = (document.getElementById('f-zip').value || '').trim();
-    if (!street || !zip) return;
-
-    const badge = document.getElementById('addr-verify');
-    badge.style.display = 'block';
-    badge.style.color = 'var(--muted)';
-    badge.textContent = '⏳ Verifying address...';
-
-    try {
-        const resp = await fetch('https://api.batchdata.com/api/v1/property/lookup/all-attributes', {
-            method: 'POST',
-            headers: {'Authorization': 'Bearer ' + BATCHDATA_KEY, 'Content-Type': 'application/json'},
-            body: JSON.stringify({requests: [{address: {street, city, state: 'NV', zip}}]})
-        });
-        const json = await resp.json();
-        if (json.status?.code !== 200 || !json.results?.properties?.length) {
-            badge.style.color = 'var(--orange)';
-            badge.textContent = '⚠️ Address not found — please double-check';
-            return;
-        }
-
-        const p = json.results.properties[0];
-        const v = p.valuation || {};
-        const l = p.listing || {};
-
-        // Show verified badge
-        badge.style.color = 'var(--green)';
-        badge.textContent = '✓ Address verified';
-
-        // Store real estimated value for offer calculation
-        if (v.estimatedValue > 0) {
-            batchEstValue = v.estimatedValue;
-        }
-
-        // Auto-fill fields the seller hasn't filled yet
-        const sqftEl = document.getElementById('f-sqft');
-        const sqftVal = l.totalBuildingAreaSquareFeet || l.livingArea || 0;
-        if (sqftVal > 0 && !sqftEl.value) sqftEl.value = sqftVal;
-
-        const bedsEl = document.getElementById('f-beds');
-        if (l.bedroomCount && !bedsEl.value) bedsEl.value = l.bedroomCount <= 5 ? l.bedroomCount : '6+';
-
-        const bathsEl = document.getElementById('f-baths');
-        if (l.bathroomCount && !bathsEl.value) bathsEl.value = l.bathroomCount <= 4 ? l.bathroomCount : '5+';
-
-        const yrEl = document.getElementById('f-year');
-        if (l.yearBuilt && yrEl && !yrEl.value) yrEl.value = l.yearBuilt;
-
-        console.log('BatchData: est value $' + (v.estimatedValue||0).toLocaleString() + ', confidence ' + (v.confidenceScore||0) + '%');
-    } catch(e) {
-        badge.style.color = 'var(--orange)';
-        badge.textContent = '⚠️ Could not verify — please check address';
-        console.log('BatchData lookup error:', e.message);
-    }
-}
+// BatchData API removed — was unused (no API key configured)
 
 // ============================================
 // GOOGLE PLACES ADDRESS AUTOCOMPLETE
