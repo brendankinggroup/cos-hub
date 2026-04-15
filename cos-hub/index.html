@@ -1189,16 +1189,21 @@ function parseCSV(){
       lastname: {exact:['last name'],contains:['last name']},
       address:  {exact:['address'],contains:['street address','property address','mailing address','addr','property street']},
       arv:      {exact:['arv'],contains:['after repair value','estimated value','arv']},
-      asking:   {exact:['asking','price'],contains:['list price','asking price','sale price']},
+      asking:   {exact:['asking','price'],contains:['list price','asking price','sale price','listing amount','mls listing amount']},
       repairs:  {exact:['rehab'],contains:['rehab cost','repair cost','est repair value','est repair','renovation cost','renovation'],startsWith:['repair'],excludes:['after repair value']},
-      debt:     {exact:['debt'],contains:['mortgage balance','loan balance','mortgage amount']},
+      debt:     {exact:['debt'],contains:['mortgage balance','loan balance','mortgage amount','total loan balance']},
       dom:      {exact:['dom'],contains:['days on market','days listed']},
       pricecuts:{exact:[],contains:['price reduction','price cut','reductions','cuts']},
       distress: {exact:['distress'],contains:['lead type','seller type','status','distress']},
       source:   {exact:['source'],contains:['lead source','source','channel']},
       notes:    {exact:['notes'],contains:['notes','comments','remarks','description']},
       agentname:{exact:[],contains:['agent name','listing agent','realtor','broker']},
-      agentphone:{exact:[],contains:['agent phone','agent #','realtor phone']},
+      agentphone:{exact:[],contains:['agent phone','agent #','realtor phone','agent primary phone']},
+      agentemail:{exact:[],contains:['agent email','mls agent email','listing agent email']},
+      brokerage: {exact:[],contains:['brokerage','broker name','agent brokerage']},
+      equity:    {exact:['equity'],contains:['equity','equity current','estimated equity']},
+      apn:       {exact:['apn'],contains:['apn','parcel number','parcel id','assessor parcel']},
+      lastsale:  {exact:[],contains:['last sale date','sale date','last sold']},
       phone:    {exact:['phone'],contains:['owner phone','seller phone','contact phone','phone number','mobile','cell'],excludes:['agent phone']},
       email:    {exact:['email'],contains:['owner email','seller email','contact email','email address'],excludes:['agent email']},
       proptype: {exact:[],contains:['property type','prop type','use code','land use','property use']},
@@ -1220,10 +1225,10 @@ function parseCSV(){
   }
 
   // Pre-compute indices for multi-column fields (Landvoice + other sources)
-  const cityIdx=header.findIndex(h=>h==='city'||h==='owner city'||h==='prop city');
-  const stateIdx=header.findIndex(h=>h==='state'||h==='owner state'||h==='prop state');
-  const zipIdx=header.findIndex(h=>h==='zipcode'||h==='zip'||h==='zip code'||h==='postal code');
-  const sqftIdx=header.findIndex(h=>h==='square footage'||h==='sq ft'||h==='sqft'||h==='living area'||h==='sq. ft.'||h==='building size');
+  const cityIdx=header.findIndex(h=>h==='city'||h==='owner city'||h==='prop city'||h==='property city');
+  const stateIdx=header.findIndex(h=>h==='state'||h==='owner state'||h==='prop state'||h==='property state');
+  const zipIdx=header.findIndex(h=>h==='zipcode'||h==='zip'||h==='zip code'||h==='postal code'||h==='property zip');
+  const sqftIdx=header.findIndex(h=>h==='square footage'||h==='sq ft'||h==='sqft'||h==='living area'||h==='sq. ft.'||h==='building size'||h.includes('building area square feet')||h.includes('total building area'));
   const bedsIdx=header.findIndex(h=>h==='bedrooms'||h==='beds'||h==='bed count'||h==='# bedrooms');
   const bathsIdx=header.findIndex(h=>h==='bathrooms'||h==='baths'||h==='bath count'||h==='# bathrooms');
   const halfBathIdx=header.findIndex(h=>h.includes('1/2 bath')||h.includes('half bath'));
@@ -1288,6 +1293,11 @@ function parseCSV(){
       hoa:sg(cols,'hoa')||'',
       pool:sg(cols,'pool')||'',
       mlsRemarks:sg(cols,'mlsremarks')||'',
+      agentEmail:sg(cols,'agentemail')||'',
+      brokerage:sg(cols,'brokerage')||'',
+      equity:+(sg(cols,'equity')||0),
+      apn:sg(cols,'apn')||'',
+      lastSaleDate:sg(cols,'lastsale')||'',
     };
   }).map(l=>({...l,score:aiScore(l),flags:scoreFlags(l)}));
 
@@ -1345,7 +1355,7 @@ function searchLeads(){
   const q=(document.getElementById('lead-search').value||'').toLowerCase().trim();
   if(!q){filteredLeads=[...leads];applyFilters();return;}
   filteredLeads=leads.filter(l=>{
-    return (l.name||'').toLowerCase().includes(q)||(l.address||'').toLowerCase().includes(q)||(l.city||'').toLowerCase().includes(q)||(l.zip||'').toLowerCase().includes(q)||(l.notes||'').toLowerCase().includes(q);
+    return [l.name,l.address,l.city,l.zip,l.notes,l.phone,l.email,l.agentName,l.agentPhone,l.agentEmail,l.brokerage,l.propType].filter(Boolean).join(' ').toLowerCase().includes(q);
   });
   renderLeads();
 }
@@ -1360,13 +1370,19 @@ function renderLeads(){
     const eq=l.arv>0?Math.round(((l.arv-(l.debt||0))/l.arv)*100):0;
     const mao=l.arv>0?Math.round(l.arv*0.70-l.repairs-13000):0;
     const flags=l.flags||[];
-    const isAgent=isMLS&&l.agentName;
+    const isAgent=l.agentName;
+    const eqFromData=l.equity>0?Math.round((l.equity/Math.max(l.arv||1,l.equity))*100):eq;
     return`<div class="card" style="border:1px solid ${score>=80?'var(--red)44':score>=60?'var(--green)22':'var(--border)'}">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-    <div style="flex:1"><div style="font-size:15px;font-weight:700;color:var(--t1);line-height:1.3">${esc(l.name)}</div><div style="font-size:12px;color:var(--t3);margin-top:3px">${esc(l.address)}</div>${l.phone||l.email?'<div style="font-size:11px;margin-top:3px;display:flex;gap:10px">'+(l.phone?'<a href="tel:'+esc(l.phone)+'" style="color:var(--blue);text-decoration:none">📞 '+esc(l.phone)+'</a>':'')+(l.email?'<a href="mailto:'+esc(l.email)+'" style="color:var(--blue);text-decoration:none">✉️ '+esc(l.email)+'</a>':'')+'</div>':''}</div>
+    <div style="flex:1">
+      <div style="font-size:15px;font-weight:700;color:var(--t1);line-height:1.3">${esc(l.name)}</div>
+      <div style="font-size:12px;color:var(--t3);margin-top:3px">${esc(l.address)}</div>
+      ${l.phone||l.email?'<div style="font-size:11px;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap">'+(l.phone?'<a href="tel:'+esc(l.phone)+'" style="color:var(--blue);text-decoration:none">📞 '+esc(l.phone)+'</a>':'')+(l.email?'<a href="mailto:'+esc(l.email)+'" style="color:var(--blue);text-decoration:none">✉️ '+esc(l.email)+'</a>':'')+(l.phone?'<a href="sms:'+esc(l.phone)+'" style="color:var(--green);text-decoration:none;font-weight:600">💬 Text</a>':'')+'</div>':''}
+      ${isAgent?'<div style="font-size:11px;margin-top:4px;padding:5px 8px;background:var(--bluedim);border-radius:5px;border-left:2px solid var(--blue);color:var(--blue)"><b>🤝 Agent:</b> '+esc(l.agentName)+(l.agentPhone?' · <a href="tel:'+esc(l.agentPhone)+'" style="color:var(--blue);text-decoration:none">'+esc(l.agentPhone)+'</a>':'')+(l.agentEmail?' · <a href="mailto:'+esc(l.agentEmail)+'" style="color:var(--blue);text-decoration:none">'+esc(l.agentEmail)+'</a>':'')+(l.brokerage?' · '+esc(l.brokerage):'')+'</div>':''}
+    </div>
     <div style="text-align:center;flex-shrink:0;margin-left:10px"><div class="hdr" style="font-size:32px;color:${sc};line-height:1">${score}</div><div style="font-size:9px;font-weight:700;color:${sc}">${sl}</div></div>
   </div>
-  ${(l.beds||l.baths||l.sqft)?`<div style="display:flex;gap:12px;margin-bottom:8px;font-size:11px;color:var(--t2)">${l.beds?`<span>🛏 <b>${l.beds}</b> bed${l.beds!=1?'s':''}</span>`:''}${l.baths?`<span>🚿 <b>${l.baths}</b> bath${l.baths!=1?'s':''}</span>`:''}${l.sqft?`<span>📐 <b>${(+l.sqft).toLocaleString()}</b> sqft</span>`:''}${l.city?`<span style="margin-left:auto;color:var(--t3)">📍 ${esc(l.city)}${l.zip?', '+l.zip:''}</span>`:''}</div>`:''}
+  ${(l.beds||l.baths||l.sqft||l.propType||l.city)?`<div style="display:flex;gap:12px;margin-bottom:8px;font-size:11px;color:var(--t2);flex-wrap:wrap">${l.propType?`<span style="font-weight:600">🏠 ${esc(l.propType)}</span>`:''}${l.beds?`<span>🛏 <b>${l.beds}</b> bed${l.beds!=1?'s':''}</span>`:''}${l.baths?`<span>🚿 <b>${l.baths}</b> bath${l.baths!=1?'s':''}</span>`:''}${l.sqft?`<span>📐 <b>${(+l.sqft).toLocaleString()}</b> sqft</span>`:''}${l.city?`<span style="margin-left:auto;color:var(--t3)">📍 ${esc(l.city)}${l.zip?', '+l.zip:''}</span>`:''}</div>`:''}
   ${l.mlsRemarks?`<div style="font-size:10px;color:var(--cyan);background:var(--bluedim);border-left:2px solid var(--cyan);padding:5px 8px;border-radius:0 5px 5px 0;margin-bottom:8px;line-height:1.4">📋 MLS: "${esc(l.mlsRemarks)}"</div>`:''}
   ${l.notes?`<div style="font-size:10px;color:var(--t2);background:var(--card);padding:5px 8px;border-radius:5px;margin-bottom:8px;line-height:1.4;border-left:2px solid var(--border2)">${esc(l.notes)}</div>`:''}
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px">
