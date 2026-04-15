@@ -1184,38 +1184,85 @@ function parseCSV(){
 
   function sg(cols,fieldType){
     const rules={
+      // Identity
       name:     {exact:['name','owner'],contains:['owner name','seller name','contact name','full name']},
-      firstname:{exact:['first name'],contains:['first name']},
-      lastname: {exact:['last name'],contains:['last name']},
+      firstname:{exact:['first name','first'],contains:['first name','owner first name','owner 2 first name']},
+      lastname: {exact:['last name','last'],contains:['last name','owner last name','owner 2 last name']},
+      // Address
       address:  {exact:['address'],contains:['street address','property address','mailing address','addr','property street']},
-      arv:      {exact:['arv'],contains:['after repair value','estimated value','arv']},
+      // Financials
+      arv:      {exact:['arv'],contains:['after repair value','arv']},
+      estvalue: {exact:[],contains:['est. value','est value','estimated value','assessed value']},
       asking:   {exact:['asking','price'],contains:['list price','asking price','sale price','listing amount','mls listing amount']},
       repairs:  {exact:['rehab'],contains:['rehab cost','repair cost','est repair value','est repair','renovation cost','renovation'],startsWith:['repair'],excludes:['after repair value']},
-      debt:     {exact:['debt'],contains:['mortgage balance','loan balance','mortgage amount','total loan balance']},
+      debt:     {exact:['debt'],contains:['mortgage balance','loan balance','mortgage amount','total loan balance','mortgage data']},
+      equity:   {exact:['equity'],contains:['est. equity','est equity','equity current','estimated equity']},
+      spread:   {exact:['spread'],contains:['spread']},
+      pctarv:   {exact:[],contains:['% arv','percent arv']},
+      estltv:   {exact:[],contains:['est. ltv','est ltv','loan to value']},
+      lastsaleamt:{exact:[],contains:['last sale amount','last sold price','last sale price']},
+      lastsale: {exact:[],contains:['last sale date','sale date','last sold']},
+      // MLS / DOM
       dom:      {exact:['dom'],contains:['days on market','days listed']},
       pricecuts:{exact:[],contains:['price reduction','price cut','reductions','cuts']},
-      distress: {exact:['distress'],contains:['lead type','seller type','status','distress']},
+      mlsstatus:{exact:[],contains:['mls status']},
+      mlsdate:  {exact:[],contains:['mls listing date','listing date']},
+      // Lead info
+      distress: {exact:['distress'],contains:['lead type','seller type','distress']},
+      leadstatus:{exact:[],contains:['lead status']},
       source:   {exact:['source'],contains:['lead source','source','channel']},
-      notes:    {exact:['notes'],contains:['notes','comments','remarks','description']},
-      agentname:{exact:[],contains:['agent name','listing agent','realtor','broker']},
-      agentphone:{exact:[],contains:['agent phone','agent #','realtor phone','agent primary phone']},
-      agentemail:{exact:[],contains:['agent email','mls agent email','listing agent email']},
-      brokerage: {exact:[],contains:['brokerage','broker name','agent brokerage']},
-      equity:    {exact:['equity'],contains:['equity','equity current','estimated equity']},
-      apn:       {exact:['apn'],contains:['apn','parcel number','parcel id','assessor parcel']},
-      lastsale:  {exact:[],contains:['last sale date','sale date','last sold']},
-      phone:    {exact:['phone'],contains:['owner phone','seller phone','contact phone','phone number','mobile','cell'],excludes:['agent phone']},
-      email:    {exact:['email'],contains:['owner email','seller email','contact email','email address'],excludes:['agent email']},
+      listcount:{exact:[],contains:['list count']},
+      listnames:{exact:[],contains:['list names']},
+      tagcount: {exact:[],contains:['tag count']},
+      tagnames: {exact:[],contains:['tag names']},
+      batchrank:{exact:['batchrank'],contains:['batch rank','batchrank']},
+      notes:    {exact:['notes'],contains:['notes','comments','remarks'],excludes:['mls remarks']},
+      foreclosure:{exact:[],contains:['foreclosure data','foreclosure']},
+      // Contact
+      phone:    {exact:['phone numbers'],contains:['phone numbers','owner phone','seller phone','contact phone','phone number','mobile','cell'],excludes:['agent phone','dnc','phone type','brokerage phone']},
+      phonednc: {exact:[],contains:['phone numbers dnc','dnc']},
+      phonetype:{exact:[],contains:['phone type']},
+      email:    {exact:['emails','email'],contains:['emails','owner email','seller email','contact email','email address'],excludes:['agent email']},
+      // Agent / MLS
+      agentname:{exact:[],contains:['listing agent','mls listing agent','agent fullname','agent full']},
+      agentphone:{exact:[],contains:['agent primary phone','agent phone','mls agent primary']},
+      agentemail:{exact:[],contains:['agent email','mls agent email']},
+      brokerage: {exact:[],contains:['brokerage name','mls agent brokerage name','agent brokerage']},
+      brokeragephone:{exact:[],contains:['brokerage phone','mls agent brokerage phone']},
+      office:    {exact:['office'],contains:['office']},
+      // Property details
       proptype: {exact:[],contains:['property type','prop type','use code','land use','property use']},
-      yearbuilt:{exact:[],contains:['year built','yr built','year']},
+      yearbuilt:{exact:[],contains:['year build','year built','yr built']},
       lotsize:  {exact:[],contains:['lot size','lot area','lot sq','lot acres','land area']},
+      zoning:   {exact:['zoning'],contains:['zoning']},
+      units:    {exact:[],contains:['number of units']},
+      numcommercial:{exact:[],contains:['number of commercial','commercial units']},
+      numresidential:{exact:[],contains:['number of residential','residential units']},
+      // Status flags
+      vacancy:  {exact:['vacancy'],contains:['vacancy']},
+      mailingvacancy:{exact:[],contains:['mailing vacancy']},
+      owneroccupied:{exact:[],contains:['owner occupied']},
+      litigator:{exact:['litigator'],contains:['litigator']},
+      optout:   {exact:[],contains:['opt out','optout']},
+      selfmanaged:{exact:[],contains:['self-managed','self managed']},
+      contactobtained:{exact:[],contains:['contact obtained']},
+      // Dates
+      dateadded:{exact:[],contains:['date added']},
+      dateupdated:{exact:[],contains:['date updated']},
+      // Location
+      county:   {exact:['county'],contains:['county'],excludes:['mailing county']},
+      mailingcounty:{exact:[],contains:['mailing county']},
+      parcelcount:{exact:[],contains:['parcel count']},
+      // Misc
       condition:{exact:['condition'],contains:['property condition','condition']},
-      occupancy:{exact:['occupancy'],contains:['occupancy','occupied','vacant']},
+      occupancy:{exact:['occupancy'],contains:['occupancy','occupied']},
       timeline: {exact:['timeline'],contains:['timeline','time frame','sell by','closing date']},
       reason:   {exact:['reason'],contains:['reason for selling','motivation','why selling']},
       hoa:      {exact:['hoa'],contains:['hoa','homeowner association']},
       pool:     {exact:['pool'],contains:['pool','swimming pool']},
-      mlsremarks:{exact:[],contains:['remarks','mls remarks','public remarks','description']},
+      mlsremarks:{exact:[],contains:['mls remarks','public remarks']},
+      apn:      {exact:['apn'],contains:['apn','parcel number','parcel id','assessor parcel']},
+      pushedbatchdialer:{exact:[],contains:['pushed to batchdialer']},
     };
     const r=rules[fieldType]||{};
     for(const t of (r.exact||[])){const idx=header.findIndex(h=>h===t);if(idx>=0)return cols[idx]||'';}
@@ -1228,7 +1275,7 @@ function parseCSV(){
   const cityIdx=header.findIndex(h=>h==='city'||h==='owner city'||h==='prop city'||h==='property city');
   const stateIdx=header.findIndex(h=>h==='state'||h==='owner state'||h==='prop state'||h==='property state');
   const zipIdx=header.findIndex(h=>h==='zipcode'||h==='zip'||h==='zip code'||h==='postal code'||h==='property zip');
-  const sqftIdx=header.findIndex(h=>h==='square footage'||h==='sq ft'||h==='sqft'||h==='living area'||h==='sq. ft.'||h==='building size'||h.includes('building area square feet')||h.includes('total building area'));
+  const sqftIdx=header.findIndex(h=>h==='square footage'||h==='sq ft'||h==='sqft'||h==='living area'||h==='sq. ft.'||h==='building size'||h==='property sqft'||h.includes('building area square feet')||h.includes('total building area'));
   const bedsIdx=header.findIndex(h=>h==='bedrooms'||h==='beds'||h==='bed count'||h==='# bedrooms');
   const bathsIdx=header.findIndex(h=>h==='bathrooms'||h==='baths'||h==='bath count'||h==='# bathrooms');
   const halfBathIdx=header.findIndex(h=>h.includes('1/2 bath')||h.includes('half bath'));
@@ -1255,7 +1302,7 @@ function parseCSV(){
     const sqft=sqftIdx>=0?+(cols[sqftIdx]||0):0;
 
     // ARV: use column if present, otherwise estimate from sqft (@$230/sqft LV median)
-    let arv=+(sg(cols,'arv')||0);
+    let arv=+(sg(cols,'arv')||0)||+(sg(cols,'estvalue')||0);
     const arvEstimated=arv===0&&sqft>500;
     if(arvEstimated) arv=Math.round(sqft*230);
 
@@ -1295,9 +1342,32 @@ function parseCSV(){
       mlsRemarks:sg(cols,'mlsremarks')||'',
       agentEmail:sg(cols,'agentemail')||'',
       brokerage:sg(cols,'brokerage')||'',
+      brokeragePhone:sg(cols,'brokeragephone')||'',
+      office:sg(cols,'office')||'',
       equity:+(sg(cols,'equity')||0),
+      estValue:+(sg(cols,'estvalue')||0),
+      spread:sg(cols,'spread')||'',
+      pctArv:sg(cols,'pctarv')||'',
+      estLtv:sg(cols,'estltv')||'',
       apn:sg(cols,'apn')||'',
       lastSaleDate:sg(cols,'lastsale')||'',
+      lastSaleAmt:+(sg(cols,'lastsaleamt')||0),
+      mlsStatus:sg(cols,'mlsstatus')||'',
+      mlsDate:sg(cols,'mlsdate')||'',
+      leadStatus:sg(cols,'leadstatus')||'',
+      listCount:sg(cols,'listcount')||'',
+      listNames:sg(cols,'listnames')||'',
+      tagCount:sg(cols,'tagcount')||'',
+      tagNames:sg(cols,'tagnames')||'',
+      batchRank:sg(cols,'batchrank')||'',
+      foreclosure:sg(cols,'foreclosure')||'',
+      vacancy:sg(cols,'vacancy')||'',
+      ownerOccupied:sg(cols,'owneroccupied')||'',
+      litigator:sg(cols,'litigator')||'',
+      zoning:sg(cols,'zoning')||'',
+      units:sg(cols,'units')||'',
+      county:sg(cols,'county')||'',
+      dateAdded:sg(cols,'dateadded')||'',
     };
   }).map(l=>({...l,score:aiScore(l),flags:scoreFlags(l)}));
 
