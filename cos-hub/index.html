@@ -888,17 +888,8 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
         <input id="bm-phone" type="tel" placeholder="(702) 555-1234" style="width:100%;padding:9px 12px;font-size:14px;border-radius:6px;border:1px solid var(--border);background:var(--s1);color:var(--t1)"/>
       </div>
       <div>
-        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Type</label>
-        <select id="bm-type" style="width:100%;padding:9px 12px;font-size:14px;border-radius:6px;border:1px solid var(--border);background:var(--s1);color:var(--t1)">
-          <option value="">Select type...</option>
-          <option value="Agent">Agent</option>
-          <option value="Investor">Investor</option>
-          <option value="Flipper">Flipper</option>
-          <option value="Landlord">Landlord</option>
-          <option value="Wholesaler">Wholesaler</option>
-          <option value="Fund">Fund</option>
-          <option value="Other">Other</option>
-        </select>
+        <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Type(s)</label>
+        <div id="bm-types-grid" style="display:flex;flex-wrap:wrap;gap:4px"></div>
       </div>
       <div>
         <label style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Status</label>
@@ -3815,7 +3806,7 @@ function renderBuyers(){
     }
     // Search
     if(search){
-      const hay=[b.Name,b.Company,b.Email,b.Phone,b.Type,(b.Tags||[]).join(' '),b['Buy Box'],b.Notes].join(' ').toLowerCase();
+      const hay=[b.Name,b.Company,b.Email,b.Phone,(b.Types||[]).join(' '),(b.Tags||[]).join(' '),b['Buy Box'],b.Notes].join(' ').toLowerCase();
       if(!hay.includes(search)) return false;
     }
     return true;
@@ -3847,7 +3838,7 @@ function renderBuyers(){
 
   list.innerHTML=filtered.map((b,i)=>{
     const realIdx=buyersCache.indexOf(b);
-    const tc=BUYER_TYPE_COLORS[b.Type]||'var(--t3)';
+    const typeBadges=(b.Types||[]).map(t=>{const c=BUYER_TYPE_COLORS[t]||'var(--t3)';return`<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:${c}22;color:${c};border:1px solid ${c}33">${esc(t)}</span>`;}).join('');
     const tags=(b.Tags||[]).map(t=>{
       const c=BUYER_TAG_COLORS[t]||'#6b7280';
       return`<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:${c}22;color:${c};border:1px solid ${c}33">${esc(t)}</span>`;
@@ -3860,7 +3851,7 @@ function renderBuyers(){
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
             <span style="font-size:16px;font-weight:800;color:var(--t1)">${esc(b.Name||'Unnamed')}</span>
             ${b.Company?'<span style="font-size:13px;color:var(--t2)">· '+esc(b.Company)+'</span>':''}
-            ${b.Type?'<span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:'+tc+'22;color:'+tc+';border:1px solid '+tc+'33">'+esc(b.Type)+'</span>':''}
+            ${typeBadges}
             <span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:${statusColor}22;color:${statusColor};border:1px solid ${statusColor}33">${esc(b.Status||'Active')}</span>
           </div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--t2);margin-bottom:6px">
@@ -3897,6 +3888,23 @@ function filterBuyerTag(t){
 }
 
 let _bmSelectedTags=[];
+let _bmSelectedTypes=[];
+const BUYER_TYPES=['Agent','Investor','Flipper','Landlord','Wholesaler','Fund','Other'];
+
+function renderTypesGrid(){
+  document.getElementById('bm-types-grid').innerHTML=BUYER_TYPES.map(t=>{
+    const sel=_bmSelectedTypes.includes(t);
+    const c=BUYER_TYPE_COLORS[t]||'var(--t3)';
+    return`<button type="button" onclick="toggleBuyerType('${esc(t)}')" style="padding:4px 10px;font-size:11px;font-weight:700;border-radius:16px;border:1px solid ${sel?c:'var(--border)'};background:${sel?c+'22':'transparent'};color:${sel?c:'var(--t3)'};cursor:pointer">${sel?'✓ ':''}${esc(t)}</button>`;
+  }).join('');
+}
+
+function toggleBuyerType(t){
+  const i=_bmSelectedTypes.indexOf(t);
+  if(i>=0) _bmSelectedTypes.splice(i,1); else _bmSelectedTypes.push(t);
+  renderTypesGrid();
+}
+
 function openBuyerModal(idx){
   _editingBuyerIdx=idx;
   const b=idx!==null?buyersCache[idx]:null;
@@ -3905,7 +3913,8 @@ function openBuyerModal(idx){
   document.getElementById('bm-company').value=b?b.Company||'':'';
   document.getElementById('bm-email').value=b?b.Email||'':'';
   document.getElementById('bm-phone').value=b?b.Phone||'':'';
-  document.getElementById('bm-type').value=b?b.Type||'':'';
+  _bmSelectedTypes=b?(b.Types||[]).slice():[];
+  renderTypesGrid();
   document.getElementById('bm-status').value=b?b.Status||'Active':'Active';
   document.getElementById('bm-deals').value=b?b['Deals Closed']||'':'';
   document.getElementById('bm-lastcontact').value=b&&b['Last Contact']?b['Last Contact']:'';
@@ -3957,7 +3966,7 @@ async function saveBuyer(){
     Company:(document.getElementById('bm-company').value||'').trim(),
     Email:(document.getElementById('bm-email').value||'').trim(),
     Phone:(document.getElementById('bm-phone').value||'').trim(),
-    Type:document.getElementById('bm-type').value||'',
+    Types:_bmSelectedTypes.length?_bmSelectedTypes:[],
     Status:document.getElementById('bm-status').value||'Active',
     'Buy Box':(document.getElementById('bm-buybox').value||'').trim(),
     Tags:_bmSelectedTags.length?_bmSelectedTags:undefined,
@@ -4002,8 +4011,8 @@ async function deleteBuyer(){
 
 function exportBuyersCSV(){
   if(!buyersCache.length){alert('No buyers to export');return;}
-  const headers=['Name','Company','Email','Phone','Type','Status','Tags','Buy Box','Deals Closed','Last Contact','Notes'];
-  const rows=buyersCache.map(b=>[b.Name,b.Company,b.Email,b.Phone,b.Type,b.Status,(b.Tags||[]).join('; '),b['Buy Box'],b['Deals Closed']||0,b['Last Contact']||'',b.Notes].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(','));
+  const headers=['Name','Company','Email','Phone','Types','Status','Tags','Buy Box','Deals Closed','Last Contact','Notes'];
+  const rows=buyersCache.map(b=>[b.Name,b.Company,b.Email,b.Phone,(b.Types||[]).join('; '),b.Status,(b.Tags||[]).join('; '),b['Buy Box'],b['Deals Closed']||0,b['Last Contact']||'',b.Notes].map(v=>'"'+(v||'').toString().replace(/"/g,'""')+'"').join(','));
   const csv=headers.join(',')+'\n'+rows.join('\n');
   const blob=new Blob([csv],{type:'text/csv'});
   const url=URL.createObjectURL(blob);
