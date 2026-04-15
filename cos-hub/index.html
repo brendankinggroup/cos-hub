@@ -1170,6 +1170,18 @@ function parseCSV(){
       notes:    {exact:['notes'],contains:['notes','comments','remarks','description']},
       agentname:{exact:[],contains:['agent name','listing agent','realtor','broker']},
       agentphone:{exact:[],contains:['agent phone','agent #','realtor phone']},
+      phone:    {exact:['phone'],contains:['owner phone','seller phone','contact phone','phone number','mobile','cell'],excludes:['agent phone']},
+      email:    {exact:['email'],contains:['owner email','seller email','contact email','email address'],excludes:['agent email']},
+      proptype: {exact:[],contains:['property type','prop type','use code','land use','property use']},
+      yearbuilt:{exact:[],contains:['year built','yr built','year']},
+      lotsize:  {exact:[],contains:['lot size','lot area','lot sq','lot acres','land area']},
+      condition:{exact:['condition'],contains:['property condition','condition']},
+      occupancy:{exact:['occupancy'],contains:['occupancy','occupied','vacant']},
+      timeline: {exact:['timeline'],contains:['timeline','time frame','sell by','closing date']},
+      reason:   {exact:['reason'],contains:['reason for selling','motivation','why selling']},
+      hoa:      {exact:['hoa'],contains:['hoa','homeowner association']},
+      pool:     {exact:['pool'],contains:['pool','swimming pool']},
+      mlsremarks:{exact:[],contains:['remarks','mls remarks','public remarks','description']},
     };
     const r=rules[fieldType]||{};
     for(const t of (r.exact||[])){const idx=header.findIndex(h=>h===t);if(idx>=0)return cols[idx]||'';}
@@ -1235,6 +1247,18 @@ function parseCSV(){
       notes, agentName:sg(cols,'agentname')||'',
       agentPhone:sg(cols,'agentphone')||'',
       sqft, beds, baths,
+      phone:sg(cols,'phone')||'',
+      email:sg(cols,'email')||'',
+      propType:sg(cols,'proptype')||'',
+      yearBuilt:sg(cols,'yearbuilt')||'',
+      lotSize:sg(cols,'lotsize')||'',
+      condition:sg(cols,'condition')||'',
+      occupancy:sg(cols,'occupancy')||'',
+      timeline:sg(cols,'timeline')||'',
+      reason:sg(cols,'reason')||'',
+      hoa:sg(cols,'hoa')||'',
+      pool:sg(cols,'pool')||'',
+      mlsRemarks:sg(cols,'mlsremarks')||'',
     };
   }).map(l=>({...l,score:aiScore(l),flags:scoreFlags(l)}));
 
@@ -1310,7 +1334,7 @@ function renderLeads(){
     const isAgent=isMLS&&l.agentName;
     return`<div class="card" style="border:1px solid ${score>=80?'var(--red)44':score>=60?'var(--green)22':'var(--border)'}">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-    <div style="flex:1"><div style="font-size:15px;font-weight:700;color:var(--t1);line-height:1.3">${esc(l.name)}</div><div style="font-size:12px;color:var(--t3);margin-top:3px">${esc(l.address)}</div></div>
+    <div style="flex:1"><div style="font-size:15px;font-weight:700;color:var(--t1);line-height:1.3">${esc(l.name)}</div><div style="font-size:12px;color:var(--t3);margin-top:3px">${esc(l.address)}</div>${l.phone||l.email?'<div style="font-size:11px;margin-top:3px;display:flex;gap:10px">'+(l.phone?'<a href="tel:'+esc(l.phone)+'" style="color:var(--blue);text-decoration:none">📞 '+esc(l.phone)+'</a>':'')+(l.email?'<a href="mailto:'+esc(l.email)+'" style="color:var(--blue);text-decoration:none">✉️ '+esc(l.email)+'</a>':'')+'</div>':''}</div>
     <div style="text-align:center;flex-shrink:0;margin-left:10px"><div class="hdr" style="font-size:32px;color:${sc};line-height:1">${score}</div><div style="font-size:9px;font-weight:700;color:${sc}">${sl}</div></div>
   </div>
   ${(l.beds||l.baths||l.sqft)?`<div style="display:flex;gap:12px;margin-bottom:8px;font-size:11px;color:var(--t2)">${l.beds?`<span>🛏 <b>${l.beds}</b> bed${l.beds!=1?'s':''}</span>`:''}${l.baths?`<span>🚿 <b>${l.baths}</b> bath${l.baths!=1?'s':''}</span>`:''}${l.sqft?`<span>📐 <b>${(+l.sqft).toLocaleString()}</b> sqft</span>`:''}${l.city?`<span style="margin-left:auto;color:var(--t3)">📍 ${esc(l.city)}${l.zip?', '+l.zip:''}</span>`:''}</div>`:''}
@@ -1347,28 +1371,62 @@ function launchCalc(arv,repairs){nav('calc');document.getElementById('c-arv').va
 function keepLead(filteredIdx){
   const l=filteredLeads[filteredIdx];
   if(!l) return;
-  // Load into calculator and scroll there — user must enter ARV and save
+
+  // Store ALL prospect data so saveDeal() can write it to Airtable
+  window._activeLeadData={
+    phone:l.phone||'',
+    email:l.email||'',
+    beds:l.beds||0,
+    baths:l.baths||0,
+    propType:l.propType||'',
+    yearBuilt:l.yearBuilt||'',
+    lotSize:l.lotSize||'',
+    condition:l.condition||'',
+    timeline:l.timeline||'',
+    reason:l.reason||'',
+    askingPrice:l.asking||0,
+    mortgage:l.debt||0,
+    occupancy:l.occupancy||'',
+    hoa:l.hoa||'',
+    pool:l.pool||'',
+    source:l.source||'',
+  };
+
+  // Navigate to calculator
   nav('calc');
+
   // Pre-fill calculator fields
-  const nameEl=document.getElementById('c-seller-name');
-  if(nameEl) nameEl.value=l.name||'';
-  const addrEl=document.getElementById('c-prop-addr');
-  if(addrEl) addrEl.value=l.address||'';
+  const setVal=(id,v)=>{const el=document.getElementById(id);if(el&&v) el.value=v;};
+  setVal('c-seller-name', l.name||'');
+  setVal('c-prop-addr', l.address||'');
   if(l.arv>0) document.getElementById('c-arv').value=l.arv;
-  if(l.sqft>0) document.getElementById('c-sqft').value=l.sqft;
+  if(l.sqft>0) setVal('c-sqft', l.sqft);
+
+  // Repairs
   if(l.repairs>0){
     const sqft=l.sqft||1600;
     const psf=Math.round(l.repairs/sqft);
     document.getElementById('c-psf').value=Math.min(80,Math.max(5,psf));
   }
-  // Set distress type
-  const distressMap={'Pre-Foreclosure':'preforeclosure','Tax Delinquent':'taxdelinquent','Probate':'probate','Vacant':'vacant','Divorce':'divorce','FSBO':'fsbo'};
+
+  // Distress type mapping
+  const distressMap={'pre-foreclosure':'preforeclosure','preforeclosure':'preforeclosure','tax delinquent':'taxdelinquent','taxdelinquent':'taxdelinquent','probate':'probate','vacant':'vacant','divorce':'divorce','fsbo':'fsbo','absentee':'absentee','expired':'mls_expired','code violation':'codeviolation','high equity':'highequity','bankruptcy':'bankruptcy'};
   const distEl=document.getElementById('c-distress');
   if(distEl&&l.distress){
+    const dLower=l.distress.toLowerCase();
     for(const[k,v]of Object.entries(distressMap)){
-      if(l.distress.toLowerCase().includes(k.toLowerCase())){distEl.value=v;break;}
+      if(dLower.includes(k)){distEl.value=v;break;}
     }
   }
+
+  // Set deal type based on agent info
+  if(l.agentName){
+    setDealType('agent');
+    setVal('c-seller-name', l.agentName);
+  }else{
+    setDealType('seller');
+  }
+
   calcMAO();
   window.scrollTo({top:0,behavior:'smooth'});
 }
