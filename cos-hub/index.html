@@ -255,6 +255,16 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     </div>
   </div>
 
+  <!-- Prospect Bulk Actions -->
+  <div id="prospect-bar" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+    <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--t1)">
+      <span id="prospect-count" style="font-weight:700"></span>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button onclick="bulkDropAll()" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer">🗑️ Clear Entire List</button>
+    </div>
+  </div>
+
   <div id="lead-grid" style="display:flex;flex-direction:column;gap:12px">
     <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--t3);font-size:13px">
       Click <b style="color:var(--blue)">"Load Sample Data"</b> to see the analyzer in action, or paste your own CSV list and click <b style="color:var(--green)">"Analyze List"</b>
@@ -1321,14 +1331,86 @@ function renderLeads(){
   <div style="display:flex;gap:5px">
     ${isAgent?`<button onclick="launchAgentScript(${i})" style="flex:1;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px;font-size:11px;font-weight:700">🤝 Agent Script</button>`:`<button onclick="launchSellerScript(${i})" style="flex:1;background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:6px;padding:6px;font-size:11px;font-weight:700">📞 Seller Script</button>`}
     <button onclick="launchCalc(${l.arv||0},${l.repairs||0})" style="flex:1;background:var(--card);color:var(--t2);border:1px solid var(--border);border-radius:6px;padding:6px;font-size:11px;font-weight:700">🧮 Calc</button>
+    <button onclick="keepLead(${i})" style="flex:1;background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:6px;padding:6px;font-size:11px;font-weight:700">✓ Keep</button>
+    <button onclick="dropLead(${i})" style="flex:1;background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:6px;font-size:11px;font-weight:700">✗ Drop</button>
   </div>
 </div>`;
   }).join('');
+  if(typeof updateProspectBar==='function') updateProspectBar();
 }
 
 function launchSellerScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('seller');document.getElementById('sc-name').value=l.name||'Homeowner';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-offer').value=l.asking||Math.round((l.arv||0)*0.65);const lt=document.getElementById('list-type').value;const tm={preforeclosure:'preforeclosure',taxdelinquent:'taxdelinquent',probate:'probate',mls_expired:'mls_expired',mls_active:'mls_active',mls_pricecut:'mls_active',fsbo:'fsbo',vacant:'vacant',divorce:'divorce',highequity:'highequity',taxlien:'codeviolation',absentee:'tiredlandlord',distressed:'distressed',distressed_landvoice:'distressed_landvoice',damage:'damage',senior:'senior',bankruptcy:'bankruptcy',military:'military'};document.getElementById('sc-type').value=tm[lt]||'preforeclosure';genScript();}
 function launchAgentScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('agent');document.getElementById('sc-agent').value=l.agentName||'the listing agent';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-listprice').value=l.asking||0;document.getElementById('sc-dom').value=l.dom||0;const lt=document.getElementById('list-type').value;document.getElementById('sc-type').value=lt.includes('expired')?'mls_expired':'mls_active';genScript();}
 function launchCalc(arv,repairs){nav('calc');document.getElementById('c-arv').value=arv||380000;if(repairs>0){const sqft=+(document.getElementById('c-sqft').value)||1600;const psf=Math.round(repairs/sqft);const clamped=Math.min(80,Math.max(5,psf));document.getElementById('c-psf').value=clamped;const psfLbl=document.getElementById('c-psf-lbl');if(psfLbl)psfLbl.textContent='$'+clamped;['c-r1','c-r2','c-r3','c-r4'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}calcMAO();}
+
+// ── PROSPECT KEEP / DROP ──────────────────────────────────────────────
+function keepLead(filteredIdx){
+  const l=filteredLeads[filteredIdx];
+  if(!l) return;
+  // Load into calculator and scroll there — user must enter ARV and save
+  nav('calc');
+  // Pre-fill calculator fields
+  const nameEl=document.getElementById('c-seller-name');
+  if(nameEl) nameEl.value=l.name||'';
+  const addrEl=document.getElementById('c-prop-addr');
+  if(addrEl) addrEl.value=l.address||'';
+  if(l.arv>0) document.getElementById('c-arv').value=l.arv;
+  if(l.sqft>0) document.getElementById('c-sqft').value=l.sqft;
+  if(l.repairs>0){
+    const sqft=l.sqft||1600;
+    const psf=Math.round(l.repairs/sqft);
+    document.getElementById('c-psf').value=Math.min(80,Math.max(5,psf));
+  }
+  // Set distress type
+  const distressMap={'Pre-Foreclosure':'preforeclosure','Tax Delinquent':'taxdelinquent','Probate':'probate','Vacant':'vacant','Divorce':'divorce','FSBO':'fsbo'};
+  const distEl=document.getElementById('c-distress');
+  if(distEl&&l.distress){
+    for(const[k,v]of Object.entries(distressMap)){
+      if(l.distress.toLowerCase().includes(k.toLowerCase())){distEl.value=v;break;}
+    }
+  }
+  calcMAO();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function dropLead(filteredIdx){
+  const l=filteredLeads[filteredIdx];
+  if(!l) return;
+  // Remove from both arrays
+  const mainIdx=leads.indexOf(l);
+  if(mainIdx>=0) leads.splice(mainIdx,1);
+  filteredLeads.splice(filteredIdx,1);
+  renderLeads();
+  updateProspectBar();
+  saveState();
+}
+
+function bulkDropAll(){
+  if(!leads.length) return;
+  if(!confirm('Clear the entire prospect list? ('+leads.length+' leads will be removed)')) return;
+  leads=[];
+  filteredLeads=[];
+  renderLeads();
+  updateProspectBar();
+  saveState();
+  document.getElementById('list-counter').textContent='No list loaded';
+  document.getElementById('list-counter').style.color='var(--t3)';
+}
+
+function updateProspectBar(){
+  const bar=document.getElementById('prospect-bar');
+  if(!leads.length){
+    bar.style.display='none';
+    return;
+  }
+  bar.style.display='flex';
+  document.getElementById('prospect-count').textContent=filteredLeads.length+' of '+leads.length+' prospects showing';
+}
+
+// Patch renderLeads to update prospect bar
+const _origRenderLeads=renderLeads;
+// We'll call updateProspectBar after each render via a wrapper approach —
+// or simpler: just add the call directly
 
 function setCalcMode(m){
   calcMode=m;
