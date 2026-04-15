@@ -1574,6 +1574,20 @@ function bulkDropAll(){
   deleteProspectsFromAirtable(atIds);
   leads=[];
   filteredLeads=[];
+  // Clear the CSV paste box
+  const csvInput=document.getElementById('csv-input');
+  if(csvInput) csvInput.value='';
+  // Clear file upload
+  const fileInput=document.getElementById('file-upload');
+  if(fileInput) fileInput.value='';
+  // Clear file name display
+  const fileDisplay=document.getElementById('file-name-display');
+  if(fileDisplay){fileDisplay.style.display='none';fileDisplay.textContent='';}
+  // Clear the lead grid
+  const grid=document.getElementById('lead-grid');
+  if(grid) grid.innerHTML='';
+  // Clear localStorage
+  try{localStorage.removeItem('cosLeads');localStorage.removeItem('cosFilteredLeads');}catch(e){}
   renderLeads();
   updateProspectBar();
   saveState();
