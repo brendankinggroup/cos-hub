@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /sell
+Allow: /offer
+Allow: /apply
+Disallow: /index.html
+Disallow: /api/
+
+Sitemap: https://cashofferspecialist.com/sitemap.xml
