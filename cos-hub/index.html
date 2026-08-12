@@ -179,6 +179,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       </div>
       <div style="display:flex;gap:14px;text-align:center">
         <div><div class="dk-num" id="dk-count" style="font-size:30px;color:var(--green);line-height:1">0</div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Priced</div></div>
+        <div><div class="dk-num" id="dk-sent" style="font-size:30px;color:var(--amber);line-height:1">0</div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Sent</div></div>
         <div><div class="dk-num" id="dk-rev" style="font-size:30px;color:var(--blue);line-height:1">$0</div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Potential Rev</div></div>
       </div>
     </div>
@@ -200,14 +201,16 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       </div>
       <div style="border-top:1px solid var(--border);padding-top:10px;font-size:10px;color:var(--t3);line-height:1.6">
         <b style="color:var(--t2)">Fee bands (auto):</b> &lt;$400K → $12K · $400–650K → $15K · $650–900K → $25K · &gt;$900K → $30K<br>
-        <b style="color:var(--t2)">Rehab tiers ($/sqft):</b> 1 Cosmetic $12 · 2 Standard $25 · 3 Heavy $40 · 4 Gut $60
+        <b style="color:var(--t2)">Rehab tiers ($/sqft):</b> 1 Cosmetic $15 · 2 Standard $30 · 3 Heavy $45 · 4 Gut $60
       </div>
     </div>
     <div class="card">
       <span class="label">Paste the Morning Queue</span>
       <div style="font-size:11px;color:var(--t3);margin-bottom:6px">One property per line, comma-separated: <b style="color:var(--t2)">Address, Agent First Name, List Price, DOM, ARV, Sqft, Tier(1-4)</b> — header row optional.</div>
-      <textarea id="dk-input" rows="7" style="font-size:11px;resize:vertical;margin-bottom:8px" placeholder="6864 Armistead St Las Vegas 89149, Patti, 395000, 120, 470000, 1750, 2&#10;3338 Oneida Way Las Vegas 89169, Mike, 564000, 171, 625000, 2100, 2"></textarea>
+      <textarea id="dk-input" rows="7" style="font-size:11px;resize:vertical;margin-bottom:8px" oninput="deskSaveState()" placeholder="6864 Armistead St Las Vegas 89149, Patti, 395000, 120, 470000, 1750, 2&#10;3338 Oneida Way Las Vegas 89169, Mike, 564000, 171, 625000, 2100, 2"></textarea>
+      <input type="file" id="dk-file" accept=".csv,.txt,.xlsx,.xls" style="display:none" onchange="deskFile(this)"/>
       <div style="display:flex;gap:6px">
+        <button onclick="document.getElementById('dk-file').click()" style="flex:1;background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:6px;padding:9px;font-size:12px;font-weight:700">📁 Import File</button>
         <button onclick="deskSample()" style="flex:1;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:9px;font-size:12px;font-weight:700">Sample Queue</button>
         <button onclick="deskPrice()" style="flex:2;background:var(--greendim);color:var(--green);border:1px solid var(--green);border-radius:6px;padding:9px;font-size:12px;font-weight:700">⚡ Price the Queue →</button>
         <button onclick="deskExport()" style="flex:1;background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:9px;font-size:12px;font-weight:700">Export CSV</button>
@@ -219,14 +222,14 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       <thead><tr>
         <th>Property</th><th>List</th><th>DOM</th><th>ARV</th><th>Rehab</th><th>Fee</th>
         <th style="color:var(--blue)">OFFER</th><th>% List</th><th style="color:var(--amber)">BAC $</th>
-        <th style="color:var(--green)">Total Rev</th><th>Packet</th>
+        <th style="color:var(--green)">Total Rev</th><th>Packet</th><th>Sent</th>
       </tr></thead>
       <tbody id="dk-body">
-        <tr><td colspan="11" style="text-align:center;padding:34px;color:var(--t3)">Paste the queue and hit <b style="color:var(--green)">Price the Queue</b> — or load the sample.</td></tr>
+        <tr><td colspan="12" style="text-align:center;padding:34px;color:var(--t3)">Paste the queue and hit <b style="color:var(--green)">Price the Queue</b> — or load the sample.</td></tr>
       </tbody>
     </table>
   </div>
-  <div style="font-size:10px;color:var(--t3);margin-top:8px">📧 = copy the agent cover email · 📋 = copy Transaction Desk field summary (price, EMD, DD, COE, BAC, POF amount). Offers over $750K ARV or unusual situations → Deal Desk before sending.</div>
+  <div style="font-size:10px;color:var(--t3);margin-top:8px">📧 = copy the agent cover email · 📋 = copy Transaction Desk field summary (price, EMD, DD, COE, BAC, POF amount) · 💾 = save to the deal pipeline as “Offer Made” · Sent ✓ = offer went out (tracked per address). Offers over $750K ARV or unusual situations → Deal Desk before sending. The queue and sent-list are remembered on this device.</div>
 </div>
 
 <div id="p-analyzer" class="panel">
@@ -4304,7 +4307,7 @@ function updateBAC(){
 
 // ── OFFER DESK — batch pricing for the daily 25 ──────────────────────────
 function deskFee(arv){return arv>=900000?30000:arv>=650000?25000:arv>=400000?15000:12000;}
-const DESK_TIERS=[12,25,40,60];
+const DESK_TIERS=[15,30,45,60];
 
 function deskParse(){
   const raw=document.getElementById('dk-input').value.trim();
@@ -4333,12 +4336,13 @@ function deskPrice(){
   });
   window._desk={rows,bacPct};
   const body=document.getElementById('dk-body');
-  if(!rows.length){body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:34px;color:var(--t3)">No valid rows — need at least Address, Agent, List, DOM, ARV, Sqft, Tier per line.</td></tr>';}
+  if(!rows.length){body.innerHTML='<tr><td colspan="12" style="text-align:center;padding:34px;color:var(--t3)">No valid rows — need at least Address, Agent, List, DOM, ARV, Sqft, Tier per line.</td></tr>';}
   else{
     body.innerHTML=rows.map((r,i)=>{
       const pl=r.list>0&&r.offer>0?(r.offer/r.list*100).toFixed(1)+'%':'—';
       const bad=r.offer<=0;
-      return`<tr style="${bad?'opacity:.45':''}">
+      const sent=!!_deskSent[deskKey(r.addr)];
+      return`<tr style="${bad||sent?'opacity:.45':''}">
       <td style="color:var(--t1);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis">${r.addr}<div style="font-size:9px;color:var(--t3)">${r.agent} · T${r.tier} · ${Math.round(r.usePct*100)}%</div></td>
       <td>${r.list?fm(r.list):'—'}</td><td>${r.dom||'—'}</td><td>${fm(r.arv)}</td>
       <td style="color:var(--amber)">${fm(r.rehab)}</td><td>${fm(r.fee)}</td>
@@ -4346,12 +4350,160 @@ function deskPrice(){
       <td>${pl}</td><td style="color:var(--amber)">${r.bac?fm(r.bac):'—'}</td>
       <td style="color:var(--green);font-weight:700">${fm(r.totalRev)}</td>
       <td><button onclick="deskCopy(${i},'email',this)" title="Copy cover email" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700">📧</button>
-      <button onclick="deskCopy(${i},'td',this)" title="Copy Transaction Desk fields" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700">📋</button></td></tr>`;
+      <button onclick="deskCopy(${i},'td',this)" title="Copy Transaction Desk fields" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700">📋</button>
+      <button onclick="deskSaveDeal(${i},this)" title="Save to deal pipeline as Offer Made" style="background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700">💾</button></td>
+      <td style="text-align:center"><input type="checkbox" ${sent?'checked':''} onchange="deskSent(${i},this)" title="Mark offer as sent" style="width:15px;height:15px;cursor:pointer;accent-color:var(--amber)"/></td></tr>`;
     }).join('');
   }
+  deskUpdateStats();
+  deskSaveState();
+}
+
+function deskUpdateStats(){
+  const rows=(window._desk||{}).rows||[];
   const good=rows.filter(r=>r.offer>0);
+  const sent=good.filter(r=>_deskSent[deskKey(r.addr)]).length;
   document.getElementById('dk-count').textContent=good.length;
+  document.getElementById('dk-sent').textContent=sent;
   document.getElementById('dk-rev').textContent='$'+Math.round(good.reduce((s,r)=>s+r.totalRev,0)/1000)+'K';
+}
+
+// ── sent tracking (per address, remembered 30 days on this device) ──
+let _deskSent={};
+function deskKey(a){return(a||'').toLowerCase().replace(/\s+/g,' ').trim();}
+function deskSent(i,el){
+  const d=window._desk;if(!d)return;
+  const r=d.rows[i];if(!r)return;
+  const k=deskKey(r.addr);
+  if(el.checked){_deskSent[k]=new Date().toISOString().slice(0,10);incKPI('offer');}
+  else{delete _deskSent[k];decKPI('offer');}
+  const tr=el.closest('tr');
+  if(tr)tr.style.opacity=(el.checked||r.offer<=0)?'.45':'';
+  deskUpdateStats();
+  deskSaveState();
+}
+
+// ── persistence — queue, levers, and sent-list survive refresh ──
+function deskSaveState(){
+  try{
+    localStorage.setItem('cosOfferDesk',JSON.stringify({
+      input:document.getElementById('dk-input').value,
+      pct:document.getElementById('dk-pct').value,
+      pct2:document.getElementById('dk-pct2').value,
+      bacOn:document.getElementById('dk-bac-on').checked,
+      bac:document.getElementById('dk-bac').value,
+      sent:_deskSent
+    }));
+  }catch(e){}
+}
+function deskLoadState(){
+  try{
+    const s=JSON.parse(localStorage.getItem('cosOfferDesk'));
+    if(!s)return;
+    const cutoff=new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+    _deskSent={};
+    Object.entries(s.sent||{}).forEach(([k,v])=>{if(typeof v==='string'&&v>=cutoff)_deskSent[k]=v;});
+    if(s.pct)document.getElementById('dk-pct').value=s.pct;
+    if(s.pct2)document.getElementById('dk-pct2').value=s.pct2;
+    if(typeof s.bacOn==='boolean')document.getElementById('dk-bac-on').checked=s.bacOn;
+    if(s.bac)document.getElementById('dk-bac').value=s.bac;
+    if(s.input){document.getElementById('dk-input').value=s.input;deskPrice();}
+  }catch(e){}
+}
+
+// ── push a priced row into Saved Deals (Airtable pipeline) ──
+async function deskSaveDeal(i,btn){
+  const d=window._desk;if(!d)return;
+  const r=d.rows[i];if(!r)return;
+  if(r.offer<=0){alert('This one is flagged ESCALATE — price it manually in the Calculator before saving.');return;}
+  const dupe=savedDealsCache.some(x=>deskKey(x.address)===deskKey(r.addr));
+  if(dupe){btn.textContent='✓';btn.title='Already in the pipeline';setTimeout(()=>{btn.textContent='💾';},2000);return;}
+  const o=btn.textContent;btn.textContent='…';btn.disabled=true;
+  const fields={
+    'Address':r.addr,'ARV':r.arv,'Repairs':r.rehab,'MAO':r.offer,'Fee':r.fee,
+    'SqFt':r.sqft,'Offer %':Math.round(r.usePct*100),'Price Offered':r.offer,
+    'Deal Type':'MLS / Agent','Pipeline':'Offer Made','Status':'New',
+    'Notes':`Offer Desk · Agent: ${r.agent} · List ${r.list?fm(r.list):'—'} · DOM ${r.dom||'—'} · Tier ${r.tier} · BAC ${r.bac?fm(r.bac):'none'} · Total rev ${fm(r.totalRev)}`,
+    'Saved At':new Date().toISOString()
+  };
+  try{
+    const resp=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{fields}]})});
+    const json=await resp.json();
+    if(json.records&&json.records.length){
+      btn.textContent='✓';btn.style.borderColor='var(--green)';btn.style.color='var(--green)';
+      loadSavedDeals();
+    }else{
+      console.error('Desk save error:',json);
+      btn.textContent='✗';btn.style.color='var(--red)';
+      setTimeout(()=>{btn.textContent=o;btn.style.color='';btn.style.borderColor='';},2500);
+    }
+  }catch(e){
+    console.error('Desk save failed:',e);
+    btn.textContent='✗';btn.style.color='var(--red)';
+    setTimeout(()=>{btn.textContent=o;btn.style.color='';btn.style.borderColor='';},2500);
+  }
+  btn.disabled=false;
+}
+
+// ── CSV / Excel import for the queue (reuses the SheetJS loader) ──
+function deskFile(input){
+  const file=input.files[0];if(!file)return;
+  const isExcel=/\.xlsx?$|\.xls$/i.test(file.name);
+  const reader=new FileReader();
+  if(isExcel){
+    reader.onload=e=>{
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        deskIngest(XLSX.utils.sheet_to_csv(ws));
+      }catch(err){alert('Could not read that file: '+err.message);}
+    };
+    reader.readAsArrayBuffer(file);
+  }else{
+    reader.onload=e=>deskIngest(e.target.result);
+    reader.readAsText(file);
+  }
+  input.value='';
+}
+function deskCSVLine(line){
+  const out=[];let cur='',q=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){if(q&&line[i+1]==='"'){cur+='"';i++;}else q=!q;}
+    else if(ch===','&&!q){out.push(cur);cur='';}
+    else cur+=ch;
+  }
+  out.push(cur);
+  return out.map(s=>s.trim());
+}
+function deskIngest(text){
+  const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+  if(!lines.length){alert('That file is empty.');return;}
+  const hdr=deskCSVLine(lines[0]).map(h=>h.toLowerCase());
+  const findCol=pats=>hdr.findIndex(h=>pats.some(p=>h.includes(p)));
+  let idx={
+    addr:findCol(['address','property']),
+    agent:findCol(['agent']),
+    list:findCol(['list price','list','asking']),
+    dom:findCol(['dom','days on']),
+    arv:findCol(['arv','after repair']),
+    sqft:findCol(['sqft','sq ft','square']),
+    tier:findCol(['tier','condition','reno'])
+  };
+  const hasHeader=idx.addr>-1&&idx.arv>-1;
+  const dataLines=hasHeader?lines.slice(1):lines;
+  if(!hasHeader)idx={addr:0,agent:1,list:2,dom:3,arv:4,sqft:5,tier:6};
+  const rows=dataLines.map(l=>{
+    const c=deskCSVLine(l);
+    const g=i=>i>-1?(c[i]||''):'';
+    const num=i=>g(i).replace(/[^0-9.]/g,'');
+    const addr=g(idx.addr).replace(/,/g,' ').replace(/\s+/g,' ').trim();
+    if(!addr||!num(idx.arv))return'';
+    return[addr,g(idx.agent).replace(/,/g,' ')||'there',num(idx.list),num(idx.dom),num(idx.arv),num(idx.sqft),num(idx.tier)||'2'].join(', ');
+  }).filter(Boolean);
+  if(!rows.length){alert('No usable rows found — the file needs at least Address and ARV columns.');return;}
+  document.getElementById('dk-input').value=rows.join('\n');
+  deskPrice();
 }
 
 function deskCopy(i,kind,btn){
@@ -4389,6 +4541,7 @@ function deskExport(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cos-offer-desk.csv';a.click();
 }
 
+deskLoadState();
 (function(){const h=(location.hash||'').replace('#','');nav(['home','desk','analyzer','calc','scripts','leads','saved','agents'].includes(h)?h:'home');})();
 
 // ── BUYERS LIST / DISPOSITION CRM ────────────────────────────────────
