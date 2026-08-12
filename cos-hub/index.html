@@ -634,7 +634,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Selling Costs <span style="font-size:11px;opacity:.6">(6.5%)</span></div><div class="hdr" id="c-selling-costs" style="font-size:26px;color:var(--amber)">—</div></div>
       <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Buyer All-In</div><div class="hdr" id="c-allin" style="font-size:26px;color:var(--t1)">$247K</div><div style="font-size:11px;color:var(--t3);margin-top:3px">Dispo + purch + rehab + sell</div></div>
       <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Est. Profit</div><div class="hdr" id="c-equity" style="font-size:26px;color:var(--green)">$132K</div><div style="font-size:11px;color:var(--t3);margin-top:3px">ARV − All-In</div></div>
-      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Straight ROI</div><div class="hdr" id="c-roi" style="font-size:26px;color:var(--amber)">—</div><div style="font-size:11px;color:var(--t3);margin-top:3px">Profit ÷ All-In</div></div>
+      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Straight ROI</div><div class="hdr" id="c-roi" style="font-size:26px;color:var(--amber)">—</div><div style="font-size:11px;color:var(--t3);margin-top:3px">Profit ÷ All-In — based on your offer price (Price Offered if set, otherwise MAO)</div></div>
       <div class="card" style="border:1px solid var(--green)33"><div style="font-size:13px;color:var(--green);margin-bottom:4px;font-weight:700">Your Fee</div><div class="hdr" id="c-myfee" style="font-size:26px;color:var(--green)">$13K</div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
@@ -2056,7 +2056,50 @@ I have paperwork ready to go today. If we can agree on the number, I can have a 
 What would it take to make this a yes right now?`
   };
 
-  const scriptText=toneScripts[tone]||toneScripts.direct;
+  // Agent-facing variants when the deal type toggle is MLS/Agent — BAC terms included
+  let agentScripts=null;
+  if(currentDealType==='agent'){
+    const vBacOn=(document.getElementById('c-bac-on')||{checked:true}).checked;
+    const vBacPct=+(document.getElementById('c-bac-pct')||{value:3}).value||3;
+    const vPrice=contractPrice>0?contractPrice:mao;
+    const vEmd=vPrice>=500000?5000:2500;
+    const bacBullet=vBacOn?`\n→  BAC:          ${vBacPct}% buyer's-broker comp in the RPA — asked of the seller, your listing side untouched`:'';
+    const bacFlex=vBacOn?` And if your seller counters on price, I can give on the BAC before I move my number — the gap closes without costing them more.`:'';
+    const agentName=sellerName==='[Seller Name]'?'[Agent Name]':sellerName;
+    agentScripts={
+      direct:`${agentName}, Brendan King — cash buyer here in the valley. About your listing at ${propAddr}:
+
+→  Cash offer:   ${fm(vPrice)} — no financing, no appraisal
+→  Close:        ${closeDays} days, or your seller's date
+→  As-is:        7-day due diligence, no repair requests coming
+→  EMD:          ${fm(vEmd)} to escrow within 2 business days${bacBullet}
+
+Proof of funds is ready, and I'll have the signed RPA to you within 24 hours of a showing.${bacFlex}
+
+Can we get on the calendar this week?`,
+      empathy:`${agentName}, Brendan King — I'm a cash buyer here in the valley, and I've been watching ${propAddr}.
+
+I know how much work goes into keeping a listing alive — showings, feedback calls, price conversations with the seller. What I can offer you is an ending: a clean, certain close.
+
+→  ${fm(vPrice)} cash — no financing, no appraisal, no inspection outs
+→  ${closeDays}-day close, or whatever date suits your seller
+→  As-is — I'm not coming back after due diligence with a repair list${bacBullet}
+
+I know it may be under what your seller had in mind. But a signed cash contract in hand often beats another month of carrying costs and open houses.${bacFlex}
+
+What's the best way to get this in front of them?`,
+      urgent:`${agentName}, Brendan King — cash buyer. I'll keep this quick because I'm placing offers this week and ${propAddr} is at the top of my list.
+
+→  ${fm(vPrice)} cash — firm, POF in hand
+→  ${closeDays}-day close — or faster if your seller needs it
+→  As-is, no contingencies, ${fm(vEmd)} EMD in 2 business days${bacBullet}
+
+This offer is good for 7 days — after that my capital moves to the next property.${bacFlex}
+
+I can have the signed RPA in your inbox within the hour. Do we have a deal to present?`
+    };
+  }
+  const scriptText=(agentScripts||toneScripts)[tone]||(agentScripts||toneScripts).direct;
   const scriptEl=document.getElementById('c-verbal-script');
   if(scriptEl) scriptEl.textContent=scriptText;
 
@@ -2083,13 +2126,13 @@ const SCRIPTS={
     email:(n,a,o,d)=>`Subject: Private Cash Offer — ${a}\n\nHi ${n},\n\nI'm a local investor specializing in pre-foreclosure situations. I can offer ${fm(o)} cash, close in ${d} days, completely as-is and confidential.\n\nIf timing is a concern, let's talk today.\n\n[Your Name] | [Phone]`,
     seq:(n,a,o,d)=>`PRE-FORECLOSURE FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call + text 30 min later if no answer\nDAY 1: "The NOD clock is ticking. I can stop this today. Ready the moment you say go. [#]"\nDAY 3: Call #2 — reference NOD deadline\nDAY 5: Yellow letter — handwritten envelope\nDAY 10: Final urgency call — "I've held this offer. Can't hold past this week."\nDAY 14: Last text — "${fm(o)} for 48 more hours. After that I move on."\nDAY 30+: Monthly nurture until resolved`
   },
-  mls_active:{title:"Active MLS Listing — Agent Contact",desc:"Contact the LISTING AGENT — not the seller directly. Be fast, professional, and make it easy to say yes.",
-    cold:(n,a,o,d)=>`Hi, is this [Agent Name]?\n\n[Agent Name], I'm [Your Name] — local Las Vegas cash buyer. I came across your listing at ${a} and want to move fast.\n\nI can offer ${fm(o)} cash, close in ${d} days, no financing, no inspection contingency. As-is.\n\nCash is cash — this one won't fall through. Can we set up a showing this week? If it checks out I'll have an LOI to you within 24 hours.`,
-    vm:(n,a,o,d)=>`Hi [Agent Name], [Name] here — cash buyer. Your listing at ${a} — ${fm(o)}, close ${d} days, no contingencies. I move fast. Call [#].`,
-    sms:(n,a,o,d)=>`Hi [Agent Name], [Name] — cash buyer for ${a}. ${fm(o)}, close ${d}d, no contingencies. Ready to move. Call [#]`,
-    letter:(n,a,o,d)=>`Dear [Agent Name],\n\nCash offer for your listing at ${a}:\n• Price: ${fm(o)}\n• Close in ${d} days\n• No financing or inspection contingency\n• As-is purchase\n\nProof of funds available. Ready to schedule a showing immediately.\n\n[Your Name] | [Phone]`,
-    email:(n,a,o,d)=>`Subject: Cash Offer — ${a} — ${fm(o)} — ${d}-Day Close\n\nHi [Agent Name],\n\nI'd like to submit an offer on your listing at ${a}.\n\n• Price: ${fm(o)} cash\n• Close: ${d} days from acceptance\n• No financing contingency\n• No inspection contingency — as-is\n\nProof of funds available on request.\n\n[Your Name] | [Phone]`,
-    seq:(n,a,o,d)=>`AGENT FOLLOW-UP — [Agent Name] | ${a}\n\nDAY 0: Call + Email same day. Goal: get showing.\nDAY 2: "Any feedback on my offer? I can adjust terms. Ready to move fast."\nDAY 7: Call #2 — "Any new offers? I can sharpen my number if there's a gap."\nDAY 14: If still listed — resubmit with adjusted terms\nDAY 30: If expired — switch to expired listing sequence immediately`
+  mls_active:{title:"Active MLS Listing — Agent Contact",desc:"Contact the LISTING AGENT — not the seller directly. Lead with certainty, protect their commission, and put your BAC ask in the RPA.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}?\n\n${n}, Brendan King — cash buyer here in the valley. I'm calling about your listing at ${a} — I'd like to move on it this week.\n\nHere's the offer so you can take it straight to your seller:\n\n• ${fm(o)} cash — no financing, no appraisal\n• Close in ${d} days, or on your seller's date\n• As-is — 7-day due diligence, no repair requests coming\n• EMD to escrow within 2 business days of acceptance\n• I'm asking ${hubBac()}% buyer's-broker compensation in the RPA — that's asked of the seller, your listing side stays exactly as it is\n\nAnd if your seller counters on price, I've got room to move the BAC before I move my number — so the gap can close without costing them more.\n\nCan we set up a showing this week? I'll have the signed RPA and proof of funds to you within 24 hours.`,
+    vm:(n,a,o,d)=>`Hi ${n}, Brendan King — cash buyer. Your listing at ${a}: ${fm(o)} cash, ${d}-day close, as-is, no contingencies. BAC asked of the seller in the RPA — your side's untouched. POF ready. (725) 226-1303.`,
+    sms:(n,a,o,d)=>`Hi ${n}, Brendan King — cash buyer for ${a}. ${fm(o)} cash, close ${d}d, as-is, no contingencies. ${hubBac()}% BAC in the RPA, your listing side untouched. POF ready. (725) 226-1303`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nCash offer for your listing at ${a}:\n\n• Price: ${fm(o)} — cash, no financing or appraisal contingency\n• Close: ${d} days from acceptance, or your seller's preferred date\n• As-is — 7-day due diligence, no repair requests\n• EMD to escrow within 2 business days\n• Buyer's-broker compensation: ${hubBac()}% written into the RPA, asked of the seller — your listing commission is fully protected\n\nProof of funds available on request. Ready to schedule a showing immediately.\n\nBrendan King · Cash Offer Specialist\n(725) 226-1303 · cashofferspecialist.com`,
+    email:(n,a,o,d)=>`Subject: Cash Offer — ${a} — ${fm(o)} — ${d}-Day Close\n\nHi ${n},\n\nI'd like to submit an offer on your listing at ${a}:\n\n• Price: ${fm(o)} cash\n• Close: ${d} days from acceptance, or your seller's date\n• No financing or appraisal contingency\n• As-is — 7-day due diligence, no repair requests coming\n• EMD to escrow within 2 business days\n• Buyer's-broker compensation: ${hubBac()}% — written into the offer, asked of the seller. Your listing side is untouched.\n\nProof of funds attached. If the number's close, call me — there's often room once we've seen the property, and I can flex the BAC on a counter before I move price.\n\nBrendan King · Cash Offer Specialist\n(725) 226-1303 · cashofferspecialist.com`,
+    seq:(n,a,o,d)=>`AGENT FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call + email same day. Goal: showing on the calendar. Lead with cash + your BAC ask in the RPA.\nDAY 2: "Any feedback from your seller? I can adjust terms — and I can move the BAC before I move price."\nDAY 7: Call #2 — "Any new offers? If there's a gap, tell me the number that gets it signed."\nDAY 14: If still listed — resubmit with adjusted terms (price or BAC, not both)\nDAY 30: If expired — switch to the expired-agent script immediately: same offer, new angle`
   },
   mls_expired:{title:"Expired MLS Listing",desc:"Call within 24 HOURS of expiration. They're maximally frustrated and open to a new approach right now.",
     cold:(n,a,o,d)=>`Hi, is this ${n}?\n\n${n}, I'm [Your Name] — local Las Vegas cash buyer. I saw the listing on ${a} just came off the market and wanted to reach out right away — not as an agent, but as a direct buyer.\n\nHere's what I can offer: certainty. Cash, close in ${d} days, no more showings, no financing fallthrough.\n\nI could offer around ${fm(o)}. Would 10 minutes make sense?`,
@@ -2099,13 +2142,21 @@ const SCRIPTS={
     email:(n,a,o,d)=>`Subject: Your Listing Expired — Direct Cash Offer Ready\n\nHi ${n},\n\nBefore you decide to relist, I'd like to present a cash offer for ${a}.\n\n• ${fm(o)} cash | Close in ${d} days | As-is | Zero commissions\n\nI'd love 10 minutes to compare what relisting will net vs. this offer.\n\n[Your Name] | [Phone]`,
     seq:(n,a,o,d)=>`EXPIRED LISTING FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call immediately (within 24h) + text 20 min later\nDAY 1: Email with net proceeds comparison\nDAY 3: Letter to property address\nDAY 7: "Before you sign a new listing agreement — have you run the numbers?"\nDAY 14: "My offer stays open until you relist. ${fm(o)}, close when ready."\nDAY 30+: If relisted, monitor and approach agent`
   },
-  mls_pricecut:{title:"Price Reduced — Active MLS",desc:"Multiple price cuts = seller softening fast. Go through the listing agent. Reference the price history.",
-    cold:(n,a,o,d)=>`Hi, [Agent Name]? I'm [Your Name] — LV cash buyer. I've been watching ${a} — the price adjustments caught my eye. I'm ready to move with a clean cash offer: ${fm(o)}, close ${d} days, no contingencies, no inspection renegotiation. Can we get a showing this week?`,
-    vm:(n,a,o,d)=>`Hi [Agent Name], [Name] — cash buyer. Noticed the price reductions on ${a}. ${fm(o)}, close ${d}d, no contingencies. Ready this week. [#]`,
-    sms:(n,a,o,d)=>`Hi [Agent Name], [Name] — cash buyer for ${a}. Price cuts caught my eye. ${fm(o)}, close ${d}d, no contingencies. Call [#]`,
-    letter:(n,a,o,d)=>`Dear [Agent Name],\n\nThe price adjustments on ${a} tell me there's an opportunity here.\n\nCash offer: ${fm(o)} | Close: ${d} days | No contingencies | As-is\n\nReady to move this week.\n\n[Your Name] | [Phone]`,
-    email:(n,a,o,d)=>`Subject: Cash Offer — ${a} (Price History Noted)\n\nHi [Agent Name],\n\nI've been following ${a} and I'm ready to make a clean cash offer.\n\n• ${fm(o)} cash | ${d}-day close | No contingencies | As-is\n\nCan we schedule a showing?\n\n[Your Name] | [Phone]`,
-    seq:(n,a,o,d)=>`PRICE-REDUCED LISTING FOLLOW-UP\nAgent: [Agent Name] | ${a}\n\nDAY 0: Call agent + email offer summary\nDAY 3: "Any movement? Still ready — cash, ${d}-day close."\nDAY 7: "If seller would consider ${fm(o*.97)}, I can close even faster."\nDAY 14: Monitor — if more cuts, call immediately\nDAY 30: If expired, switch to expired script`
+  mls_expired_agent:{title:"Expired Listing — Former Agent",desc:"The listing died but the relationship didn't. Give the agent a way to still get paid on a property they already worked.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}?\n\n${n}, Brendan King — cash buyer here in the valley. Your listing at ${a} just came off the market, and I know you put real work into that one. Here's a way it still pays you.\n\nI'll buy it direct: ${fm(o)} cash, close in ${d} days, as-is, no contingencies. If you reconnect with your seller and bring them this offer, I'll write ${hubBac()}% buyer's-broker compensation into the RPA — asked of the seller. And if you're re-listing them instead, I'll submit through you either way, so your side is protected no matter how it plays.\n\nThat's a closed deal on a property that already cost you marketing dollars. Worth a call to your seller?`,
+    vm:(n,a,o,d)=>`Hi ${n}, Brendan King — cash buyer. Your listing at ${a} just expired — I'll buy it direct: ${fm(o)} cash, ${d}-day close, as-is. Bring your seller this offer and I'll write ${hubBac()}% BAC into the RPA. Turn a dead listing into a closed deal. (725) 226-1303.`,
+    sms:(n,a,o,d)=>`Hi ${n}, Brendan King — cash buyer. Your listing at ${a} expired — I'll buy direct: ${fm(o)} cash, ${d}d close, as-is. Reconnect your seller + I'll put ${hubBac()}% BAC in the RPA. Dead listing → closed deal. (725) 226-1303`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nYour listing at ${a} recently expired. Before that seller relists with someone else — here's a way the work you already did still pays:\n\n• I'll buy it direct: ${fm(o)} cash\n• Close in ${d} days — as-is, no financing, no contingencies\n• Bring your seller this offer and I'll write ${hubBac()}% buyer's-broker compensation into the RPA, asked of the seller\n• Re-listing them instead? I'll submit through you either way\n\nA closed transaction beats an expired one on your production report. Proof of funds ready.\n\nBrendan King · Cash Offer Specialist\n(725) 226-1303 · cashofferspecialist.com`,
+    email:(n,a,o,d)=>`Subject: ${a} expired — a way it still closes (and still pays you)\n\nHi ${n},\n\nI saw your listing at ${a} came off the market. I'm a direct cash buyer, and I'd still like to buy it:\n\n• ${fm(o)} cash | ${d}-day close | As-is | No financing, appraisal, or inspection contingency\n• EMD to escrow within 2 business days\n• Buyer's-broker compensation: ${hubBac()}% written into the RPA, asked of the seller — you get paid for reconnecting them\n\nYou already know this seller and this property. One phone call from you could turn an expired listing into a closed deal this month. If they'd rather relist, I'll submit the offer through you either way — your relationship, your commission.\n\nProof of funds attached.\n\nBrendan King · Cash Offer Specialist\n(725) 226-1303 · cashofferspecialist.com`,
+    seq:(n,a,o,d)=>`EXPIRED — FORMER AGENT FOLLOW-UP — ${n} | ${a}\n\nDAY 0: Call within 24h of expiry — "turn your dead listing into a closed deal" + email offer\nDAY 2: Text — "Reached your seller yet? Offer stands: ${fm(o)} cash, BAC in the RPA for you."\nDAY 7: "Seller relisting or open to the direct sale? Either way I'll work through you."\nDAY 14: If relisted with same agent — submit through them same day\nDAY 21: If relisted elsewhere — switch to the active-listing script with the new agent\nDAY 30: If still off-market — go direct to owner with the seller expired script`
+  },
+  mls_pricecut:{title:"Price Reduced — Active MLS",desc:"Multiple price cuts = seller softening fast. Go through the listing agent, reference the price history, and give them a certain close to sell.",
+    cold:(n,a,o,d)=>`Hi, is this ${n}?\n\n${n}, Brendan King — cash buyer here in the valley. I've been watching ${a} — the price adjustments caught my eye, and I think your seller's ready for certainty.\n\nHere's my offer:\n\n• ${fm(o)} cash — no financing, no appraisal\n• Close in ${d} days, or your seller's date\n• As-is — no inspection renegotiation, no repair requests\n• EMD to escrow in 2 business days\n• ${hubBac()}% buyer's-broker comp asked of the seller in the RPA — your listing side stays whole\n\nAfter the cuts they've already taken, a signed cash close might beat chasing another retail buyer. And if they counter, I can give on the BAC before I touch price. Showing this week?`,
+    vm:(n,a,o,d)=>`Hi ${n}, Brendan King — cash buyer. The price reductions on ${a} caught my eye. ${fm(o)} cash, ${d}-day close, as-is, no contingencies, ${hubBac()}% BAC in the RPA. Ready this week. (725) 226-1303.`,
+    sms:(n,a,o,d)=>`Hi ${n}, Brendan King — cash buyer for ${a}. Saw the price cuts. ${fm(o)} cash, close ${d}d, as-is, no contingencies. ${hubBac()}% BAC in RPA, your side untouched. (725) 226-1303`,
+    letter:(n,a,o,d)=>`Dear ${n},\n\nThe price adjustments on ${a} tell me your seller wants this done. Here's a certain close:\n\n• Cash: ${fm(o)} — no financing or appraisal contingency\n• Close: ${d} days, or your seller's date\n• As-is — no repair requests\n• Buyer's-broker compensation: ${hubBac()}% in the RPA, asked of the seller — your listing commission fully protected\n\nProof of funds ready. One showing and I'll have the signed RPA to you within 24 hours.\n\nBrendan King · Cash Offer Specialist\n(725) 226-1303 · cashofferspecialist.com`,
+    email:(n,a,o,d)=>`Subject: Cash Offer — ${a} — ${fm(o)}, ${d}-Day Close (Price History Noted)\n\nHi ${n},\n\nI've been following ${a} through the price adjustments, and I'm ready with a clean cash offer:\n\n• ${fm(o)} cash | ${d}-day close | As-is | No financing, appraisal, or inspection contingency\n• EMD to escrow within 2 business days\n• Buyer's-broker compensation: ${hubBac()}% — written into the offer, asked of the seller. Your listing side is untouched.\n\nAfter the reductions your seller has already absorbed, certainty may be worth more than another month on market. If the number's close, call me — I can flex the BAC on a counter before I move price.\n\nProof of funds attached.\n\nBrendan King · Cash Offer Specialist\n(725) 226-1303 · cashofferspecialist.com`,
+    seq:(n,a,o,d)=>`PRICE-REDUCED LISTING FOLLOW-UP\nAgent: ${n} | ${a}\n\nDAY 0: Call agent + email offer summary (cash, terms, BAC in RPA)\nDAY 3: "Any movement? Still ready — cash, ${d}-day close. I can move BAC before price."\nDAY 7: "If your seller would consider ${fm(o*.97)}, I can close even faster."\nDAY 14: Monitor — another price cut, call within the hour\nDAY 30: If expired, switch to the expired-agent script — same offer, new angle`
   },
   taxdelinquent:{title:"Tax Delinquent",desc:"'We pay ALL back taxes at closing' is your single most powerful line on this lead type.",
     cold:(n,a,o,d)=>`Hi, is this ${n}? I'm [Your Name] — local LV investor. I pay off ALL the back taxes and penalties at closing, then give you cash for the property. You walk away completely clean — no tax debt, no liens.\n\nI could offer around ${fm(o)} for ${a}. That wipes the taxes and puts cash in your pocket in ${d} days. Worth a quick call?`,
@@ -2319,6 +2370,9 @@ function setSTab(t){
   if(window._scripts)document.getElementById('sc-content').textContent=window._scripts[t]||'(Not available for this type)';
 }
 
+// Hub-wide BAC % — reads the Calculator's BAC input so scripts stay in sync with pricing
+function hubBac(){return +(document.getElementById('c-bac-pct')||{value:3}).value||3;}
+
 function genScript(){
   const type=document.getElementById('sc-type').value;
   const n=document.getElementById('sc-name').value||'Homeowner';
@@ -2337,7 +2391,7 @@ function genScript(){
   document.getElementById('sc-banner-desc').textContent=def.desc;
   let scripts={};
   if(contactMode==='agent'){
-    const at=scriptType==='mls_active'?'mls_active':scriptType==='mls_expired'?'mls_expired':scriptType==='mls_pricecut'?'mls_pricecut':'mls_active';
+    const at=scriptType==='mls_active'?'mls_active':scriptType==='mls_expired'?'mls_expired_agent':scriptType==='mls_pricecut'?'mls_pricecut':'mls_active';
     const ad=SCRIPTS[at]||SCRIPTS.mls_active;
     scripts={cold:ad.cold(agentName,a,o,d),vm:ad.vm(agentName,a,o,d),sms:ad.sms(agentName,a,o,d),letter:ad.letter(agentName,a,o,d),email:ad.email(agentName,a,o,d),seq:ad.seq(agentName,a,listprice,dom)};
     document.getElementById('sc-banner-title').textContent='Agent Contact: '+def.title;
@@ -4842,6 +4896,65 @@ function openOutreach(dealIdx){
   const offer=fm(d.mao);
   const days=d.closeDays||14;
   const distress=d.distress||'';
+
+  // ── AGENT / MLS DEALS — outreach goes to the listing agent, not the seller ──
+  if(d.dealType==='MLS / Agent'){
+    const agentMatch=/Agent:\s*([^·\n]+)/.exec(d.notes||'');
+    const agentName=(agentMatch?agentMatch[1].trim():'')||d.seller||'[Agent Name]';
+    const agentFirst=agentName.split(' ')[0]||'there';
+    const price=d.priceOffered>0?d.priceOffered:d.mao;
+    const emd=price>=500000?5000:2500;
+    const bacPct=hubBac();
+    const noBac=/BAC none/.test(d.notes||'');
+    const bacBullet=noBac?'':`\n• Buyer's-broker compensation: ${bacPct}% — written into the offer, asked of the seller. Your listing side is untouched.`;
+    const bacFlex=noBac?'':` If the number's close, call me — I can flex the BAC on a counter before I move price.`;
+    _outreachTemplates={
+      offer:{
+        subject:`Signed Cash Offer + POF — ${addr} — ${fm(price)}`,
+        body:`Hi ${agentFirst},
+
+I'd like to submit an offer on your listing at ${addr}:
+
+• Price: ${fm(price)} — cash, no financing or appraisal contingency
+• Close: ${days} days from acceptance, or your seller's preferred date
+• As-is — 7-day due diligence, no repair requests coming
+• EMD: ${fm(emd)} to escrow within 2 business days of acceptance${bacBullet}
+
+Proof of funds attached. I can have the fully signed RPA to you within 24 hours.${bacFlex}
+
+Brendan King · Cash Offer Specialist
+(725) 226-1303 · cashofferspecialist.com`
+      },
+      appt:{
+        subject:`Showing request — ${addr}`,
+        body:`Hi ${agentFirst},
+
+I'm a local cash buyer preparing an offer on your listing at ${addr}, and I'd like to walk the property this week — 15 minutes is all I need.
+
+To give you a sense of where I'm headed: cash, around ${fm(price)}, ${days}-day close, as-is with no repair requests${noBac?'':`, and ${bacPct}% buyer's-broker compensation written into the RPA (asked of the seller — your listing side stays whole)`}.
+
+Would any of these work?
+
+• [Day/Time Option 1]
+• [Day/Time Option 2]
+• [Day/Time Option 3]
+
+I move fast after a showing — signed RPA and POF within 24 hours.
+
+Brendan King · Cash Offer Specialist
+(725) 226-1303 · cashofferspecialist.com`
+      },
+      text:{
+        subject:'',
+        body:`Hi ${agentFirst}, Brendan King — cash buyer for ${addr}. ${fm(price)} cash, ${days}-day close, as-is, no contingencies${noBac?'':`, ${bacPct}% BAC in the RPA (your side untouched)`}. POF ready. Worth a quick call? (725) 226-1303`
+      }
+    };
+    document.getElementById('outreach-deal-label').textContent=addr+' · Agent: '+agentName;
+    switchOutreachTab('offer');
+    document.getElementById('outreach-modal').style.display='block';
+    document.body.style.overflow='hidden';
+    return;
+  }
 
   // Empathy line based on distress
   const empathyMap={
