@@ -1,9 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>COS Hub — Wholesale Deal Tools</title>
+<meta name="description" content="Internal wholesale operations hub for Cash Offer Specialist — Las Vegas.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23061020%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2222%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2216%22%20fill%3D%22%234f8ef7%22%20text-anchor%3D%22middle%22%3EC%3C%2Ftext%3E%3C%2Fsvg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -70,6 +73,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <div style="font-size:11px;color:var(--t3);letter-spacing:.1em;margin-top:-2px">WHOLESALE OPERATIONS · LAS VEGAS</div>
   </div>
   <div style="display:flex;gap:5px;flex-wrap:wrap">
+    <button onclick="nav('desk')" id="n-desk" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">⚡ OFFER DESK</button>
     <button onclick="nav('analyzer')" id="n-analyzer" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue)">📊 DEAL ANALYZER</button>
     <button onclick="nav('saved')" id="n-saved" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">💾 SAVED</button>
     <button onclick="nav('agents')" id="n-agents" style="padding:10px 20px;font-size:13px;font-weight:700;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t3)">🤝 BUYERS</button>
@@ -97,6 +101,11 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <div style="font-size:16px;color:var(--t1);line-height:1.5" id="home-joke"></div>
   </div>
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:20px">
+    <div class="card" onclick="nav('desk')" style="cursor:pointer;text-align:center;padding:24px;transition:transform .15s;border-color:var(--green)44" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+      <div style="font-size:28px;margin-bottom:8px">⚡</div>
+      <div style="font-size:14px;font-weight:700;color:var(--t1)">Offer Desk</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px">Batch-price the daily 25</div>
+    </div>
     <div class="card" onclick="nav('calc')" style="cursor:pointer;text-align:center;padding:24px;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
       <div style="font-size:28px;margin-bottom:8px">🧮</div>
       <div style="font-size:14px;font-weight:700;color:var(--t1)">Calculator</div>
@@ -153,6 +162,73 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 </div>
 
 <!-- DEAL ANALYZER -->
+<!-- OFFER DESK — batch pricing for the daily 25 -->
+<style>
+.dk-num{font-family:'Barlow Condensed',sans-serif;font-weight:900}
+.dk-input{font-size:13px;padding:7px 9px}
+table.dk{width:100%;border-collapse:collapse;font-size:12px}
+table.dk th{text-align:left;padding:7px 8px;color:var(--t3);text-transform:uppercase;font-size:9px;letter-spacing:.07em;border-bottom:1px solid var(--border2);white-space:nowrap}
+table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);vertical-align:middle;white-space:nowrap}
+</style>
+<div id="p-desk" class="panel" style="display:none">
+  <div class="card" style="margin-bottom:12px;border-left:3px solid var(--green)">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <div class="hdr" style="font-size:20px;color:var(--green)">THE DAILY 25 — BATCH PRICING</div>
+        <div style="font-size:12px;color:var(--t2);margin-top:2px">Paste the morning queue → formula prices every row → copy the cover email &amp; Transaction Desk fields per offer. Offer = ARV% × ARV − Rehab − Fee.</div>
+      </div>
+      <div style="display:flex;gap:14px;text-align:center">
+        <div><div class="dk-num" id="dk-count" style="font-size:30px;color:var(--green);line-height:1">0</div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Priced</div></div>
+        <div><div class="dk-num" id="dk-rev" style="font-size:30px;color:var(--blue);line-height:1">$0</div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Potential Rev</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:12px;margin-bottom:12px">
+    <div class="card">
+      <span class="label">Pricing Levers</span>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div><span class="label">ARV %</span><input type="number" id="dk-pct" class="dk-input" value="82" min="50" max="100" oninput="deskPrice()"/></div>
+        <div><span class="label">High-end %</span><input type="number" id="dk-pct2" class="dk-input" value="78" min="50" max="100" oninput="deskPrice()"/></div>
+      </div>
+      <div style="font-size:10px;color:var(--t3);margin-bottom:12px">High-end % applies over $750K ARV, condos, tier-4 gut jobs.</div>
+      <div style="border-top:1px solid var(--border);padding-top:10px;margin-bottom:10px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);cursor:pointer;margin-bottom:8px">
+          <input type="checkbox" id="dk-bac-on" checked onchange="deskPrice()"/> Ask Buyer's Agent Commission
+        </label>
+        <div><span class="label">BAC %</span><input type="number" id="dk-bac" class="dk-input" value="3" min="0" max="6" step="0.5" oninput="deskPrice()"/></div>
+        <div style="font-size:10px;color:var(--t3);margin-top:6px">BAC is asked of the seller in the RPA. Enter your net % if your brokerage takes a cut. Drop it on a counter to sweeten the deal without raising price.</div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:10px;font-size:10px;color:var(--t3);line-height:1.6">
+        <b style="color:var(--t2)">Fee bands (auto):</b> &lt;$400K → $12K · $400–650K → $15K · $650–900K → $25K · &gt;$900K → $30K<br>
+        <b style="color:var(--t2)">Rehab tiers ($/sqft):</b> 1 Cosmetic $12 · 2 Standard $25 · 3 Heavy $40 · 4 Gut $60
+      </div>
+    </div>
+    <div class="card">
+      <span class="label">Paste the Morning Queue</span>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:6px">One property per line, comma-separated: <b style="color:var(--t2)">Address, Agent First Name, List Price, DOM, ARV, Sqft, Tier(1-4)</b> — header row optional.</div>
+      <textarea id="dk-input" rows="7" style="font-size:11px;resize:vertical;margin-bottom:8px" placeholder="6864 Armistead St Las Vegas 89149, Patti, 395000, 120, 470000, 1750, 2&#10;3338 Oneida Way Las Vegas 89169, Mike, 564000, 171, 625000, 2100, 2"></textarea>
+      <div style="display:flex;gap:6px">
+        <button onclick="deskSample()" style="flex:1;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:9px;font-size:12px;font-weight:700">Sample Queue</button>
+        <button onclick="deskPrice()" style="flex:2;background:var(--greendim);color:var(--green);border:1px solid var(--green);border-radius:6px;padding:9px;font-size:12px;font-weight:700">⚡ Price the Queue →</button>
+        <button onclick="deskExport()" style="flex:1;background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:9px;font-size:12px;font-weight:700">Export CSV</button>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="padding:0;overflow-x:auto">
+    <table class="dk" id="dk-table">
+      <thead><tr>
+        <th>Property</th><th>List</th><th>DOM</th><th>ARV</th><th>Rehab</th><th>Fee</th>
+        <th style="color:var(--blue)">OFFER</th><th>% List</th><th style="color:var(--amber)">BAC $</th>
+        <th style="color:var(--green)">Total Rev</th><th>Packet</th>
+      </tr></thead>
+      <tbody id="dk-body">
+        <tr><td colspan="11" style="text-align:center;padding:34px;color:var(--t3)">Paste the queue and hit <b style="color:var(--green)">Price the Queue</b> — or load the sample.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="font-size:10px;color:var(--t3);margin-top:8px">📧 = copy the agent cover email · 📋 = copy Transaction Desk field summary (price, EMD, DD, COE, BAC, POF amount). Offers over $750K ARV or unusual situations → Deal Desk before sending.</div>
+</div>
+
 <div id="p-analyzer" class="panel">
   <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
     <div class="card">
@@ -483,13 +559,13 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
         <div>
           <span class="label">Market %</span>
           <div style="display:flex;align-items:center;gap:6px">
-            <input type="number" min="50" max="100" value="80" id="c-pct" oninput="updateCalcPct(this.value)" style="font-size:18px;font-weight:700;width:80px;text-align:center;color:var(--blue);border-color:var(--blue)55"/>
+            <input type="number" min="50" max="100" value="82" id="c-pct" oninput="updateCalcPct(this.value)" style="font-size:18px;font-weight:700;width:80px;text-align:center;color:var(--blue);border-color:var(--blue)55"/>
             <span style="font-size:13px;color:var(--t3)">%</span>
           </div>
         </div>
         <div style="background:var(--card);border-radius:8px;padding:10px 14px">
-          <span id="c-pct-lbl" style="font-size:15px;font-weight:700;color:var(--blue)">80% Aggressive</span>
-          <div style="font-size:11px;color:var(--t3);margin-top:2px">50 conservative → 100 full price</div>
+          <span id="c-pct-lbl" style="font-size:15px;font-weight:700;color:var(--blue)">82% Aggressive</span>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px">50 conservative → 100 full price · machine standard: 82</div>
         </div>
       </div>
       <div id="c-full-extra" style="display:none;flex-direction:column;gap:7px;margin-bottom:10px">
@@ -513,6 +589,17 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
             <span id="c-fee-lbl" style="font-size:14px;font-weight:700;color:var(--green)" class="hdr">$13,000</span>
           </div>
         </div>
+      </div>
+      <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:10px">
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--t1);cursor:pointer;margin-bottom:8px">
+          <input type="checkbox" id="c-bac-on" checked onchange="calcMAO()"/> Ask Buyer's Agent Commission (in RPA)
+        </label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:end;margin-bottom:2px">
+          <div><span class="label">BAC %</span><input type="number" id="c-bac-pct" value="3" min="0" max="6" step="0.5" oninput="calcMAO()" style="font-size:14px;text-align:center"/></div>
+          <div style="background:var(--card);border-radius:6px;padding:7px;text-align:center"><div style="font-size:8px;color:var(--t3)">BAC $</div><div class="hdr" id="c-rev-bac" style="font-size:14px;color:var(--amber)">—</div></div>
+          <div style="background:var(--card);border-radius:6px;padding:7px;text-align:center"><div style="font-size:8px;color:var(--t3)">TOTAL REV</div><div class="hdr" id="c-rev-total" style="font-size:14px;color:var(--green)">—</div></div>
+        </div>
+        <div style="font-size:10px;color:var(--t3);margin-top:6px">Total revenue = fee + BAC. Enter net BAC % if your brokerage takes a cut.</div>
       </div>
     </div>
   </div>
@@ -1038,7 +1125,7 @@ const STACK_FILTERS=[
 ];
 
 function nav(p, skipHash){
-  ['home','analyzer','calc','scripts','leads','saved','agents'].forEach(id=>{
+  ['home','desk','analyzer','calc','scripts','leads','saved','agents'].forEach(id=>{
     const panel=document.getElementById('p-'+id);
     if(panel) panel.style.display=id===p?'block':'none';
     const n=document.getElementById('n-'+id);
@@ -1056,7 +1143,7 @@ function nav(p, skipHash){
 }
 window.addEventListener('hashchange',()=>{
   const h=(location.hash||'').replace('#','');
-  if(['home','analyzer','calc','scripts','saved'].includes(h)) nav(h,true);
+  if(['home','desk','analyzer','calc','scripts','saved'].includes(h)) nav(h,true);
 });
 
 function initStackFilters(){
@@ -2741,6 +2828,7 @@ document.addEventListener('keydown', function(e) {
   if(key === '1' || (e.altKey && key === '1')) { e.preventDefault(); nav('analyzer'); }
   else if(key === '2' || (e.altKey && key === '2')) { e.preventDefault(); nav('calc'); }
   else if(key === '3' || (e.altKey && key === '3')) { e.preventDefault(); nav('scripts'); }
+  else if(key === '4' || (e.altKey && key === '4')) { e.preventDefault(); nav('desk'); }
   else if((e.ctrlKey || e.metaKey) && key === 'e') { e.preventDefault(); document.querySelector('[onclick*="exportData"]')?.click(); }
   else if((e.ctrlKey || e.metaKey) && key === 'k') { e.preventDefault(); document.querySelector('[onclick*="copyScript"]')?.click(); }
   else if(key === 'escape') { e.preventDefault(); document.querySelectorAll('[onclick*="toggleSection"]').forEach(el => el.click()); }
@@ -4199,7 +4287,109 @@ function checkSession(){
 initTheme();
 checkSession();
 loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();loadSavedDeals();
-(function(){const h=(location.hash||'').replace('#','');nav(['home','analyzer','calc','scripts','leads','saved','agents'].includes(h)?h:'home');})();
+
+// ── BAC readout (hooks calcMAO non-invasively) ───────────────────────────
+const __calcMAO_base = calcMAO;
+calcMAO = function(){ __calcMAO_base(); try{ updateBAC(); }catch(e){} };
+function updateBAC(){
+  const mao=window._c_mao||0, fee=window._c_fee||0;
+  const on=(document.getElementById('c-bac-on')||{checked:true}).checked;
+  const pct=on?((+(document.getElementById('c-bac-pct')||{value:3}).value||0)/100):0;
+  const bac=mao>0?mao*pct:0, totalRev=mao>0?fee+bac:0;
+  const set=(id,val,dash)=>{const el=document.getElementById(id);if(el)el.textContent=dash?'—':fm(val);};
+  set('c-rev-bac',bac,!(mao>0&&on));
+  set('c-rev-total',totalRev,!(mao>0));
+  window._c_bac=bac; window._c_totalrev=totalRev;
+}
+
+// ── OFFER DESK — batch pricing for the daily 25 ──────────────────────────
+function deskFee(arv){return arv>=900000?30000:arv>=650000?25000:arv>=400000?15000:12000;}
+const DESK_TIERS=[12,25,40,60];
+
+function deskParse(){
+  const raw=document.getElementById('dk-input').value.trim();
+  if(!raw)return[];
+  return raw.split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
+    const c=line.split(',').map(x=>x.trim());
+    return{addr:c[0]||'',agent:c[1]||'there',list:+(String(c[2]||'').replace(/[^0-9.]/g,''))||0,
+      dom:+(String(c[3]||'').replace(/[^0-9.]/g,''))||0,arv:+(String(c[4]||'').replace(/[^0-9.]/g,''))||0,
+      sqft:+(String(c[5]||'').replace(/[^0-9.]/g,''))||0,tier:Math.min(4,Math.max(1,+(c[6]||2)||2))};
+  }).filter(r=>r.arv>0&&r.sqft>0);
+}
+
+function deskPrice(){
+  const pct=(+(document.getElementById('dk-pct')||{value:82}).value||82)/100;
+  const pct2=(+(document.getElementById('dk-pct2')||{value:78}).value||78)/100;
+  const bacOn=(document.getElementById('dk-bac-on')||{checked:true}).checked;
+  const bacPct=bacOn?((+(document.getElementById('dk-bac')||{value:3}).value||0)/100):0;
+  const rows=deskParse().map(r=>{
+    const usePct=(r.arv>=750000||r.tier===4)?pct2:pct;
+    const rehab=r.sqft*DESK_TIERS[r.tier-1];
+    const fee=deskFee(r.arv);
+    const offer=Math.round((usePct*r.arv-rehab-fee)/1000)*1000;
+    const bac=offer>0?Math.round(offer*bacPct):0;
+    const totalRev=offer>0?fee+bac:0;
+    return{...r,usePct,rehab,fee,offer,bac,totalRev};
+  });
+  window._desk={rows,bacPct};
+  const body=document.getElementById('dk-body');
+  if(!rows.length){body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:34px;color:var(--t3)">No valid rows — need at least Address, Agent, List, DOM, ARV, Sqft, Tier per line.</td></tr>';}
+  else{
+    body.innerHTML=rows.map((r,i)=>{
+      const pl=r.list>0&&r.offer>0?(r.offer/r.list*100).toFixed(1)+'%':'—';
+      const bad=r.offer<=0;
+      return`<tr style="${bad?'opacity:.45':''}">
+      <td style="color:var(--t1);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis">${r.addr}<div style="font-size:9px;color:var(--t3)">${r.agent} · T${r.tier} · ${Math.round(r.usePct*100)}%</div></td>
+      <td>${r.list?fm(r.list):'—'}</td><td>${r.dom||'—'}</td><td>${fm(r.arv)}</td>
+      <td style="color:var(--amber)">${fm(r.rehab)}</td><td>${fm(r.fee)}</td>
+      <td class="hdr" style="color:var(--blue);font-size:14px">${bad?'ESCALATE':fm(r.offer)}</td>
+      <td>${pl}</td><td style="color:var(--amber)">${r.bac?fm(r.bac):'—'}</td>
+      <td style="color:var(--green);font-weight:700">${fm(r.totalRev)}</td>
+      <td><button onclick="deskCopy(${i},'email',this)" title="Copy cover email" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700">📧</button>
+      <button onclick="deskCopy(${i},'td',this)" title="Copy Transaction Desk fields" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700">📋</button></td></tr>`;
+    }).join('');
+  }
+  const good=rows.filter(r=>r.offer>0);
+  document.getElementById('dk-count').textContent=good.length;
+  document.getElementById('dk-rev').textContent='$'+Math.round(good.reduce((s,r)=>s+r.totalRev,0)/1000)+'K';
+}
+
+function deskCopy(i,kind,btn){
+  const d=window._desk;if(!d)return;
+  const r=d.rows[i];if(!r)return;
+  const emd=r.offer>=500000?5000:2500;
+  const bacLine=r.bac>0?`\n  • Buyer's broker compensation: ${(d.bacPct*100).toFixed(1)}% — written into the offer`:'';
+  let txt='';
+  if(kind==='email'){
+    txt=`Subject: Signed Cash Offer + POF — ${r.addr} — ${fm(r.offer)}\n\nHi ${r.agent},\n\nAttached is a fully executed purchase agreement for ${r.addr} at ${fm(r.offer)}, cash, with proof of funds:\n\n  • No financing or appraisal contingency\n  • 7-day due diligence, as-is — no repair requests coming\n  • COE in 21 days or on your seller's preferred date\n  • EMD ${fm(emd)} to escrow within 2 business days of acceptance${bacLine}\n  • Your commission fully protected\n\nI know it's below list — after ${r.dom||'many'} days I wanted your seller to have a signed, certain option on the table alongside whatever else comes in. Offer is valid for 7 days.\n\nIf the number's close, call me. There's often room once we've seen the property.\n\nBrendan King · Cash Offer Specialist\n(725) 226-1303 · cashofferspecialist.com`;
+  }else{
+    txt=`TRANSACTION DESK — ${r.addr}\nPurchase price: ${fm(r.offer)}\nEMD: ${fm(emd)} (2 business days from acceptance)\nFinancing: CASH — no financing/appraisal contingency\nDue diligence: 7 calendar days\nCOE: 21 days from acceptance (or seller's date)\nCondition: AS-IS, no repair requests\nBuyer's broker compensation: ${r.bac>0?(d.bacPct*100).toFixed(1)+'%':'none'}\nKiavi POF amount: ${fm(r.offer)} (match offer — never your ceiling)\nRehab basis: T${r.tier} @ $${DESK_TIERS[r.tier-1]}/sqft × ${r.sqft.toLocaleString()} sqft = ${fm(r.rehab)}\nARV: ${fm(r.arv)} @ ${Math.round(r.usePct*100)}% | Fee: ${fm(r.fee)} | Total rev: ${fm(r.totalRev)}`;
+  }
+  navigator.clipboard.writeText(txt).catch(()=>{});
+  if(btn){const o=btn.textContent;btn.textContent='✓';setTimeout(()=>{btn.textContent=o;},1500);}
+}
+
+function deskSample(){
+  document.getElementById('dk-input').value=[
+    '6864 Armistead St Las Vegas 89149, Patti, 395000, 120, 470000, 1750, 2',
+    '3338 Oneida Way Las Vegas 89169, Lisa, 564000, 171, 625000, 2100, 2',
+    '7012 Grand Junction Ave Las Vegas 89179, Jack, 459000, 173, 450000, 1900, 3',
+    '4141 Klondike River Pl N Las Vegas 89081, Ron, 359000, 88, 425000, 1650, 2',
+    '813 White Falcon St Las Vegas 89144, Sarah, 998000, 126, 1005000, 3400, 3'
+  ].join('\n');
+  deskPrice();
+}
+
+function deskExport(){
+  const d=window._desk;
+  if(!d||!d.rows.length){alert('Price the queue first.');return;}
+  const lines=['Address,Agent,List,DOM,ARV,Sqft,Tier,ARV %,Rehab,Fee,Offer,BAC %,BAC $,Total Revenue'];
+  d.rows.forEach(r=>lines.push([`"${r.addr}"`,r.agent,r.list,r.dom,r.arv,r.sqft,r.tier,Math.round(r.usePct*100)+'%',r.rehab,r.fee,r.offer,(d.bacPct*100).toFixed(1)+'%',r.bac,r.totalRev].join(',')));
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cos-offer-desk.csv';a.click();
+}
+
+(function(){const h=(location.hash||'').replace('#','');nav(['home','desk','analyzer','calc','scripts','leads','saved','agents'].includes(h)?h:'home');})();
 
 // ── BUYERS LIST / DISPOSITION CRM ────────────────────────────────────
 const BUYERS_URL='/api/agents';
