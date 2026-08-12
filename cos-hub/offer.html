@@ -1118,59 +1118,48 @@
         }
 
         // ============================================
-        // LEAD DELIVERY — Web3Forms → info@cashofferspecialist.com
+        // LEAD DELIVERY — /api/notify → info@cashofferspecialist.com
+        // (Web3Forms key lives in the WEB3FORMS_KEY env var on Vercel)
         // ============================================
-        // HOW TO ACTIVATE:
-        // 1. Go to https://web3forms.com
-        // 2. Enter: info@cashofferspecialist.com
-        // 3. They'll email you an access key
-        // 4. Paste it below replacing YOUR_ACCESS_KEY_HERE
-        const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY_HERE';
-
         async function sendLeadEmail(formData, offer) {
             // Always save to localStorage as backup
             let leads = JSON.parse(localStorage.getItem('cosOfferLeads') || '[]');
             leads.push(formData);
             localStorage.setItem('cosOfferLeads', JSON.stringify(leads));
 
-            // Send via Web3Forms (stays in app — no mailto popup).
-            // Skipped when WEB3FORMS_KEY is the placeholder; lead still saves to Airtable below.
-            if (WEB3FORMS_KEY && WEB3FORMS_KEY !== 'YOUR_ACCESS_KEY_HERE') {
-                try {
-                    const response = await fetch('https://api.web3forms.com/submit', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            access_key: WEB3FORMS_KEY,
-                            subject: `🏠 New Cash Offer Lead — ${formData.address}`,
-                            from_name: 'COS Offer Page',
-                            to: 'info@cashofferspecialist.com',
-                            // Property details
-                            'Property Address': `${formData.address}, ${formData.city}`,
-                            'Bedrooms': formData.bedrooms,
-                            'Bathrooms': formData.bathrooms,
-                            'Square Footage': formData.sqft,
-                            'Condition': formData.condition,
-                            'Timeline': formData.timeline,
-                            // Seller info
-                            'Seller Name': formData.name,
-                            'Phone': formData.phone,
-                            'Email': formData.email || 'Not provided',
-                            'Source': formData.source,
-                            // Offer range
-                            'Offer Range': `${formatCurrency(offer.low)} — ${formatCurrency(offer.mid)} — ${formatCurrency(offer.high)}`,
-                            'Submitted': new Date().toLocaleString()
-                        })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        console.log('Lead sent to info@cashofferspecialist.com');
-                    } else {
-                        console.error('Web3Forms error:', result);
-                    }
-                } catch (err) {
-                    console.error('Failed to send lead:', err);
+            // Send through /api/notify (stays in app — key lives server-side)
+            try {
+                const response = await fetch('/api/notify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subject: `🏠 New Cash Offer Lead — ${formData.address}`,
+                        from_name: 'COS Offer Page',
+                        // Property details
+                        'Property Address': `${formData.address}, ${formData.city}`,
+                        'Bedrooms': formData.bedrooms,
+                        'Bathrooms': formData.bathrooms,
+                        'Square Footage': formData.sqft,
+                        'Condition': formData.condition,
+                        'Timeline': formData.timeline,
+                        // Seller info
+                        'Seller Name': formData.name,
+                        'Phone': formData.phone,
+                        'Email': formData.email || 'Not provided',
+                        'Source': formData.source,
+                        // Offer range
+                        'Offer Range': `${formatCurrency(offer.low)} — ${formatCurrency(offer.mid)} — ${formatCurrency(offer.high)}`,
+                        'Submitted': new Date().toLocaleString()
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    console.log('Lead sent to info@cashofferspecialist.com');
+                } else {
+                    console.error('Notify error:', result);
                 }
+            } catch (err) {
+                console.error('Failed to send lead:', err);
             }
 
             // Save to Airtable

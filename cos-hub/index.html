@@ -2601,18 +2601,16 @@ d.script+'\n\n'+
 '(725) 226-1303 · www.cashofferspecialist.com\n'+
 'Las Vegas, NV'
   );
-  // Send via Web3Forms — stays in app, no mailto popup
+  // Send through /api/notify — Web3Forms key stays server-side
   const btn=document.querySelector('[onclick*="exportDealEmail"]');
   const origText=btn?btn.textContent:'';
   if(btn){btn.textContent='Sending...';btn.disabled=true;}
   try{
-    const r=await fetch('https://api.web3forms.com/submit',{
+    const r=await fetch('/api/notify',{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        access_key:'0a47fb7c-56cb-4696-8293-4dccbddfad27',
         subject:'Cash Offer Summary — '+d.propAddr+' — '+fm(d.mao),
         from_name:'COS Hub Calculator',
-        to:'info@cashofferspecialist.com',
         message:decodeURIComponent(body)
       })
     });
@@ -4406,9 +4404,9 @@ function deskPrice(){
       <td class="hdr" style="color:var(--blue);font-size:14px">${bad?'ESCALATE':fm(r.offer)}</td>
       <td>${pl}</td><td style="color:var(--amber)">${r.bac?fm(r.bac):'—'}</td>
       <td style="color:var(--green);font-weight:700">${fm(r.totalRev)}</td>
-      <td><button onclick="deskCopy(${i},'email',this)" title="Copy cover email" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700">📧</button>
-      <button onclick="deskCopy(${i},'td',this)" title="Copy Transaction Desk fields" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700">📋</button>
-      <button onclick="deskSaveDeal(${i},this)" title="Save to deal pipeline as Offer Made" style="background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:11px;font-weight:700">💾</button></td>
+      <td style="white-space:nowrap"><button onclick="deskCopy(${i},'email',this)" title="Copy the agent cover email" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">📧 Email</button>
+      <button onclick="deskCopy(${i},'td',this)" title="Copy the Transaction Desk field summary" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">📋 TD Fields</button>
+      <button onclick="deskSaveDeal(${i},this)" title="Save to deal pipeline as Offer Made" style="background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">💾 Save</button></td>
       <td style="text-align:center"><input type="checkbox" ${sent?'checked':''} onchange="deskSent(${i},this)" title="Mark offer as sent" style="width:15px;height:15px;cursor:pointer;accent-color:var(--amber)"/></td></tr>`;
     }).join('');
   }
@@ -4474,7 +4472,7 @@ async function deskSaveDeal(i,btn){
   const r=d.rows[i];if(!r)return;
   if(r.offer<=0){alert('This one is flagged ESCALATE — price it manually in the Calculator before saving.');return;}
   const dupe=savedDealsCache.some(x=>deskKey(x.address)===deskKey(r.addr));
-  if(dupe){btn.textContent='✓';btn.title='Already in the pipeline';setTimeout(()=>{btn.textContent='💾';},2000);return;}
+  if(dupe){const dOrig=btn.textContent;btn.textContent='✓ In pipeline';btn.title='Already in the pipeline';setTimeout(()=>{btn.textContent=dOrig;},2000);return;}
   const o=btn.textContent;btn.textContent='…';btn.disabled=true;
   const fields={
     'Address':r.addr,'ARV':r.arv,'Repairs':r.rehab,'MAO':r.offer,'Fee':r.fee,
