@@ -597,23 +597,19 @@ function resetForm() {
 }
 
 // LEAD DELIVERY
-// Set this to your Web3Forms access key to enable email notifications.
-// Leave as the placeholder to skip email (leads still save to Airtable below).
-const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY_HERE';
+// Email notifications go through /api/notify — the Web3Forms key lives server-side.
 async function sendLeadEmail(d, offer) {
     let leads = JSON.parse(localStorage.getItem('cosOfferLeads')||'[]');
     leads.push(d); localStorage.setItem('cosOfferLeads', JSON.stringify(leads));
-    if (WEB3FORMS_KEY && WEB3FORMS_KEY !== 'YOUR_ACCESS_KEY_HERE') {
-        try {
-            const r=await fetch('https://api.web3forms.com/submit',{method:'POST',headers:{'Content-Type':'application/json'},
-                body:JSON.stringify({access_key:WEB3FORMS_KEY,subject:`New Cash Offer Lead — ${d.address}`,from_name:'COS Landing Page',to:'info@cashofferspecialist.com',
-                    'Property Address':`${d.address}, ${d.city}`,'Bedrooms':d.bedrooms,'Bathrooms':d.bathrooms,'Square Footage':d.sqft,
-                    'Condition':d.condition,'Timeline':d.timeline,'Seller Name':d.name,'Phone':d.phone,'Email':d.email||'Not provided',
-                    'Source':d.source,'Offer Range':`${fmt(offer.low)} — ${fmt(offer.mid)} — ${fmt(offer.high)}`,'Submitted':new Date().toLocaleString(),'Page':'sell.html'})});
-            const res=await r.json();
-            if(res.success)console.log('Lead sent');else console.error('Web3Forms:',res);
-        } catch(err){console.error('Lead send failed:',err);}
-    }
+    try {
+        const r=await fetch('/api/notify',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({subject:`New Cash Offer Lead — ${d.address}`,from_name:'COS Landing Page',
+                'Property Address':`${d.address}, ${d.city}`,'Bedrooms':d.bedrooms,'Bathrooms':d.bathrooms,'Square Footage':d.sqft,
+                'Condition':d.condition,'Timeline':d.timeline,'Seller Name':d.name,'Phone':d.phone,'Email':d.email||'Not provided',
+                'Source':d.source,'Offer Range':`${fmt(offer.low)} — ${fmt(offer.mid)} — ${fmt(offer.high)}`,'Submitted':new Date().toLocaleString(),'Page':'sell.html'})});
+        const res=await r.json();
+        if(res.success)console.log('Lead sent');else console.error('Notify:',res);
+    } catch(err){console.error('Lead send failed:',err);}
 
     // Save to Airtable
     try {

@@ -527,7 +527,7 @@
 // ============================================
 // CONFIG
 // ============================================
-const WEB3FORMS_KEY = '1e19b12f-24fe-476a-8526-1ddff342a022';
+// Email notifications go through /api/notify — the Web3Forms key lives server-side
 const CLOUDINARY_CLOUD = 'dzve75on0';
 const CLOUDINARY_PRESET = 'cos_apply_photos';
 // batchEstValue removed — BatchData API no longer used
@@ -1072,13 +1072,11 @@ async function sendLead(data, offer) {
     let photoLinks = '';
     Object.entries(data.photoUrls).forEach(([k,v]) => { photoLinks += `${k}: ${v}\n`; });
 
-    // Send via Web3Forms (stays in app — no mailto popup)
+    // Send through /api/notify (stays in app — no mailto popup; key stays server-side)
     const payload = {
-        access_key: WEB3FORMS_KEY,
         subject: `🏠 New Property Submission — ${data.address}, ${data.zip}`,
         from_name: data.name || 'COS Apply Page',
         replyto: data.email || '',
-        to: 'info@cashofferspecialist.com',
         'Property Address': `${data.address}, ${data.city} ${data.zip}`,
         'Property Type': `${data.propertyType} | ${data.beds}bd/${data.baths}ba | ${data.sqft}sqft`,
         'Property Details': `Year: ${data.yearBuilt} | Lot: ${data.lotSize} | HOA: ${data.hoa} | Pool: ${data.pool}`,
@@ -1102,14 +1100,14 @@ async function sendLead(data, offer) {
     };
 
     try {
-        const r = await fetch('https://api.web3forms.com/submit', {
+        const r = await fetch('/api/notify', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(payload)
         });
         const res = await r.json();
-        if (res.success) console.log('Lead sent via Web3Forms');
-        else console.error('Web3Forms error:', res);
+        if (res.success) console.log('Lead notification sent');
+        else console.error('Notify error:', res);
     } catch(err) {
         console.error('Send failed:', err);
         // Silent fail — data is already saved to localStorage
