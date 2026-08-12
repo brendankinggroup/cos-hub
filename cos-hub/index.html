@@ -201,7 +201,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       </div>
       <div style="border-top:1px solid var(--border);padding-top:10px;font-size:10px;color:var(--t3);line-height:1.6">
         <b style="color:var(--t2)">Fee bands (auto):</b> &lt;$400K → $12K · $400–650K → $15K · $650–900K → $25K · &gt;$900K → $30K<br>
-        <b style="color:var(--t2)">Rehab tiers ($/sqft):</b> 1 Cosmetic $12 · 2 Standard $25 · 3 Heavy $40 · 4 Gut $60
+        <b style="color:var(--t2)">Rehab tiers ($/sqft):</b> 1 Cosmetic $15 · 2 Standard $30 · 3 Heavy $45 · 4 Gut $60
       </div>
     </div>
     <div class="card">
@@ -4307,7 +4307,7 @@ function updateBAC(){
 
 // ── OFFER DESK — batch pricing for the daily 25 ──────────────────────────
 function deskFee(arv){return arv>=900000?30000:arv>=650000?25000:arv>=400000?15000:12000;}
-const DESK_TIERS=[12,25,40,60];
+const DESK_TIERS=[15,30,45,60];
 
 function deskParse(){
   const raw=document.getElementById('dk-input').value.trim();
