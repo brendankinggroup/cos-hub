@@ -2958,7 +2958,7 @@ async function saveDeal(){
   const ld=window._activeLeadData||{};
   const fields={
     'Address':d.propAddr||'Unknown',
-    'Seller':d.sellerName||'',
+    'Seller':(d.sellerName==='[Seller Name]'?'':d.sellerName)||'',
     'Seller Phone':ld.phone||'',
     'Seller Email':ld.email||'',
     'ARV':d.arv,'Repairs':d.repairs,'MAO':d.mao,'Fee':d.fee,
@@ -4888,8 +4888,9 @@ let _outreachTemplates={};
 function openOutreach(dealIdx){
   _outreachDealIdx=dealIdx;
   const d=savedDealsCache[dealIdx];
-  const name=d.seller||'Homeowner';
-  const firstName=(name.split(' ')[0])||'there';
+  let name=(d.seller||'').trim();
+  if(!name||name.startsWith('['))name='Homeowner';
+  const firstName=name==='Homeowner'?'there':(name.split(' ')[0]||'there');
   const addr=d.address||'your property';
   const offer=fm(d.mao);
   const days=d.closeDays||14;
@@ -4898,8 +4899,9 @@ function openOutreach(dealIdx){
   // ── AGENT / MLS DEALS — outreach goes to the listing agent, not the seller ──
   if(d.dealType==='MLS / Agent'){
     const agentMatch=/Agent:\s*([^·\n]+)/.exec(d.notes||'');
-    const agentName=(agentMatch?agentMatch[1].trim():'')||d.seller||'[Agent Name]';
-    const agentFirst=agentName.split(' ')[0]||'there';
+    let agentName=(agentMatch?agentMatch[1].trim():'')||(d.seller||'').trim();
+    if(!agentName||agentName.startsWith('['))agentName='[Agent Name]';
+    const agentFirst=agentName.startsWith('[')?'there':(agentName.split(' ')[0]||'there');
     const price=d.priceOffered>0?d.priceOffered:d.mao;
     const emd=price>=500000?5000:2500;
     const bacPct=hubBac();
