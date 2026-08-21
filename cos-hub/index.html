@@ -500,7 +500,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
           <span class="label">Assignment Fee</span>
           <div style="display:flex;align-items:center;gap:8px">
             <input type="number" min="0" max="100000" step="500" value="15000" id="c-fee" oninput="window._feeManual=true;document.getElementById('c-fee-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" style="font-size:16px;font-weight:700;color:var(--green);border-color:var(--green)55;text-align:right;width:120px"/>
-            <span id="c-fee-lbl" style="font-size:14px;font-weight:700;color:var(--green)" class="hdr">$13,000</span>
+            <span id="c-fee-lbl" style="font-size:14px;font-weight:700;color:var(--green)" class="hdr">$15,000</span>
           </div>
         </div>
       </div>
@@ -1749,7 +1749,9 @@ function calcMAO(){
     // Fee follows the standard bands until the user types their own number ($15K before an ARV exists)
     fee=arv>0?deskFee(arv):15000;
     const feeEl=document.getElementById('c-fee');
-    if(feeEl&&+feeEl.value!==fee){feeEl.value=fee;const fl=document.getElementById('c-fee-lbl');if(fl)fl.textContent='$'+fee.toLocaleString();}
+    if(feeEl&&+feeEl.value!==fee)feeEl.value=fee;
+    const fl=document.getElementById('c-fee-lbl');
+    if(fl)fl.textContent='$'+fee.toLocaleString();
   }
   if(!fee)fee=arv>0?deskFee(arv):15000;
   const hood=(document.getElementById('c-hood')||{value:'Enterprise'}).value;
