@@ -1,0 +1,9 @@
+{
+  "name": "cos-hub",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.120.0",
+    "zod": "^4.0.0"
+  }
+}

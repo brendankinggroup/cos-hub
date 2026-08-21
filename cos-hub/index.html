@@ -184,6 +184,22 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       </div>
     </div>
   </div>
+  <!-- AI SCREENER -->
+  <div class="card" style="margin-bottom:12px;border-left:3px solid var(--purple)">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <span class="label">🔍 AI Screener</span>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">Drop the raw MLS export — every listing gets read (remarks included), the workable ones get flagged with the play, the rest get passed. Use "→ Queue" on a flagged card, then type its ARV in the queue and Price.</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <input type="file" id="dk-screen-file" accept=".csv,.txt,.xlsx,.xls" style="display:none" onchange="screenFile(this)"/>
+        <button id="dk-screen-btn" onclick="document.getElementById('dk-screen-file').click()" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:9px 14px;font-size:12px;font-weight:700">🔍 Screen MLS Export</button>
+        <button onclick="screenClear()" style="background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-size:12px;font-weight:700">Clear</button>
+      </div>
+    </div>
+    <div id="dk-screen-status" style="display:none;font-size:12px;padding:10px 0 2px"></div>
+    <div id="dk-screen-results" style="margin-top:8px"></div>
+  </div>
   <div style="display:grid;grid-template-columns:280px 1fr;gap:12px;margin-bottom:12px">
     <div class="card">
       <span class="label">Pricing Levers</span>
@@ -4561,6 +4577,143 @@ function deskIngest(text){
   deskPrice();
 }
 
+// ── AI SCREENER — raw MLS export → /api/screen → tiered hit list ─────────
+const SCREEN_CHUNK=20;
+let _screen=null;
+
+function screenFile(input){
+  const file=input.files[0];if(!file)return;
+  const isExcel=/\.xlsx?$|\.xls$/i.test(file.name);
+  const reader=new FileReader();
+  if(isExcel){
+    reader.onload=e=>{
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        screenRun(XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]]));
+      }catch(err){screenStatus('❌ Could not read that file: '+err.message,true);}
+    };
+    reader.readAsArrayBuffer(file);
+  }else{
+    reader.onload=e=>screenRun(e.target.result);
+    reader.readAsText(file);
+  }
+  input.value='';
+}
+
+function screenRows(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2)return null;
+  const hdr=deskCSVLine(lines[0]);
+  return lines.slice(1).map(l=>{
+    const c=deskCSVLine(l);
+    const o={};
+    hdr.forEach((h,i)=>{if(h&&(c[i]||'').trim())o[h]=c[i].trim();});
+    return o;
+  }).filter(o=>Object.keys(o).length>2);
+}
+
+async function screenRun(text){
+  const rows=screenRows(text);
+  if(!rows||!rows.length){screenStatus('❌ No usable rows found in that file.',true);return;}
+  const btn=document.getElementById('dk-screen-btn');
+  btn.disabled=true;
+  const all={market_note:'',properties:[],screenedAt:new Date().toLocaleString()};
+  try{
+    for(let i=0;i<rows.length;i+=SCREEN_CHUNK){
+      const chunk=rows.slice(i,i+SCREEN_CHUNK);
+      screenStatus(`⏳ Screening ${i+1}–${Math.min(i+SCREEN_CHUNK,rows.length)} of ${rows.length}… about a minute per batch, leave this tab open`);
+      const r=await fetch('/api/screen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rows:chunk})});
+      const json=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(json.error||('Screening failed (HTTP '+r.status+')'));
+      all.properties.push(...((json.result&&json.result.properties)||[]));
+      if(json.result&&json.result.market_note)all.market_note=json.result.market_note;
+    }
+    all.properties.sort((a,b)=>(a.tier-b.tier)||((b.dom||0)-(a.dom||0)));
+    _screen=all;
+    try{localStorage.setItem('cosOfferScreen',JSON.stringify(all));}catch(e){}
+    screenStatus('');
+    renderScreen();
+  }catch(e){
+    screenStatus('❌ '+e.message,true);
+  }
+  btn.disabled=false;
+}
+
+function screenStatus(msg,isErr){
+  const el=document.getElementById('dk-screen-status');
+  if(!el)return;
+  if(!msg){el.style.display='none';return;}
+  el.style.display='block';el.textContent=msg;el.style.color=isErr?'var(--red)':'var(--t2)';
+}
+
+function screenClear(){
+  _screen=null;
+  try{localStorage.removeItem('cosOfferScreen');}catch(e){}
+  screenStatus('');
+  renderScreen();
+}
+
+function screenToQueue(i,btn){
+  const p=_screen&&_screen.properties[i];if(!p)return;
+  const agentFirst=((p.agent&&p.agent.name)||'there').split(' ')[0]||'there';
+  const line=`${(p.address||'').replace(/,/g,' ')}, ${agentFirst}, ${p.list_price||''}, ${p.dom||''}, , ${p.sqft||''}, ${p.rehab_tier_guess||2}`;
+  const ta=document.getElementById('dk-input');
+  ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+line;
+  deskSaveState();
+  if(btn){btn.textContent='✓ In queue — add ARV';btn.disabled=true;}
+  ta.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function screenCopyAngle(i,btn){
+  const p=_screen&&_screen.properties[i];if(!p)return;
+  navigator.clipboard.writeText(p.outreach_angle||'').catch(()=>{});
+  if(btn){const o=btn.textContent;btn.textContent='✓';setTimeout(()=>{btn.textContent=o;},1500);}
+}
+
+function renderScreen(){
+  const box=document.getElementById('dk-screen-results');
+  if(!box)return;
+  if(!_screen||!_screen.properties.length){box.innerHTML='';return;}
+  const props=_screen.properties;
+  const tierColor={1:'var(--red)',2:'var(--amber)'};
+  const card=(p,i)=>`<div class="card" style="margin-bottom:8px;border-left:3px solid ${tierColor[p.tier]}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--t1)">${esc(p.address)} <span style="color:var(--t3);font-weight:400">· ${esc(p.zip)}</span></div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${p.list_price?fm(p.list_price):'—'} · ${p.dom||'—'} DOM · ${p.sqft?p.sqft.toLocaleString()+' sqft':'—'} · rehab guess T${p.rehab_tier_guess||2}</div>
+        <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${(p.flags||[]).map(f=>`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:${tierColor[p.tier]}22;color:${tierColor[p.tier]}">🚩 ${esc(f)}</span>`).join('')}</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <button onclick="screenToQueue(${i},this)" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700">→ Queue</button>
+        <button onclick="screenCopyAngle(${i},this)" title="Copy the outreach angle" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700">📋 Angle</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--t1);margin-top:7px;line-height:1.5">${esc(p.why)}</div>
+    <div style="font-size:12px;color:var(--green);margin-top:4px;line-height:1.5"><b>Play:</b> ${esc(p.play)}</div>
+    <div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5;font-style:italic">${esc(p.outreach_angle)}</div>
+    <div style="font-size:10px;color:var(--t3);margin-top:5px">${esc((p.agent&&p.agent.name)||'')}${p.agent&&p.agent.phone?` · <a href="tel:${esc(p.agent.phone)}" style="color:var(--blue);text-decoration:none">${esc(p.agent.phone)}</a>`:''}${p.agent&&p.agent.email?` · <a href="mailto:${esc(p.agent.email)}" style="color:var(--blue);text-decoration:none">${esc(p.agent.email)}</a>`:''} · <span style="color:var(--amber)">${esc(p.arv_note||'')}</span></div>
+  </div>`;
+  const section=(tier,label)=>{
+    const items=props.map((p,i)=>({p,i})).filter(x=>x.p.tier===tier);
+    if(!items.length)return'';
+    return`<div style="font-size:11px;font-weight:800;letter-spacing:.06em;color:${tierColor[tier]};margin:12px 0 6px">${label} (${items.length})</div>`+items.map(x=>card(x.p,x.i)).join('');
+  };
+  const passed=props.filter(p=>p.tier>=3).length;
+  box.innerHTML=
+    (_screen.market_note?`<div style="font-size:12px;color:var(--t2);background:var(--card);border-radius:7px;padding:10px 12px;line-height:1.5">📉 ${esc(_screen.market_note)}</div>`:'')+
+    `<div style="font-size:10px;color:var(--amber);margin-top:6px">⚠️ ARVs here are modeled, not underwriting-grade — pull 90-day renovated solds for the zip before anything goes in writing.</div>`+
+    section(1,'TIER 1 — CHASE NOW')+
+    section(2,'TIER 2 — WATCH / CONDITIONAL')+
+    (passed?`<div style="font-size:11px;color:var(--t3);margin-top:10px">${passed} passed over (Tier 3 — retail behaving normally)${_screen.screenedAt?' · screened '+esc(_screen.screenedAt):''}</div>`:'');
+}
+
+function screenLoadState(){
+  try{
+    const s=JSON.parse(localStorage.getItem('cosOfferScreen'));
+    if(s&&s.properties){_screen=s;renderScreen();}
+  }catch(e){}
+}
+
 function deskCopy(i,kind,btn){
   const d=window._desk;if(!d)return;
   const r=d.rows[i];if(!r)return;
@@ -4597,6 +4750,7 @@ function deskExport(){
 }
 
 deskLoadState();
+screenLoadState();
 (function(){const h=(location.hash||'').replace('#','');nav(['home','desk','analyzer','calc','scripts','leads','saved','agents'].includes(h)?h:'home');})();
 
 // ── BUYERS LIST / DISPOSITION CRM ────────────────────────────────────

@@ -1,5 +1,10 @@
 {
   "buildCommand": "",
   "outputDirectory": "cos-hub",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "functions": {
+    "api/screen.js": {
+      "maxDuration": 300
+    }
+  }
 }
