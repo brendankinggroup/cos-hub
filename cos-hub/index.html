@@ -7,6 +7,7 @@
 <meta name="description" content="Internal wholesale operations hub for Cash Offer Specialist — Las Vegas.">
 <meta name="robots" content="noindex,nofollow">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23061020%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2222%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2216%22%20fill%3D%22%234f8ef7%22%20text-anchor%3D%22middle%22%3EC%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -46,7 +47,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
 .tag-pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;margin:3px}
 @media (max-width:860px){#analyzer-cards{grid-template-columns:1fr 1fr !important}#filter-grid{grid-template-columns:repeat(4,1fr) !important}#leads-grid{grid-template-columns:1fr !important}#calc-top{grid-template-columns:1fr !important}#scripts-grid{grid-template-columns:1fr !important}#exit-grid{grid-template-columns:repeat(2,1fr) !important}#calc-stats{grid-template-columns:1fr 1fr !important}.saved-actions{flex-wrap:wrap !important}.saved-header-btns{flex-wrap:wrap !important}}@media (max-width:600px){#analyzer-cards{grid-template-columns:1fr !important}#filter-grid{grid-template-columns:repeat(3,1fr) !important}#leads-grid{grid-template-columns:1fr !important}#calc-top{grid-template-columns:1fr !important}#scripts-grid{grid-template-columns:1fr !important}#exit-grid{grid-template-columns:1fr !important}#calc-stats{grid-template-columns:1fr 1fr !important}button{padding:8px 12px !important;font-size:11px !important}.saved-header{flex-direction:column !important;align-items:flex-start !important;gap:10px !important}.saved-header-btns{width:100%}.saved-card-top{flex-direction:column !important;gap:8px !important}.saved-card-badges{margin-left:0 !important;flex-wrap:wrap !important}.saved-actions{flex-direction:column !important;gap:8px !important}.saved-action-btns{width:100%}.saved-nums{grid-template-columns:repeat(2,1fr) !important}}
 </style>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script defer src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -183,6 +184,22 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
         <div><div class="dk-num" id="dk-rev" style="font-size:30px;color:var(--blue);line-height:1">$0</div><div style="font-size:9px;color:var(--t3);text-transform:uppercase">Potential Rev</div></div>
       </div>
     </div>
+  </div>
+  <!-- AI SCREENER -->
+  <div class="card" style="margin-bottom:12px;border-left:3px solid var(--purple)">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <span class="label">🔍 AI Screener</span>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">Drop the raw MLS export — every listing gets read (remarks included), the workable ones get flagged with the play, the rest get passed. Use "→ Queue" on a flagged card, then type its ARV in the queue and Price.</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <input type="file" id="dk-screen-file" accept=".csv,.txt,.xlsx,.xls" style="display:none" onchange="screenFile(this)"/>
+        <button id="dk-screen-btn" onclick="document.getElementById('dk-screen-file').click()" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:9px 14px;font-size:12px;font-weight:700">🔍 Screen MLS Export</button>
+        <button onclick="screenClear()" style="background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:9px 10px;font-size:12px;font-weight:700">Clear</button>
+      </div>
+    </div>
+    <div id="dk-screen-status" style="display:none;font-size:12px;padding:10px 0 2px"></div>
+    <div id="dk-screen-results" style="margin-top:8px"></div>
   </div>
   <div style="display:grid;grid-template-columns:280px 1fr;gap:12px;margin-bottom:12px">
     <div class="card">
@@ -408,7 +425,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
               <option>Whitney</option>
               <option>Sunrise Manor</option>
               <option>Winchester</option>
-              <option>Boulder City</option>
+              
               <option>Aliante</option>
               <option>Centennial Hills</option>
               <option>Lone Mountain</option>
@@ -588,7 +605,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
         <div>
           <span class="label">Assignment Fee</span>
           <div style="display:flex;align-items:center;gap:8px">
-            <input type="number" min="0" max="100000" step="500" value="13000" id="c-fee" oninput="document.getElementById('c-fee-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" style="font-size:16px;font-weight:700;color:var(--green);border-color:var(--green)55;text-align:right;width:120px"/>
+            <input type="number" min="0" max="100000" step="500" value="13000" id="c-fee" oninput="window._feeManual=true;document.getElementById('c-fee-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" style="font-size:16px;font-weight:700;color:var(--green);border-color:var(--green)55;text-align:right;width:120px"/>
             <span id="c-fee-lbl" style="font-size:14px;font-weight:700;color:var(--green)" class="hdr">$13,000</span>
           </div>
         </div>
@@ -887,6 +904,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
     <button onclick="filterPipeline('all')" class="pf-btn pf-active" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue);cursor:pointer">All</button>
     <button onclick="filterPipeline('New')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">New</button>
     <button onclick="filterPipeline('Contacted')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Contacted</button>
+    <button onclick="filterPipeline('Offer Approved')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Offer Approved</button>
     <button onclick="filterPipeline('Offer Made')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Offer Made</button>
     <button onclick="filterPipeline('Under Contract')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Under Contract</button>
     <button onclick="filterPipeline('Assigned')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Assigned</button>
@@ -1146,7 +1164,7 @@ function nav(p, skipHash){
 }
 window.addEventListener('hashchange',()=>{
   const h=(location.hash||'').replace('#','');
-  if(['home','desk','analyzer','calc','scripts','saved'].includes(h)) nav(h,true);
+  if(['home','desk','analyzer','calc','scripts','leads','saved','agents'].includes(h)) nav(h,true);
 });
 
 function initStackFilters(){
@@ -1270,7 +1288,7 @@ function parseCSV(){
   const raw=document.getElementById('csv-input').value.trim();
   if(!raw){loadSample();return;}
   const rows=raw.split('\n').filter(r=>r.trim());
-  if(rows.length<2){loadSample();return;}
+  if(rows.length<2){showFileStatus('❌ Need a header row plus at least one data row — nothing was loaded.','var(--red)');return;}
   const header=_csvSplitRow(rows[0]).map(h=>h.toLowerCase().trim());
 
   function sg(cols,fieldType){
@@ -1506,7 +1524,7 @@ function exportTop(){
   top.forEach(l=>{
     const eq=l.arv>0?Math.round(((l.arv-(l.debt||0))/l.arv)*100):0;
     const eqDollar=l.arv>0?l.arv-(l.debt||0):0;
-    const mao=l.arv>0?Math.round(l.arv*0.70-(l.repairs||0)-13000):0;
+    const mao=l.arv>0?Math.round(stdMAO(l.arv,l.repairs)):0;
     const sl=l.score>=80?'FIRE':l.score>=60?'SOLID':l.score>=40?'WORTH A LOOK':'PASS';
     lines.push([l.name,l.address,l.city||'',l.zip||'',l.beds||'',l.baths||'',l.sqft||'',l.score,sl,fm(l.arv),fm(l.asking),fm(l.debt||0),fm(mao),eq+'%',fm(eqDollar),l.dom||0,l.pricecuts||0,l.distress,l.source||'',(l.flags||[]).join(' | '),l.agentName||'',l.agentPhone||'',l.notes].map(csvQ).join(','));
   });
@@ -1525,16 +1543,14 @@ function searchLeads(){
 
 function renderLeads(){
   if(!filteredLeads.length){document.getElementById('lead-grid').innerHTML='<div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--t3)">No leads match the current filters.</div>';return;}
-  const isMLS=document.getElementById('list-type').value.includes('mls');
   document.getElementById('lead-grid').innerHTML=filteredLeads.map((l,i)=>{
     const score=l.score||0;
     const sc=score>=80?'var(--red)':score>=60?'var(--green)':score>=40?'var(--amber)':'var(--t3)';
     const sl=score>=80?'🔥 FIRE':score>=60?'✅ SOLID':score>=40?'⚠️ WARM':'❄️ COLD';
     const eq=l.arv>0?Math.round(((l.arv-(l.debt||0))/l.arv)*100):0;
-    const mao=l.arv>0?Math.round(l.arv*0.70-l.repairs-13000):0;
+    const mao=l.arv>0?Math.round(stdMAO(l.arv,l.repairs)):0;
     const flags=l.flags||[];
     const isAgent=l.agentName;
-    const eqFromData=l.equity>0?Math.round((l.equity/Math.max(l.arv||1,l.equity))*100):eq;
     return`<div class="card" style="border:1px solid ${score>=80?'var(--red)44':score>=60?'var(--green)22':'var(--border)'}">
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
     <div style="flex:1">
@@ -1571,14 +1587,15 @@ function renderLeads(){
   if(typeof updateProspectBar==='function') updateProspectBar();
 }
 
-function launchSellerScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('seller');document.getElementById('sc-name').value=l.name||'Homeowner';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-offer').value=l.asking||Math.round((l.arv||0)*0.65);const lt=document.getElementById('list-type').value;const tm={preforeclosure:'preforeclosure',taxdelinquent:'taxdelinquent',probate:'probate',mls_expired:'mls_expired',mls_active:'mls_active',mls_pricecut:'mls_active',fsbo:'fsbo',vacant:'vacant',divorce:'divorce',highequity:'highequity',taxlien:'codeviolation',absentee:'tiredlandlord',distressed:'distressed',distressed_landvoice:'distressed_landvoice',damage:'damage',senior:'senior',bankruptcy:'bankruptcy',military:'military'};document.getElementById('sc-type').value=tm[lt]||'preforeclosure';genScript();}
-function launchAgentScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('agent');document.getElementById('sc-agent').value=l.agentName||'the listing agent';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-listprice').value=l.asking||0;document.getElementById('sc-dom').value=l.dom||0;const lt=document.getElementById('list-type').value;document.getElementById('sc-type').value=lt.includes('expired')?'mls_expired':'mls_active';genScript();}
-function launchCalc(arv,repairs){nav('calc');document.getElementById('c-arv').value=arv||380000;if(repairs>0){const sqft=+(document.getElementById('c-sqft').value)||1600;const psf=Math.round(repairs/sqft);const clamped=Math.min(80,Math.max(5,psf));document.getElementById('c-psf').value=clamped;const psfLbl=document.getElementById('c-psf-lbl');if(psfLbl)psfLbl.textContent='$'+clamped;['c-r1','c-r2','c-r3','c-r4'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}calcMAO();}
+function launchSellerScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('seller');document.getElementById('sc-name').value=l.name||'Homeowner';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-offer').value=Math.max(0,Math.round(stdMAO(l.arv||0,l.repairs||0)));const lt=document.getElementById('list-type').value;const tm={preforeclosure:'preforeclosure',taxdelinquent:'taxdelinquent',probate:'probate',mls_expired:'mls_expired',mls_active:'mls_active',mls_pricecut:'mls_active',fsbo:'fsbo',vacant:'vacant',divorce:'divorce',highequity:'highequity',taxlien:'codeviolation',absentee:'tiredlandlord',distressed:'distressed',distressed_landvoice:'distressed_landvoice',damage:'damage',senior:'senior',bankruptcy:'bankruptcy',military:'military'};document.getElementById('sc-type').value=tm[lt]||'preforeclosure';genScript();}
+function launchAgentScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('agent');document.getElementById('sc-agent').value=l.agentName||'the listing agent';document.getElementById('sc-offer').value=Math.max(0,Math.round(stdMAO(l.arv||0,l.repairs||0)));document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-listprice').value=l.asking||0;document.getElementById('sc-dom').value=l.dom||0;const lt=document.getElementById('list-type').value;document.getElementById('sc-type').value=lt.includes('expired')?'mls_expired':'mls_active';genScript();}
+function launchCalc(arv,repairs){nav('calc');document.getElementById('c-arv').value=arv||380000;if(repairs>0){const sqft=+(document.getElementById('c-sqft').value)||1600;const psf=Math.round(repairs/sqft);const clamped=Math.min(80,Math.max(5,psf));document.getElementById('c-psf').value=clamped;['c-r1','c-r2','c-r3','c-r4'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}calcMAO();}
 
 // ── PROSPECT KEEP / DROP ──────────────────────────────────────────────
 function keepLead(filteredIdx){
   const l=filteredLeads[filteredIdx];
   if(!l) return;
+  window._c_debt=l.debt||0;
 
   // Store ALL prospect data so saveDeal() can write it to Airtable
   window._activeLeadData={
@@ -1839,12 +1856,19 @@ function calcMAO(){
   const flat=['c-r1','c-r2','c-r3','c-r4'].reduce((s,id)=>s+(+(document.getElementById(id)||{value:0}).value||0),0);
   const repOverride=+(document.getElementById('c-rep-override')||{value:''}).value||0;
   const repairs=repOverride>0?repOverride:sqft*psf+flat;
-  const pct=(+(document.getElementById('c-pct')||{value:70}).value||70)/100;
-  const fee=+(document.getElementById('c-fee')||{value:13000}).value||13000;
+  const pct=(+(document.getElementById('c-pct')||{value:82}).value||82)/100;
+  let fee=+(document.getElementById('c-fee')||{value:0}).value||0;
+  if(!window._feeManual){
+    // Fee follows the standard bands until the user types their own number
+    fee=deskFee(arv);
+    const feeEl=document.getElementById('c-fee');
+    if(feeEl&&+feeEl.value!==fee){feeEl.value=fee;const fl=document.getElementById('c-fee-lbl');if(fl)fl.textContent='$'+fee.toLocaleString();}
+  }
+  if(!fee)fee=deskFee(arv);
   const hood=(document.getElementById('c-hood')||{value:'Enterprise'}).value;
   let mao;
   if(calcMode==='quick'){mao=arv*pct-repairs-fee;}
-  else{const bp=(+(document.getElementById('c-bp')||{value:20}).value||20)/100;const hm=+(document.getElementById('c-hm')||{value:3}).value||3;const ac=(+(document.getElementById('c-ac')||{value:6}).value||6)/100;const fc=arv*0.03+arv*ac+800*hm+1800+(arv/500)*2.55;const fullMao=arv-repairs-fc-arv*bp-fee;const quickCap=arv*pct-repairs-fee;mao=Math.min(fullMao,quickCap);}
+  else{const bp=(+(document.getElementById('c-bp')||{value:10}).value||10)/100;const hm=+(document.getElementById('c-hm')||{value:3}).value||3;const ac=(+(document.getElementById('c-ac')||{value:6}).value||6)/100;const fc=arv*0.03+arv*ac+800*hm+1800+(arv/500)*2.55;const fullMao=arv-repairs-fc-arv*bp-fee;const quickCap=arv*pct-repairs-fee;mao=Math.min(fullMao,quickCap);}
   const distressVal=(document.getElementById('c-distress')||{value:''}).value;
   document.getElementById('c-mao').textContent=fm(mao);
   document.getElementById('c-mao-lo').textContent=fm(mao*.95);document.getElementById('c-mao-mi').textContent=fm(mao);document.getElementById('c-mao-hi').textContent=fm(mao*1.03);
@@ -1869,7 +1893,6 @@ function calcMAO(){
   const allin=disposition+purchaseCosts+repairs+sellingCosts; // TRUE all-in for buyer
   const profit=arv-allin; // Estimated Profit
   const straightRoi=allin>0?(profit/allin*100):0;
-  const hm1=+(document.getElementById('c-hm')||{value:4}).value;
 
   // ── DEAL SCORE — based on actual economics ──
   let score=0;
@@ -2109,7 +2132,6 @@ I can have the signed RPA in your inbox within the hour. Do we have a deal to pr
   setEl('c-vs-arv', arv>0?fm(arv):'—');
   setEl('c-vs-rep', repairs>0?fm(repairs):'—');
   setEl('c-vs-fee', fm(fee));
-  setEl('c-vs-disp', disposition>0?fm(disposition):'—');
   setEl('c-vs-days', closeDays+'d');
 }
 
@@ -2393,7 +2415,7 @@ function genScript(){
   if(contactMode==='agent'){
     const at=scriptType==='mls_active'?'mls_active':scriptType==='mls_expired'?'mls_expired_agent':scriptType==='mls_pricecut'?'mls_pricecut':'mls_active';
     const ad=SCRIPTS[at]||SCRIPTS.mls_active;
-    scripts={cold:ad.cold(agentName,a,o,d),vm:ad.vm(agentName,a,o,d),sms:ad.sms(agentName,a,o,d),letter:ad.letter(agentName,a,o,d),email:ad.email(agentName,a,o,d),seq:ad.seq(agentName,a,listprice,dom)};
+    scripts={cold:ad.cold(agentName,a,o,d),vm:ad.vm(agentName,a,o,d),sms:ad.sms(agentName,a,o,d),letter:ad.letter(agentName,a,o,d),email:ad.email(agentName,a,o,d),seq:ad.seq(agentName,a,o,d)};
     document.getElementById('sc-banner-title').textContent='Agent Contact: '+def.title;
   } else {
     scripts={cold:def.cold(n,a,o,d),vm:def.vm(n,a,o,d),sms:def.sms(n,a,o,d),letter:def.letter(n,a,o,d),email:def.email(n,a,o,d),seq:def.seq(n,a,o,d)};
@@ -2794,8 +2816,7 @@ function syncSliderToOverride(){
 function saveState(){
   const state={
     leads,
-    calculator:{arv:+(document.getElementById('c-arv')||{value:0}).value||0,sqft:+(document.getElementById('c-sqft')||{value:1600}).value||1600,repairs:+(document.getElementById('c-rep-override')||{value:0}).value||(+(document.getElementById('c-psf')||{value:30}).value||30)*(+(document.getElementById('c-sqft')||{value:1600}).value||1600),mode:document.querySelector('input[name="c-mode"]:checked')?.value||'default',marketPct:+(document.getElementById('c-market')||{value:65}).value||65,assignmentFee:+(document.getElementById('c-fee')||{value:0}).value||0},
-    filters:{prop:document.getElementById('f-prop')?.value||'',stats:document.getElementById('f-stats')?.value||'',condition:document.getElementById('f-cond')?.value||''},
+    calculator:{arv:+(document.getElementById('c-arv')||{value:0}).value||0,sqft:+(document.getElementById('c-sqft')||{value:1600}).value||1600,repairs:+(document.getElementById('c-rep-override')||{value:0}).value||0,offerPct:+(document.getElementById('c-pct')||{value:82}).value||82,assignmentFee:+(document.getElementById('c-fee')||{value:0}).value||0,feeManual:!!window._feeManual},
     contactMode,
     route,
     activeTab:document.querySelector('[data-nav-tab].active')?.getAttribute('data-nav-tab')||'analyzer'
@@ -2811,16 +2832,9 @@ function loadState(){
       const c=state.calculator;
       const arvEl=document.getElementById('c-arv');if(arvEl)arvEl.value=c.arv;
       const sqftEl=document.getElementById('c-sqft');if(sqftEl)sqftEl.value=c.sqft;
-      const repEl=document.getElementById('c-rep-override');if(repEl)repEl.value=c.repairs;
-      const modeEl=document.querySelector('input[name="c-mode"][value="'+c.mode+'"]');if(modeEl)modeEl.checked=true;
-      const marketEl=document.getElementById('c-market');if(marketEl)marketEl.value=c.marketPct;
-      const feeEl=document.getElementById('c-fee');if(feeEl)feeEl.value=c.assignmentFee;
-    }
-    if(state.filters){
-      const f=state.filters;
-      const propEl=document.getElementById('f-prop');if(propEl)propEl.value=f.prop;
-      const statsEl=document.getElementById('f-stats');if(statsEl)statsEl.value=f.stats;
-      const condEl=document.getElementById('f-cond');if(condEl)condEl.value=f.condition;
+      const repEl=document.getElementById('c-rep-override');if(repEl)repEl.value=c.repairs||'';
+      if(c.offerPct){const pctEl=document.getElementById('c-pct');if(pctEl){pctEl.value=c.offerPct;updateCalcPct(c.offerPct);}}
+      if(c.feeManual){window._feeManual=true;const feeEl=document.getElementById('c-fee');if(feeEl&&c.assignmentFee){feeEl.value=c.assignmentFee;const fl=document.getElementById('c-fee-lbl');if(fl)fl.textContent='$'+(+c.assignmentFee).toLocaleString();}}
     }
     if(state.contactMode)contactMode=state.contactMode;
     if(state.route)route=state.route;
@@ -2831,7 +2845,13 @@ function loadState(){
 function clearSavedData(){
   if(confirm('Clear all saved data and reload?')){
     localStorage.removeItem('cosHubState');
-    localStorage.removeItem('cosHubKPI');
+    localStorage.removeItem('cosHubKPI_lastDate');
+    localStorage.removeItem('cosOfferDesk');
+    localStorage.removeItem('cosOfferScreen');
+    for(let i=localStorage.length-1;i>=0;i--){
+      const k=localStorage.key(i);
+      if(k&&k.startsWith('cosHubKPI_'))localStorage.removeItem(k);
+    }
     location.reload();
   }
 }
@@ -2885,21 +2905,28 @@ document.addEventListener('keydown', function(e) {
   else if(key === '2' || (e.altKey && key === '2')) { e.preventDefault(); nav('calc'); }
   else if(key === '3' || (e.altKey && key === '3')) { e.preventDefault(); nav('scripts'); }
   else if(key === '4' || (e.altKey && key === '4')) { e.preventDefault(); nav('desk'); }
-  else if((e.ctrlKey || e.metaKey) && key === 'e') { e.preventDefault(); document.querySelector('[onclick*="exportData"]')?.click(); }
   else if((e.ctrlKey || e.metaKey) && key === 'k') { e.preventDefault(); document.querySelector('[onclick*="copyScript"]')?.click(); }
-  else if(key === 'escape') { e.preventDefault(); document.querySelectorAll('[onclick*="toggleSection"]').forEach(el => el.click()); }
 });
 // ── SAVED DEALS (Airtable-synced via Netlify proxy) ────────────────────
 const API_URL='/api/airtable';
 const PROSPECTS_URL='/api/prospects';
 
 let savedDealsCache=[];
+// Resolve a deal reference (Airtable record id string, or legacy numeric index)
+// to the CURRENT cache index — id-based refs survive background refetch/re-sort.
+function resolveDealIdx(ref){return typeof ref==='string'?savedDealsCache.findIndex(x=>x._atId===ref):ref;}
 
 async function loadSavedDeals(){
   try{
-    const r=await fetch(API_URL+'?sort%5B0%5D%5Bfield%5D=Saved+At&sort%5B0%5D%5Bdirection%5D=desc&maxRecords=100');
-    const json=await r.json();
-    savedDealsCache=(json.records||[]).map(rec=>({
+    // Follow Airtable's offset cursor — a single request caps at 100 records
+    let all=[],offset='';
+    do{
+      const r=await fetch(API_URL+'?sort%5B0%5D%5Bfield%5D=Saved+At&sort%5B0%5D%5Bdirection%5D=desc'+(offset?'&offset='+encodeURIComponent(offset):''));
+      const json=await r.json();
+      all=all.concat(json.records||[]);
+      offset=json.offset||'';
+    }while(offset);
+    savedDealsCache=all.map(rec=>({
       _atId:rec.id,
       address:rec.fields['Address']||'',
       seller:rec.fields['Seller']||'',
@@ -2947,6 +2974,43 @@ async function loadSavedDeals(){
   }catch(e){console.error('Airtable load error:',e);renderSavedDeals();}
 }
 
+// Builds the Airtable field set for a deal. On UPDATE (isUpdate=true) only
+// calculator-derived fields are written — Pipeline/Status/Saved At and the
+// lead-sourced contact/property facts are left alone so editing a deal never
+// knocks it back to "New" or blanks the seller's info.
+function buildDealFields(d,ld,isUpdate){
+  const fields={
+    'Address':d.propAddr||'Unknown',
+    'Seller':(d.sellerName==='[Seller Name]'?'':d.sellerName)||'',
+    'ARV':d.arv,'Repairs':d.repairs,'MAO':d.mao,'Fee':d.fee,
+    'Dispo':d.disposition,'Purchase Costs':d.purchaseCosts,'Selling Costs':d.sellingCosts,
+    'All-In':d.allin,'Profit':d.profit,'ROI':d.roi/100,
+    'Deal Score':d.score,'Score Label':d.scoreLbl,
+    'Distress':d.distress||'','Neighborhood':d.hood||'',
+    'SqFt':d.sqft||0,'Offer %':d.pct||82,'Close Days':d.closeDays||14,
+    'Deal Type':d.dealType==='agent'?'MLS / Agent':'Seller Direct',
+    'Comps Link':d.compsLink||'',
+    'Tax Records':d.taxRecords||'',
+    'Price Offered':d.priceOffered||0
+  };
+  const hasLead=ld&&Object.keys(ld).length>0;
+  if(!isUpdate||hasLead){
+    fields['Seller Phone']=ld.phone||'';
+    fields['Seller Email']=ld.email||'';
+    fields['Beds']=ld.beds||0;fields['Baths']=ld.baths||0;
+    fields['Condition']=ld.condition||'';fields['Timeline']=ld.timeline||'';
+    fields['Reason']=ld.reason||'';fields['Property Type']=ld.propType||'';
+    fields['Year Built']=ld.yearBuilt||0;fields['Lot Size']=ld.lotSize||'';
+    fields['Asking Price']=ld.askingPrice||0;fields['Mortgage']=ld.mortgage||0;
+  }
+  if(!isUpdate){
+    fields['Pipeline']='New';
+    fields['Status']='New';
+    fields['Saved At']=new Date().toISOString();
+  }
+  return fields;
+}
+
 async function saveDeal(){
   const d=getDealSummaryData();
   if(!d.arv||d.arv<=0){showBdStatus('Set an ARV before saving','var(--red)');return;}
@@ -2956,29 +3020,7 @@ async function saveDeal(){
 
   // Pull seller contact info from active lead if available
   const ld=window._activeLeadData||{};
-  const fields={
-    'Address':d.propAddr||'Unknown',
-    'Seller':d.sellerName||'',
-    'Seller Phone':ld.phone||'',
-    'Seller Email':ld.email||'',
-    'ARV':d.arv,'Repairs':d.repairs,'MAO':d.mao,'Fee':d.fee,
-    'Dispo':d.disposition,'Purchase Costs':d.purchaseCosts,'Selling Costs':d.sellingCosts,
-    'All-In':d.allin,'Profit':d.profit,'ROI':d.roi/100,
-    'Deal Score':d.score,'Score Label':d.scoreLbl,
-    'Distress':d.distress||'','Neighborhood':d.hood||'',
-    'SqFt':d.sqft||0,'Offer %':d.pct||70,'Close Days':d.closeDays||14,
-    'Beds':ld.beds||0,'Baths':ld.baths||0,
-    'Condition':ld.condition||'','Timeline':ld.timeline||'',
-    'Reason':ld.reason||'','Property Type':ld.propType||'',
-    'Year Built':ld.yearBuilt||0,'Lot Size':ld.lotSize||'',
-    'Asking Price':ld.askingPrice||0,'Mortgage':ld.mortgage||0,
-    'Deal Type':d.dealType==='agent'?'MLS / Agent':'Seller Direct',
-    'Comps Link':d.compsLink||'',
-    'Tax Records':d.taxRecords||'',
-    'Price Offered':d.priceOffered||0,
-    'Pipeline':'New',
-    'Status':'New','Saved At':new Date().toISOString()
-  };
+  const fields=buildDealFields(d,ld,!!window._editingAtId);
 
   try{
     let r;
@@ -3098,13 +3140,13 @@ function renderSavedDeals(){
           ${['New','Contacted','Offer Approved','Offer Made','Under Contract','Assigned','Closed','Dead'].map(s=>`<option value="${s}"${d.pipeline===s?' selected':''}>${s}</option>`).join('')}
         </select>
         <div class="saved-action-btns" style="display:flex;gap:6px;flex-wrap:wrap">
-          <button onclick="viewDeal(${realIdx})" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="View">👁️ View</button>
-          <button onclick="pdfDeal(${realIdx})" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="PDF">📄 PDF</button>
-          <button onclick="buyerPdf(${realIdx})" style="background:#f25116;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Buyer Sheet">🏷️ Buyer</button>
-          <button onclick="recalcDeal(${realIdx})" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Recalc">🧮 Recalc</button>
-          <button onclick="event.stopPropagation();openAssignModal(${realIdx})" style="background:#f9731622;color:#f97316;border:1px solid #f9731644;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Assign to Buyer">🤝 ${d.assignedBuyer?'Reassign':'Assign'}</button>
-          <button onclick="event.stopPropagation();openOutreach(${realIdx})" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Generate Outreach">📧 Outreach</button>
-          <button onclick="deleteDeal(${realIdx})" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700" title="Delete">✕</button>
+          <button onclick="viewDeal('${d._atId}')" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="View">👁️ View</button>
+          <button onclick="pdfDeal('${d._atId}')" style="background:#1a0a2e;color:var(--purple);border:1px solid var(--purple)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="PDF">📄 PDF</button>
+          <button onclick="buyerPdf('${d._atId}')" style="background:#f25116;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Buyer Sheet">🏷️ Buyer</button>
+          <button onclick="recalcDeal('${d._atId}')" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Recalc">🧮 Recalc</button>
+          <button onclick="event.stopPropagation();openAssignModal('${d._atId}')" style="background:#f9731622;color:#f97316;border:1px solid #f9731644;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Assign to Buyer">🤝 ${d.assignedBuyer?'Reassign':'Assign'}</button>
+          <button onclick="event.stopPropagation();openOutreach('${d._atId}')" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Generate Outreach">📧 Outreach</button>
+          <button onclick="deleteDeal('${d._atId}')" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700" title="Delete">✕</button>
         </div>
       </div>
     </div>`;
@@ -3176,6 +3218,7 @@ async function bulkDelete(){
 }
 
 function recalcDeal(idx){
+  idx=resolveDealIdx(idx);
   const d=savedDealsCache[idx];if(!d)return;
   nav('calc');
 
@@ -3234,6 +3277,7 @@ function clearEditing(){
 }
 
 function viewDeal(idx){
+  idx=resolveDealIdx(idx);
   const d=savedDealsCache[idx];if(!d)return;
   const sc=d.score>=80?'var(--red)':d.score>=60?'var(--green)':d.score>=40?'var(--amber)':'var(--t3)';
   const profitColor=d.profit>0?'var(--green)':'var(--red)';
@@ -3320,14 +3364,15 @@ function viewDeal(idx){
       ${d.taxRecords?`<a href="${esc(d.taxRecords)}" target="_blank" style="flex:1;text-align:center;background:var(--s2);color:var(--t1);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:12px;font-weight:700;text-decoration:none">📋 Tax Records</a>`:''}
     </div>
     <div style="display:flex;gap:8px">
-      <button onclick="document.getElementById('deal-modal').remove();pdfDeal(${idx})" style="flex:1;background:#1a0a2e;color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">📄 Export PDF</button>
-      <button onclick="document.getElementById('deal-modal').remove();recalcDeal(${idx})" style="flex:1;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">🧮 Recalculate</button>
+      <button onclick="document.getElementById('deal-modal').remove();pdfDeal('${d._atId}')" style="flex:1;background:#1a0a2e;color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">📄 Export PDF</button>
+      <button onclick="document.getElementById('deal-modal').remove();recalcDeal('${d._atId}')" style="flex:1;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer">🧮 Recalculate</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
 }
 
 function pdfDeal(idx){
+  idx=resolveDealIdx(idx);
   const d=savedDealsCache[idx];if(!d)return;
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   const repPsf=d.sqft>0?'$'+Math.round(d.repairs/d.sqft)+'/sqft':'';
@@ -3435,6 +3480,7 @@ function pdfDeal(idx){
 }
 
 function buyerPdf(idx){
+  idx=resolveDealIdx(idx);
   const d=savedDealsCache[idx];if(!d)return;
   const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
   const purchaseCosts=Math.round(d.disposition*0.01);
@@ -3582,11 +3628,14 @@ function buyerPdf(idx){
 }
 
 async function deleteDeal(idx){
+  idx=resolveDealIdx(idx);
   const d=savedDealsCache[idx];if(!d||!d._atId)return;
   if(!confirm('Delete this deal?'))return;
   try{
     await fetch(API_URL+'?id='+d._atId,{method:'DELETE'});
-    await loadSavedDeals();
+    savedDealsCache.splice(idx,1);
+    renderSavedDeals();
+    if(savedViewMode==='board') renderKanban();
   }catch(e){console.error('Airtable delete error:',e);}
 }
 
@@ -3603,8 +3652,8 @@ async function updatePipeline(idx, status){
 }
 
 async function updatePipelineAndRefresh(idx, status){
-  await updatePipeline(idx, status);
-  await loadSavedDeals();
+  await updatePipeline(idx, status); // sets d.pipeline locally + PATCHes Airtable
+  renderSavedDeals();
   if(savedViewMode==='board') renderKanban();
 }
 
@@ -3663,7 +3712,7 @@ function renderKanban(){
           const profitColor=d.profit>0?'var(--green)':'var(--red)';
           const sc=d.score>=80?'var(--red)':d.score>=60?'var(--green)':d.score>=40?'var(--amber)':'var(--t3)';
           return`<div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px;transition:transform .1s" onmouseover="this.style.transform='translateY(-1px)';this.style.borderColor='${color}'" onmouseout="this.style.transform='none';this.style.borderColor='var(--border)'">
-            <div onclick="viewDeal(${realIdx})" style="cursor:pointer">
+            <div onclick="viewDeal('${d._atId}')" style="cursor:pointer">
               <div style="font-size:11px;font-weight:700;color:var(--t1);margin-bottom:4px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(d.address||'No Address')}</div>
               <div style="font-size:10px;color:var(--t2);margin-bottom:6px">${esc(d.seller||'—')}</div>
               <div style="display:flex;justify-content:space-between;align-items:center">
@@ -4049,9 +4098,15 @@ async function loadLeads(){
   if(!el)return;
   el.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">Loading leads...</div>';
   try{
-    const r=await fetch(LEADS_URL+'?sort%5B0%5D%5Bfield%5D=Submitted+At&sort%5B0%5D%5Bdirection%5D=desc&maxRecords=200');
-    const json=await r.json();
-    leadsCache=(json.records||[]).map(rec=>({
+    // Follow Airtable's offset cursor — a single request caps at 100 records
+    let all=[],offset='';
+    do{
+      const r=await fetch(LEADS_URL+'?sort%5B0%5D%5Bfield%5D=Submitted+At&sort%5B0%5D%5Bdirection%5D=desc'+(offset?'&offset='+encodeURIComponent(offset):''));
+      const json=await r.json();
+      all=all.concat(json.records||[]);
+      offset=json.offset||'';
+    }while(offset);
+    leadsCache=all.map(rec=>({
       _atId:rec.id,
       address:rec.fields['Address']||'',
       city:rec.fields['City']||'',
@@ -4362,6 +4417,8 @@ try{ updateBAC(); }catch(e){}
 
 // ── OFFER DESK — batch pricing for the daily 25 ──────────────────────────
 function deskFee(arv){return arv>=900000?30000:arv>=650000?25000:arv>=400000?15000:12000;}
+// The machine standard — one MAO formula everywhere: 82% ARV − repairs − banded fee
+function stdMAO(arv,repairs){return (arv||0)*0.82-(repairs||0)-deskFee(arv||0);}
 const DESK_TIERS=[15,30,45,60];
 
 function deskParse(){
@@ -4474,9 +4531,18 @@ async function deskSaveDeal(i,btn){
   const dupe=savedDealsCache.some(x=>deskKey(x.address)===deskKey(r.addr));
   if(dupe){const dOrig=btn.textContent;btn.textContent='✓ In pipeline';btn.title='Already in the pipeline';setTimeout(()=>{btn.textContent=dOrig;},2000);return;}
   const o=btn.textContent;btn.textContent='…';btn.disabled=true;
+  // Full buyer economics so deal views / PDFs render real numbers
+  const dispo=r.offer+r.fee;
+  const purch=Math.round(dispo*0.01);
+  const sell=Math.round(r.arv*0.065);
+  const allin=dispo+purch+r.rehab+sell;
+  const profit=r.arv-allin;
   const fields={
     'Address':r.addr,'ARV':r.arv,'Repairs':r.rehab,'MAO':r.offer,'Fee':r.fee,
+    'Dispo':dispo,'Purchase Costs':purch,'Selling Costs':sell,
+    'All-In':allin,'Profit':profit,'ROI':allin>0?profit/allin:0,
     'SqFt':r.sqft,'Offer %':Math.round(r.usePct*100),'Price Offered':r.offer,
+    'Close Days':21,
     'Deal Type':'MLS / Agent','Pipeline':'Offer Made','Status':'New',
     'Notes':`Offer Desk · Agent: ${r.agent} · List ${r.list?fm(r.list):'—'} · DOM ${r.dom||'—'} · Tier ${r.tier} · BAC ${r.bac?fm(r.bac):'none'} · Total rev ${fm(r.totalRev)}`,
     'Saved At':new Date().toISOString()
@@ -4561,6 +4627,143 @@ function deskIngest(text){
   deskPrice();
 }
 
+// ── AI SCREENER — raw MLS export → /api/screen → tiered hit list ─────────
+const SCREEN_CHUNK=20;
+let _screen=null;
+
+function screenFile(input){
+  const file=input.files[0];if(!file)return;
+  const isExcel=/\.xlsx?$|\.xls$/i.test(file.name);
+  const reader=new FileReader();
+  if(isExcel){
+    reader.onload=e=>{
+      try{
+        const wb=XLSX.read(e.target.result,{type:'array'});
+        screenRun(XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]]));
+      }catch(err){screenStatus('❌ Could not read that file: '+err.message,true);}
+    };
+    reader.readAsArrayBuffer(file);
+  }else{
+    reader.onload=e=>screenRun(e.target.result);
+    reader.readAsText(file);
+  }
+  input.value='';
+}
+
+function screenRows(text){
+  const lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2)return null;
+  const hdr=deskCSVLine(lines[0]);
+  return lines.slice(1).map(l=>{
+    const c=deskCSVLine(l);
+    const o={};
+    hdr.forEach((h,i)=>{if(h&&(c[i]||'').trim())o[h]=c[i].trim();});
+    return o;
+  }).filter(o=>Object.keys(o).length>2);
+}
+
+async function screenRun(text){
+  const rows=screenRows(text);
+  if(!rows||!rows.length){screenStatus('❌ No usable rows found in that file.',true);return;}
+  const btn=document.getElementById('dk-screen-btn');
+  btn.disabled=true;
+  const all={market_note:'',properties:[],screenedAt:new Date().toLocaleString()};
+  try{
+    for(let i=0;i<rows.length;i+=SCREEN_CHUNK){
+      const chunk=rows.slice(i,i+SCREEN_CHUNK);
+      screenStatus(`⏳ Screening ${i+1}–${Math.min(i+SCREEN_CHUNK,rows.length)} of ${rows.length}… about a minute per batch, leave this tab open`);
+      const r=await fetch('/api/screen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({rows:chunk})});
+      const json=await r.json().catch(()=>({}));
+      if(!r.ok)throw new Error(json.error||('Screening failed (HTTP '+r.status+')'));
+      all.properties.push(...((json.result&&json.result.properties)||[]));
+      if(json.result&&json.result.market_note)all.market_note=json.result.market_note;
+    }
+    all.properties.sort((a,b)=>(a.tier-b.tier)||((b.dom||0)-(a.dom||0)));
+    _screen=all;
+    try{localStorage.setItem('cosOfferScreen',JSON.stringify(all));}catch(e){}
+    screenStatus('');
+    renderScreen();
+  }catch(e){
+    screenStatus('❌ '+e.message,true);
+  }
+  btn.disabled=false;
+}
+
+function screenStatus(msg,isErr){
+  const el=document.getElementById('dk-screen-status');
+  if(!el)return;
+  if(!msg){el.style.display='none';return;}
+  el.style.display='block';el.textContent=msg;el.style.color=isErr?'var(--red)':'var(--t2)';
+}
+
+function screenClear(){
+  _screen=null;
+  try{localStorage.removeItem('cosOfferScreen');}catch(e){}
+  screenStatus('');
+  renderScreen();
+}
+
+function screenToQueue(i,btn){
+  const p=_screen&&_screen.properties[i];if(!p)return;
+  const agentFirst=((p.agent&&p.agent.name)||'there').split(' ')[0]||'there';
+  const line=`${(p.address||'').replace(/,/g,' ')}, ${agentFirst}, ${p.list_price||''}, ${p.dom||''}, , ${p.sqft||''}, ${p.rehab_tier_guess||2}`;
+  const ta=document.getElementById('dk-input');
+  ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+line;
+  deskSaveState();
+  if(btn){btn.textContent='✓ In queue — add ARV';btn.disabled=true;}
+  ta.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function screenCopyAngle(i,btn){
+  const p=_screen&&_screen.properties[i];if(!p)return;
+  navigator.clipboard.writeText(p.outreach_angle||'').catch(()=>{});
+  if(btn){const o=btn.textContent;btn.textContent='✓';setTimeout(()=>{btn.textContent=o;},1500);}
+}
+
+function renderScreen(){
+  const box=document.getElementById('dk-screen-results');
+  if(!box)return;
+  if(!_screen||!_screen.properties.length){box.innerHTML='';return;}
+  const props=_screen.properties;
+  const tierColor={1:'var(--red)',2:'var(--amber)'};
+  const card=(p,i)=>`<div class="card" style="margin-bottom:8px;border-left:3px solid ${tierColor[p.tier]}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+      <div>
+        <div style="font-size:14px;font-weight:700;color:var(--t1)">${esc(p.address)} <span style="color:var(--t3);font-weight:400">· ${esc(p.zip)}</span></div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${p.list_price?fm(p.list_price):'—'} · ${p.dom||'—'} DOM · ${p.sqft?p.sqft.toLocaleString()+' sqft':'—'} · rehab guess T${p.rehab_tier_guess||2}</div>
+        <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${(p.flags||[]).map(f=>`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:${tierColor[p.tier]}22;color:${tierColor[p.tier]}">🚩 ${esc(f)}</span>`).join('')}</div>
+      </div>
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <button onclick="screenToQueue(${i},this)" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700">→ Queue</button>
+        <button onclick="screenCopyAngle(${i},this)" title="Copy the outreach angle" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700">📋 Angle</button>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--t1);margin-top:7px;line-height:1.5">${esc(p.why)}</div>
+    <div style="font-size:12px;color:var(--green);margin-top:4px;line-height:1.5"><b>Play:</b> ${esc(p.play)}</div>
+    <div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5;font-style:italic">${esc(p.outreach_angle)}</div>
+    <div style="font-size:10px;color:var(--t3);margin-top:5px">${esc((p.agent&&p.agent.name)||'')}${p.agent&&p.agent.phone?` · <a href="tel:${esc(p.agent.phone)}" style="color:var(--blue);text-decoration:none">${esc(p.agent.phone)}</a>`:''}${p.agent&&p.agent.email?` · <a href="mailto:${esc(p.agent.email)}" style="color:var(--blue);text-decoration:none">${esc(p.agent.email)}</a>`:''} · <span style="color:var(--amber)">${esc(p.arv_note||'')}</span></div>
+  </div>`;
+  const section=(tier,label)=>{
+    const items=props.map((p,i)=>({p,i})).filter(x=>x.p.tier===tier);
+    if(!items.length)return'';
+    return`<div style="font-size:11px;font-weight:800;letter-spacing:.06em;color:${tierColor[tier]};margin:12px 0 6px">${label} (${items.length})</div>`+items.map(x=>card(x.p,x.i)).join('');
+  };
+  const passed=props.filter(p=>p.tier>=3).length;
+  box.innerHTML=
+    (_screen.market_note?`<div style="font-size:12px;color:var(--t2);background:var(--card);border-radius:7px;padding:10px 12px;line-height:1.5">📉 ${esc(_screen.market_note)}</div>`:'')+
+    `<div style="font-size:10px;color:var(--amber);margin-top:6px">⚠️ ARVs here are modeled, not underwriting-grade — pull 90-day renovated solds for the zip before anything goes in writing.</div>`+
+    section(1,'TIER 1 — CHASE NOW')+
+    section(2,'TIER 2 — WATCH / CONDITIONAL')+
+    (passed?`<div style="font-size:11px;color:var(--t3);margin-top:10px">${passed} passed over (Tier 3 — retail behaving normally)${_screen.screenedAt?' · screened '+esc(_screen.screenedAt):''}</div>`:'');
+}
+
+function screenLoadState(){
+  try{
+    const s=JSON.parse(localStorage.getItem('cosOfferScreen'));
+    if(s&&s.properties){_screen=s;renderScreen();}
+  }catch(e){}
+}
+
 function deskCopy(i,kind,btn){
   const d=window._desk;if(!d)return;
   const r=d.rows[i];if(!r)return;
@@ -4597,6 +4800,7 @@ function deskExport(){
 }
 
 deskLoadState();
+screenLoadState();
 (function(){const h=(location.hash||'').replace('#','');nav(['home','desk','analyzer','calc','scripts','leads','saved','agents'].includes(h)?h:'home');})();
 
 // ── BUYERS LIST / DISPOSITION CRM ────────────────────────────────────
@@ -4861,8 +5065,9 @@ async function deleteBuyer(){
   const id=buyersCache[_editingBuyerIdx].id;
   try{
     await fetch(BUYERS_URL+'?id='+id,{method:'DELETE'});
+    buyersCache=buyersCache.filter(b=>b.id!==id);
     closeBuyerModal();
-    loadBuyers();
+    renderBuyers();
   }catch(e){
     alert('Error deleting buyer: '+e.message);
   }
@@ -4886,10 +5091,12 @@ let _outreachTab='offer';
 let _outreachTemplates={};
 
 function openOutreach(dealIdx){
+  dealIdx=resolveDealIdx(dealIdx);
   _outreachDealIdx=dealIdx;
   const d=savedDealsCache[dealIdx];
-  const name=d.seller||'Homeowner';
-  const firstName=(name.split(' ')[0])||'there';
+  let name=(d.seller||'').trim();
+  if(!name||name.startsWith('['))name='Homeowner';
+  const firstName=name==='Homeowner'?'there':(name.split(' ')[0]||'there');
   const addr=d.address||'your property';
   const offer=fm(d.mao);
   const days=d.closeDays||14;
@@ -4898,8 +5105,9 @@ function openOutreach(dealIdx){
   // ── AGENT / MLS DEALS — outreach goes to the listing agent, not the seller ──
   if(d.dealType==='MLS / Agent'){
     const agentMatch=/Agent:\s*([^·\n]+)/.exec(d.notes||'');
-    const agentName=(agentMatch?agentMatch[1].trim():'')||d.seller||'[Agent Name]';
-    const agentFirst=agentName.split(' ')[0]||'there';
+    let agentName=(agentMatch?agentMatch[1].trim():'')||(d.seller||'').trim();
+    if(!agentName||agentName.startsWith('['))agentName='[Agent Name]';
+    const agentFirst=agentName.startsWith('[')?'there':(agentName.split(' ')[0]||'there');
     const price=d.priceOffered>0?d.priceOffered:d.mao;
     const emd=price>=500000?5000:2500;
     const bacPct=hubBac();
@@ -5089,24 +5297,15 @@ function sendOutreachText(){
 let _assignDealIdx=null;
 
 function openAssignModal(dealIdx){
+  dealIdx=resolveDealIdx(dealIdx);
   _assignDealIdx=dealIdx;
   const d=savedDealsCache[dealIdx];
   document.getElementById('assign-deal-label').textContent='Deal: '+(d.address||'Unknown');
   document.getElementById('assign-search').value='';
   document.getElementById('assign-unassign-btn').style.display=d.assignedBuyer?'inline-block':'none';
-  // Load buyers if not loaded
+  // Load buyers if not loaded — reuse the paginated loader (single source of mapping)
   if(!buyersCache.length){
-    fetch(BUYERS_URL).then(r=>r.json()).then(json=>{
-      buyersCache=(json.records||[]).map(r=>{
-        const f=r.fields||{};
-        return{id:r.id,Name:f.Name||'',Company:f.Company||'',Email:f.Email||'',Phone:f.Phone||'',
-          Types:(f.Types&&f.Types.length>0)?(f.Types.map(t=>typeof t==='object'?t.name:t)):(f.Type?[typeof f.Type==='object'?f.Type.name:f.Type]:[]),
-          Status:typeof f.Status==='object'?f.Status.name:f.Status||'Active',
-          Tags:(f.Tags||[]).map(t=>typeof t==='object'?t.name:t),
-          'Buy Box':f['Buy Box']||'',Notes:f.Notes||'','Deals Closed':f['Deals Closed']||0,'Last Contact':f['Last Contact']||'','Added At':f['Added At']||''};
-      });
-      renderAssignList();
-    }).catch(()=>renderAssignList());
+    loadBuyers().then(()=>renderAssignList()).catch(()=>renderAssignList());
   }else{
     renderAssignList();
   }
