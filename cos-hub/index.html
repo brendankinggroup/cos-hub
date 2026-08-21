@@ -2802,8 +2802,8 @@ const PROSPECTS_URL='/api/prospects';
 
 let savedDealsCache=[];
 // ONE source of truth for pipeline stages (Airtable legacy names mapped on load)
-const PIPELINE_STAGES=['Analyzing','Request Approval','Offer Made','Under Contract','Assigned','Closed','Dead'];
-function mapLegacyStage(st){return st==='New'||st==='Contacted'?'Analyzing':st==='Offer Approved'?'Request Approval':(st||'Analyzing');}
+const PIPELINE_STAGES=['New','Analyzing','Request Approval','Offer Approved','Offer Made','Under Contract','Assigned','Closed','Dead'];
+function mapLegacyStage(st){return st==='Contacted'?'Analyzing':(st||'New');}
 // Resolve a deal reference (Airtable record id string, or legacy numeric index)
 // to the CURRENT cache index — id-based refs survive background refetch/re-sort.
 function resolveDealIdx(ref){return typeof ref==='string'?savedDealsCache.findIndex(x=>x._atId===ref):ref;}
@@ -2899,7 +2899,7 @@ function buildDealFields(d,ld,isUpdate){
     fields['Asking Price']=ld.askingPrice||0;fields['Mortgage']=ld.mortgage||0;
   }
   if(!isUpdate){
-    fields['Pipeline']='Analyzing';
+    fields['Pipeline']='New';
     fields['Status']='New';
     fields['Saved At']=new Date().toISOString();
   }
@@ -3628,8 +3628,8 @@ function toggleSavedView(){
   }
 }
 
-const PIPELINE_COLORS={'Analyzing':'var(--blue)','Request Approval':'#22d3ee','Offer Made':'var(--amber)','Under Contract':'#f97316','Assigned':'var(--purple)','Closed':'var(--green)','Dead':'var(--t3)'};
-const PIPELINE_BG={'Analyzing':'var(--bluedim)','Request Approval':'#0a2a2e','Offer Made':'#2a1f0a','Under Contract':'#2a150a','Assigned':'#1a0a2e','Closed':'var(--greendim)','Dead':'var(--s2)'};
+const PIPELINE_COLORS={'New':'var(--blue)','Analyzing':'#00d4ff','Request Approval':'#14b8a6','Offer Approved':'#22d3ee','Offer Made':'var(--amber)','Under Contract':'#f97316','Assigned':'var(--purple)','Closed':'var(--green)','Dead':'var(--t3)'};
+const PIPELINE_BG={'New':'var(--bluedim)','Analyzing':'#0a2a30','Request Approval':'#0a2a24','Offer Approved':'#0a2a2e','Offer Made':'#2a1f0a','Under Contract':'#2a150a','Assigned':'#1a0a2e','Closed':'var(--greendim)','Dead':'var(--s2)'};
 
 function renderKanban(){
   const board=document.getElementById('kanban-board');
@@ -3637,7 +3637,7 @@ function renderKanban(){
   const stages=PIPELINE_STAGES;
 
   board.innerHTML=stages.map(stage=>{
-    const stageDeals=deals.filter(d=>(d.pipeline||'Analyzing')===stage);
+    const stageDeals=deals.filter(d=>(d.pipeline||'New')===stage);
     const color=PIPELINE_COLORS[stage]||'var(--t3)';
     const bg=PIPELINE_BG[stage]||'var(--s2)';
     return`<div style="min-width:200px;max-width:220px;flex-shrink:0">
