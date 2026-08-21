@@ -16,6 +16,7 @@ const ScreenResult = z.object({
     dom: z.number(),
     sqft: z.number(),
     tier: z.number(),        // 1 = chase now, 2 = watch/conditional, 3 = pass
+    arv_estimate: z.number(), // modeled ARV in dollars — triage-grade, 0 when unsupported
     flags: z.array(z.string()),
     why: z.string(),
     play: z.string(),
@@ -77,6 +78,11 @@ OUTPUT FIELD RULES
   "Get the rent roll and assign on cap rate").
 - outreach_angle: 2–3 sentences addressed to THIS listing agent's situation, in a
   direct, professional, certainty-selling voice. No listing-agent commission mentions.
+- arv_estimate: your modeled after-repair value in whole dollars — conservative and
+  triage-grade, derived from the row's sqft, zip, price band, and condition language.
+  It feeds a pricing queue that computes a preliminary offer from it, and is replaced
+  by a comps-based ARV before anything goes in writing — so give your best defensible
+  number rather than refusing. Use 0 only when the row truly cannot support an estimate.
 - rehab_tier_guess: 1 cosmetic / 2 standard / 3 heavy / 4 gut, inferred from remarks,
   year built, and condition language. Default 2 when unclear.
 - agent: pull name/phone/email from the row's agent columns; empty string when absent.

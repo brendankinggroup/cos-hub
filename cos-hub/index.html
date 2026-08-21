@@ -190,7 +190,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
       <div>
         <span class="label">🔍 AI Screener</span>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">Drop the raw MLS export — every listing gets read (remarks included), the workable ones get flagged with the play, the rest get passed. Use "→ Queue" on a flagged card, then type its ARV in the queue and Price.</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">Drop the raw MLS export — every listing gets read (remarks included), the workable ones get flagged with the play, the rest get passed. "→ Queue" prices a flagged card instantly off its modeled ARV — swap in a comps-based ARV before the offer goes in writing.</div>
       </div>
       <div style="display:flex;gap:6px">
         <input type="file" id="dk-screen-file" accept=".csv,.txt,.xlsx,.xls" style="display:none" onchange="screenFile(this)"/>
@@ -4706,11 +4706,17 @@ function screenClear(){
 function screenToQueue(i,btn){
   const p=_screen&&_screen.properties[i];if(!p)return;
   const agentFirst=((p.agent&&p.agent.name)||'there').split(' ')[0]||'there';
-  const line=`${(p.address||'').replace(/,/g,' ')}, ${agentFirst}, ${p.list_price||''}, ${p.dom||''}, , ${p.sqft||''}, ${p.rehab_tier_guess||2}`;
+  const arv=p.arv_estimate>0?Math.round(p.arv_estimate):'';
+  const line=`${(p.address||'').replace(/,/g,' ')}, ${agentFirst}, ${p.list_price||''}, ${p.dom||''}, ${arv}, ${p.sqft||''}, ${p.rehab_tier_guess||2}`;
   const ta=document.getElementById('dk-input');
   ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+line;
-  deskSaveState();
-  if(btn){btn.textContent='✓ In queue — add ARV';btn.disabled=true;}
+  if(arv){
+    deskPrice(); // prices immediately off the modeled ARV — replace with comps before writing
+    if(btn){btn.textContent='✓ Queued & priced';btn.disabled=true;}
+  }else{
+    deskSaveState();
+    if(btn){btn.textContent='✓ In queue — add ARV';btn.disabled=true;}
+  }
   ta.scrollIntoView({behavior:'smooth',block:'center'});
 }
 
@@ -4730,7 +4736,7 @@ function renderScreen(){
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
       <div>
         <div style="font-size:14px;font-weight:700;color:var(--t1)">${esc(p.address)} <span style="color:var(--t3);font-weight:400">· ${esc(p.zip)}</span></div>
-        <div style="font-size:11px;color:var(--t3);margin-top:2px">${p.list_price?fm(p.list_price):'—'} · ${p.dom||'—'} DOM · ${p.sqft?p.sqft.toLocaleString()+' sqft':'—'} · rehab guess T${p.rehab_tier_guess||2}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:2px">${p.list_price?fm(p.list_price):'—'} · ${p.dom||'—'} DOM · ${p.sqft?p.sqft.toLocaleString()+' sqft':'—'} · rehab guess T${p.rehab_tier_guess||2}${p.arv_estimate>0?` · <span style="color:var(--amber)">ARV ~${fm(p.arv_estimate)} (modeled)</span>`:''}</div>
         <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${(p.flags||[]).map(f=>`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:${tierColor[p.tier]}22;color:${tierColor[p.tier]}">🚩 ${esc(f)}</span>`).join('')}</div>
       </div>
       <div style="display:flex;gap:5px;flex-shrink:0">
