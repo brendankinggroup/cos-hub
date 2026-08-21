@@ -372,22 +372,14 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
 <!-- CALCULATOR -->
 <div id="p-calc" class="panel" style="display:none">
 <div style="display:flex;flex-direction:column;gap:14px">
-  <!-- BATCHDATA ADDRESS LOOKUP -->
-  <div class="card" style="border:1px solid var(--blue)44;background:linear-gradient(135deg,var(--s1) 0%,var(--bluedim) 100%)">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-      <span style="font-size:16px">📍</span>
-      <span class="label" style="margin:0;color:var(--blue)">Property Address — Syncs to Calculator & Scripts</span>
-    </div>
-    <div style="display:flex;gap:8px">
-      <input id="bd-address" type="text" placeholder="Enter address (e.g. 3016 Palace Gate Ct, Las Vegas, NV)" style="flex:1;font-size:13px;padding:10px 12px" onkeydown="if(event.key==='Enter')useAddress()" oninput="useAddress()"/>
-      <button id="bd-btn" onclick="useAddress()" style="background:var(--blue);color:#fff;border:none;border-radius:var(--r);padding:10px 20px;font-size:13px;font-weight:700;white-space:nowrap">Use Address</button>
-    </div>
-    <div id="bd-status" style="font-size:11px;color:var(--green);margin-top:6px;display:none"></div>
-  </div>
-
   <div style="display:flex;flex-direction:column;gap:10px">
     <div class="card">
       <span class="label">Property Info</span>
+      <div style="display:flex;gap:8px;margin:6px 0 4px">
+        <input id="bd-address" type="text" placeholder="Enter address (e.g. 3016 Palace Gate Ct, Las Vegas, NV)" style="flex:1;font-size:13px;padding:10px 12px" onkeydown="if(event.key==='Enter')useAddress()" oninput="useAddress()"/>
+        <button id="bd-btn" onclick="useAddress()" style="background:var(--blue);color:#fff;border:none;border-radius:var(--r);padding:10px 20px;font-size:13px;font-weight:700;white-space:nowrap">Use Address</button>
+      </div>
+      <div id="bd-status" style="font-size:11px;color:var(--green);margin-bottom:8px;display:none"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
         <div>
   <span class="label" style="margin-bottom:4px">ARV</span>
@@ -399,54 +391,8 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
   </div>
   <span class="hdr" id="c-arv-lbl" style="font-size:0;height:0;overflow:hidden">$380,000</span>
 </div>
-        <div><span class="label">Neighborhood</span>
-          <select id="c-hood" onchange="calcMAO()" style="font-size:11px">
-            <optgroup label="── PREMIUM ──">
-              <option>Summerlin</option>
-              <option>Summerlin South</option>
-              <option>The Lakes</option>
-              <option>Anthem (Henderson)</option>
-              <option>MacDonald Ranch</option>
-              <option>Green Valley</option>
-              <option>Seven Hills</option>
-            </optgroup>
-            <optgroup label="── SOLID ──">
-              <option>Henderson</option>
-              <option>Enterprise</option>
-              <option>Spring Valley</option>
-              <option>Southwest Las Vegas</option>
-              <option>Silverado Ranch</option>
-              <option>Rhodes Ranch</option>
-              <option>Mountains Edge</option>
-              <option>Inspirada</option>
-            </optgroup>
-            <optgroup label="── MID-MARKET ──">
-              <option>Paradise</option>
-              <option>Whitney</option>
-              <option>Sunrise Manor</option>
-              <option>Winchester</option>
-              
-              <option>Aliante</option>
-              <option>Centennial Hills</option>
-              <option>Lone Mountain</option>
-            </optgroup>
-            <optgroup label="── VALUE ──">
-              <option selected>North Las Vegas</option>
-              <option>East Las Vegas</option>
-              <option>Downtown Las Vegas</option>
-              <option>Nellis / Sunrise</option>
-              <option>Craig Ranch</option>
-              <option>Cheyenne / Carey</option>
-              <option>Lamb / Pecos Corridor</option>
-              <option>Decatur / Carey</option>
-            </optgroup>
-            <optgroup label="── SURROUNDING ──">
-              <option>Pahrump</option>
-              <option>Mesquite</option>
-              <option>Boulder City</option>
-              <option>Jean / Sloan</option>
-            </optgroup>
-          </select>
+        <div><span class="label">MLS #</span>
+          <input id="c-mls" placeholder="auto-fills from address, or type it" style="font-size:13px"/>
         </div>
         <div>
   <span class="label" style="margin-bottom:4px">Sq Footage</span>
@@ -458,60 +404,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
   </div>
   <span class="hdr" id="c-sqft-lbl" style="font-size:0;height:0;overflow:hidden">1,600 sqft</span>
 </div>
-        <div><span class="label">Distress Type</span>
-          <select id="c-distress" onchange="calcMAO()" style="font-size:11px">
-            <optgroup label="── HIGH URGENCY ──">
-              <option value="Pre-foreclosure">Pre-Foreclosure (NOD)</option>
-              <option value="Notice of Trustee Sale">Notice of Trustee Sale</option>
-              <option value="Lis Pendens">Lis Pendens / Foreclosure</option>
-              <option value="Tax Delinquent">Tax Delinquent (2+ yrs)</option>
-              <option value="Code Violations">Code Violations / City Liens</option>
-              <option value="Distressed (Landvoice)">Landvoice Distressed (Mixed)</option>
-              <option value="Distressed">General Distressed</option>
-            </optgroup>
-            <optgroup label="── LIFE EVENT ──">
-              <option value="Divorce">Divorce / Separation</option>
-              <option value="Probate/Estate">Probate / Estate Sale</option>
-              <option value="Inherited">Inherited Property</option>
-              <option value="Job Relocation">Job Relocation / Transfer</option>
-              <option value="Death in Family">Death in Family</option>
-              <option value="Medical Hardship">Medical / Health Hardship</option>
-              <option value="Bankruptcy">Bankruptcy / BK Filing</option>
-            </optgroup>
-            <optgroup label="── PROPERTY SITUATION ──">
-              <option value="Vacant">Vacant / Abandoned</option>
-              <option value="Tired Landlord">Tired Landlord</option>
-              <option value="Problem Tenants">Problem Tenants / Eviction</option>
-              <option value="Hoarder/Condition">Hoarder / Severe Condition</option>
-              <option value="Fire Damage">Fire / Water / Storm Damage</option>
-              <option value="Foundation Issues">Foundation / Structural Issues</option>
-              <option value="Failed Flip">Failed Flip / Over-Improved</option>
-            </optgroup>
-            <optgroup label="── FINANCIAL ──">
-              <option value="High Equity Absentee">High Equity Absentee Owner</option>
-              <option value="Underwater">Underwater / Negative Equity</option>
-              <option value="Behind on Payments">Behind on Mortgage Payments</option>
-              <option value="Debt Consolidation">Debt Consolidation</option>
-              <option value="HOA Delinquent">HOA Delinquent</option>
-              <option value="IRS Tax Lien">IRS / Federal Tax Lien</option>
-            </optgroup>
-            <optgroup label="── MLS RELATED ──">
-              <option value="FSBO/Expired">FSBO / For Sale By Owner</option>
-              <option value="Expired Listing">Expired MLS Listing</option>
-              <option value="Price Reduced">Price Reduced (Active MLS)</option>
-              <option value="Failed to Close">Failed to Close / Fell Out</option>
-              <option value="Short Sale">Short Sale / Pre-Short Sale</option>
-            </optgroup>
-            <optgroup label="── OTHER ──">
-              <option value="Downsizing">Downsizing / Empty Nester</option>
-              <option value="Upsizing">Upsizing / Growing Family</option>
-              <option value="Out of State Owner">Out of State Owner</option>
-              <option value="Builder/Developer">Builder / Developer Closeout</option>
-              <option value="Corporate REO">Corporate Owned / REO</option>
-              <option value="Other">Other / Unknown</option>
-            </optgroup>
-          </select>
-        </div>
+        
       </div>
     </div>
     <div class="card">
@@ -530,7 +423,8 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
           <span class="hdr" id="c-rep-slider" style="font-size:20px;color:var(--amber)">$48,000</span>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <button onclick="const b=document.getElementById('c-itemized');const open=b.style.display==='none';b.style.display=open?'grid':'none';this.textContent=open?'▾ Itemized repairs (kitchen, bath, roof, HVAC)':'▸ Itemized repairs (kitchen, bath, roof, HVAC)'" style="background:transparent;border:none;color:var(--t2);font-size:11px;font-weight:700;padding:0 0 8px;cursor:pointer;text-align:left">▸ Itemized repairs (kitchen, bath, roof, HVAC)</button>
+      <div id="c-itemized" style="display:none;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div><span class="label">Kitchen <span style="color:var(--t3);font-weight:400">($18K–$35K)</span></span>
           <input type="number" id="c-r1" placeholder="0" oninput="syncSliderToOverride()" style="font-size:14px;text-align:right"/></div>
         <div><span class="label">Bathroom <span style="color:var(--t3);font-weight:400">($8K–$18K)</span></span>
@@ -605,7 +499,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
         <div>
           <span class="label">Assignment Fee</span>
           <div style="display:flex;align-items:center;gap:8px">
-            <input type="number" min="0" max="100000" step="500" value="13000" id="c-fee" oninput="window._feeManual=true;document.getElementById('c-fee-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" style="font-size:16px;font-weight:700;color:var(--green);border-color:var(--green)55;text-align:right;width:120px"/>
+            <input type="number" min="0" max="100000" step="500" value="15000" id="c-fee" oninput="window._feeManual=true;document.getElementById('c-fee-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()" style="font-size:16px;font-weight:700;color:var(--green);border-color:var(--green)55;text-align:right;width:120px"/>
             <span id="c-fee-lbl" style="font-size:14px;font-weight:700;color:var(--green)" class="hdr">$13,000</span>
           </div>
         </div>
@@ -625,7 +519,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
   </div>
   <div style="display:flex;flex-direction:column;gap:10px">
     <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="card" style="text-align:center;padding:20px">
+      <div class="card" style="display:none;text-align:center;padding:20px">
         <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">Deal Score</div>
         <div class="hdr" id="c-score-num" style="font-size:72px;color:var(--green);line-height:1">76</div>
         <div id="c-score-lbl" style="font-size:12px;font-weight:700;color:var(--green);margin-top:2px">✅ SOLID DEAL</div>
@@ -678,8 +572,8 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       <div style="margin-bottom:10px">
         <span class="label">Deal Type</span>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <button id="dt-seller" onclick="setDealType('seller')" style="padding:10px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--green);background:var(--greendim);color:var(--green);cursor:pointer">🏠 Seller Direct</button>
-          <button id="dt-agent" onclick="setDealType('agent')" style="padding:10px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">🤝 MLS / Agent</button>
+          <button id="dt-agent" onclick="setDealType('agent')" style="padding:10px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue);cursor:pointer">🤝 MLS / Agent</button>
+          <button id="dt-seller" onclick="setDealType('seller')" style="padding:10px;font-size:13px;font-weight:700;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">🏠 Seller Direct</button>
         </div>
       </div>
 
@@ -902,14 +796,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="pipeline-filters">
     <button onclick="filterPipeline('all')" class="pf-btn pf-active" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue);cursor:pointer">All</button>
-    <button onclick="filterPipeline('New')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">New</button>
-    <button onclick="filterPipeline('Contacted')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Contacted</button>
-    <button onclick="filterPipeline('Offer Approved')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Offer Approved</button>
-    <button onclick="filterPipeline('Offer Made')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Offer Made</button>
-    <button onclick="filterPipeline('Under Contract')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Under Contract</button>
-    <button onclick="filterPipeline('Assigned')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Assigned</button>
-    <button onclick="filterPipeline('Closed')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Closed</button>
-    <button onclick="filterPipeline('Dead')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">Dead</button>
+    <span id="pf-stage-btns" style="display:contents"></span>
   </div>
   <!-- Bulk Action Bar -->
   <div id="bulk-bar" style="display:none;position:sticky;top:0;z-index:100;background:var(--blue);border-radius:8px;padding:10px 16px;margin-bottom:12px;display:none;align-items:center;justify-content:space-between;gap:12px;animation:fadeUp .15s ease;flex-wrap:wrap">
@@ -1099,7 +986,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
 const fm=(n)=>n||n===0?'$'+Math.round(n).toLocaleString():'—';
 const esc=(s)=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 function _csvSplitRow(row){const cols=[];let cur='',inQ=false;for(let i=0;i<row.length;i++){const ch=row[i];if(inQ){if(ch==='"'&&row[i+1]==='"'){cur+='"';i++;}else if(ch==='"'){inQ=false;}else{cur+=ch;}}else{if(ch==='"'){inQ=true;}else if(ch===','){cols.push(cur.trim());cur='';}else{cur+=ch;}}}cols.push(cur.trim());return cols;}
-let contactMode='seller',sTab='cold',calcMode='quick',route='seller',openObj=null;
+let contactMode='agent',sTab='cold',calcMode='quick',route='agent',openObj=null;
 const motVals={timeline:3,financial:3,condition:3,attachment:3,competition:3};
 const activePains=new Set();
 let leads=[],filteredLeads=[];
@@ -1828,7 +1715,7 @@ function setCalcMode(m){
 
 function updateCalcPct(v){const p=+v;const lbl=document.getElementById('c-pct-lbl');if(lbl)lbl.textContent=p+'% '+(p<=59?'Very Conservative':p<=65?'Conservative':p<=72?'Standard':p<=79?'Competitive':p<=89?'Aggressive':p<=94?'Very Aggressive':'Retail / Full Price');calcMAO();}
 
-let currentDealType='seller';
+let currentDealType='agent';
 function setDealType(type){
   currentDealType=type;
   const s=document.getElementById('dt-seller');
@@ -1859,12 +1746,12 @@ function calcMAO(){
   const pct=(+(document.getElementById('c-pct')||{value:82}).value||82)/100;
   let fee=+(document.getElementById('c-fee')||{value:0}).value||0;
   if(!window._feeManual){
-    // Fee follows the standard bands until the user types their own number
-    fee=deskFee(arv);
+    // Fee follows the standard bands until the user types their own number ($15K before an ARV exists)
+    fee=arv>0?deskFee(arv):15000;
     const feeEl=document.getElementById('c-fee');
     if(feeEl&&+feeEl.value!==fee){feeEl.value=fee;const fl=document.getElementById('c-fee-lbl');if(fl)fl.textContent='$'+fee.toLocaleString();}
   }
-  if(!fee)fee=deskFee(arv);
+  if(!fee)fee=arv>0?deskFee(arv):15000;
   const hood=(document.getElementById('c-hood')||{value:'Enterprise'}).value;
   let mao;
   if(calcMode==='quick'){mao=arv*pct-repairs-fee;}
@@ -2581,7 +2468,7 @@ function getDealSummaryData(){
   const compsLink=(document.getElementById('c-comps-link')||{value:''}).value.trim();
   const taxRecords=(document.getElementById('c-tax-records')||{value:''}).value.trim();
   const priceOffered=+(document.getElementById('c-price-offered')||{value:''}).value||0;
-  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script,dealType,compsLink,taxRecords,priceOffered};
+  return{mao,fee,arv,repairs,disposition,purchaseCosts,sellingCosts,allin,profit,roi,sellerName,propAddr,closeDays,distress,hood,pct,score,scoreLbl,sqft,psf,maoLo,maoHi,script,dealType,compsLink,taxRecords,priceOffered,mls:(document.getElementById('c-mls')||{value:''}).value.trim()};
 }
 
 async function exportDealEmail(){
@@ -2912,6 +2799,9 @@ const API_URL='/api/airtable';
 const PROSPECTS_URL='/api/prospects';
 
 let savedDealsCache=[];
+// ONE source of truth for pipeline stages (Airtable legacy names mapped on load)
+const PIPELINE_STAGES=['Analyzing','Request Approval','Offer Made','Under Contract','Assigned','Closed','Dead'];
+function mapLegacyStage(st){return st==='New'||st==='Contacted'?'Analyzing':st==='Offer Approved'?'Request Approval':(st||'Analyzing');}
 // Resolve a deal reference (Airtable record id string, or legacy numeric index)
 // to the CURRENT cache index — id-based refs survive background refetch/re-sort.
 function resolveDealIdx(ref){return typeof ref==='string'?savedDealsCache.findIndex(x=>x._atId===ref):ref;}
@@ -2957,7 +2847,9 @@ async function loadSavedDeals(){
       baths:rec.fields['Baths']||0,
       condition:rec.fields['Condition']||'',
       timeline:rec.fields['Timeline']||'',
-      pipeline:rec.fields['Pipeline']||'New',
+      pipeline:mapLegacyStage(rec.fields['Pipeline']),
+      contactedOn:rec.fields['Contacted On']||'',
+      mls:rec.fields['MLS #']||'',
       status:rec.fields['Status']||'New',
       notes:rec.fields['Notes']||'',
       askingPrice:rec.fields['Asking Price']||0,
@@ -2993,6 +2885,7 @@ function buildDealFields(d,ld,isUpdate){
     'Tax Records':d.taxRecords||'',
     'Price Offered':d.priceOffered||0
   };
+  if(d.mls)fields['MLS #']=d.mls;
   const hasLead=ld&&Object.keys(ld).length>0;
   if(!isUpdate||hasLead){
     fields['Seller Phone']=ld.phone||'';
@@ -3004,7 +2897,7 @@ function buildDealFields(d,ld,isUpdate){
     fields['Asking Price']=ld.askingPrice||0;fields['Mortgage']=ld.mortgage||0;
   }
   if(!isUpdate){
-    fields['Pipeline']='New';
+    fields['Pipeline']='Analyzing';
     fields['Status']='New';
     fields['Saved At']=new Date().toISOString();
   }
@@ -3136,8 +3029,12 @@ function renderSavedDeals(){
       ${d.compsLink||d.taxRecords?'<div style="display:flex;gap:12px;margin-bottom:8px">'+(d.compsLink?'<a href="'+esc(d.compsLink)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--blue);text-decoration:none;font-weight:600">🔗 View Comps</a>':'')+(d.taxRecords?'<a href="'+esc(d.taxRecords)+'" target="_blank" onclick="event.stopPropagation()" style="font-size:11px;color:var(--t2);text-decoration:none;font-weight:600">📋 Tax Records</a>':'')+'</div>':''}
       <!-- Row 3: Actions -->
       <div class="saved-actions" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <label onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:${d.contactedOn?'var(--green)':'var(--t3)'};cursor:pointer;white-space:nowrap">
+          <input type="checkbox" ${d.contactedOn?'checked':''} onchange="toggleContacted('${d._atId}',this)" style="width:14px;height:14px;cursor:pointer;accent-color:var(--green)"/>
+          ${d.contactedOn?'✓ Contacted '+fmtShortDate(d.contactedOn):'Contacted'}
+        </label>
         <select onchange="updatePipeline(${realIdx},this.value)" style="font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--t1);font-weight:600;cursor:pointer;width:auto">
-          ${['New','Contacted','Offer Approved','Offer Made','Under Contract','Assigned','Closed','Dead'].map(s=>`<option value="${s}"${d.pipeline===s?' selected':''}>${s}</option>`).join('')}
+          ${PIPELINE_STAGES.map(s=>`<option value="${s}"${d.pipeline===s?' selected':''}>${s}</option>`).join('')}
         </select>
         <div class="saved-action-btns" style="display:flex;gap:6px;flex-wrap:wrap">
           <button onclick="viewDeal('${d._atId}')" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="View">👁️ View</button>
@@ -3149,8 +3046,45 @@ function renderSavedDeals(){
           <button onclick="deleteDeal('${d._atId}')" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700" title="Delete">✕</button>
         </div>
       </div>
+      ${d.mls?`<div style="font-size:10px;color:var(--t3);margin-top:8px">MLS # ${esc(d.mls)}</div>`:''}
+      <div style="margin-top:8px" onclick="event.stopPropagation()">
+        <textarea placeholder="Notes…" onblur="saveDealNotes('${d._atId}',this)" style="width:100%;font-size:11px;min-height:34px;resize:vertical;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--t1);font-family:'DM Sans',sans-serif">${esc(d.notes||'')}</textarea>
+      </div>
     </div>`;
   }).join('');
+}
+
+function fmtShortDate(iso){try{return new Date(iso+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});}catch(e){return iso;}}
+
+async function toggleContacted(atId,cb){
+  const idx=resolveDealIdx(atId);
+  const d=savedDealsCache[idx];if(!d)return;
+  const val=cb.checked?new Date().toISOString().slice(0,10):null;
+  try{
+    const r=await fetch(API_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{id:d._atId,fields:{'Contacted On':val}}]})});
+    const json=await r.json();
+    if(json.error)throw new Error(json.error.message||json.error);
+    d.contactedOn=val||'';
+    renderSavedDeals();
+    if(savedViewMode==='board')renderKanban();
+  }catch(e){
+    cb.checked=!cb.checked;
+    alert('Could not save — add a Date field named "Contacted On" to the Saved Deals table in Airtable, then try again.');
+  }
+}
+
+async function saveDealNotes(atId,ta){
+  const idx=resolveDealIdx(atId);
+  const d=savedDealsCache[idx];if(!d)return;
+  const v=ta.value;
+  if(v===(d.notes||''))return;
+  try{
+    const r=await fetch(API_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{id:d._atId,fields:{'Notes':v}}]})});
+    const json=await r.json();
+    if(json.error)throw new Error('save failed');
+    d.notes=v;
+    ta.style.borderColor='var(--green)';setTimeout(()=>{ta.style.borderColor='var(--border)';},1200);
+  }catch(e){ta.style.borderColor='var(--red)';}
 }
 
 window._editingAtId=null;
@@ -3235,8 +3169,7 @@ function recalcDeal(idx){
   set('c-close-days',d.closeDays||14);
   const feeLbl=document.getElementById('c-fee-lbl');if(feeLbl)feeLbl.textContent='$'+(d.fee||13000).toLocaleString();
 
-  const hoodEl=document.getElementById('c-hood');if(hoodEl)hoodEl.value=d.hood||'Enterprise';
-  const distEl=document.getElementById('c-distress');if(distEl)distEl.value=d.distress||'Other';
+  const mlsEl=document.getElementById('c-mls');if(mlsEl)mlsEl.value=d.mls||'';
 
   const sellerEl=document.getElementById('c-seller-name');if(sellerEl)sellerEl.value=d.seller||'';
   const propEl=document.getElementById('c-prop-addr');if(propEl)propEl.value=d.address||'';
@@ -3658,6 +3591,10 @@ async function updatePipelineAndRefresh(idx, status){
 }
 
 let currentPipelineFilter='all';
+function initPipelineFilters(){
+  const box=document.getElementById('pf-stage-btns');
+  if(box)box.innerHTML=PIPELINE_STAGES.map(st=>`<button onclick="filterPipeline('${st}')" class="pf-btn" style="padding:5px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer">${st}</button>`).join('');
+}
 function filterPipeline(status){
   currentPipelineFilter=status;
   document.querySelectorAll('.pf-btn').forEach(b=>{
@@ -3689,16 +3626,16 @@ function toggleSavedView(){
   }
 }
 
-const PIPELINE_COLORS={'New':'var(--blue)','Contacted':'var(--cyan,#00d4ff)','Offer Approved':'#22d3ee','Offer Made':'var(--amber)','Under Contract':'#f97316','Assigned':'var(--purple)','Closed':'var(--green)','Dead':'var(--t3)'};
-const PIPELINE_BG={'New':'var(--bluedim)','Contacted':'#0a2a30','Offer Approved':'#0a2a2e','Offer Made':'#2a1f0a','Under Contract':'#2a150a','Assigned':'#1a0a2e','Closed':'var(--greendim)','Dead':'var(--s2)'};
+const PIPELINE_COLORS={'Analyzing':'var(--blue)','Request Approval':'#22d3ee','Offer Made':'var(--amber)','Under Contract':'#f97316','Assigned':'var(--purple)','Closed':'var(--green)','Dead':'var(--t3)'};
+const PIPELINE_BG={'Analyzing':'var(--bluedim)','Request Approval':'#0a2a2e','Offer Made':'#2a1f0a','Under Contract':'#2a150a','Assigned':'#1a0a2e','Closed':'var(--greendim)','Dead':'var(--s2)'};
 
 function renderKanban(){
   const board=document.getElementById('kanban-board');
   const deals=savedDealsCache;
-  const stages=['New','Contacted','Offer Approved','Offer Made','Under Contract','Assigned','Closed','Dead'];
+  const stages=PIPELINE_STAGES;
 
   board.innerHTML=stages.map(stage=>{
-    const stageDeals=deals.filter(d=>(d.pipeline||'New')===stage);
+    const stageDeals=deals.filter(d=>(d.pipeline||'Analyzing')===stage);
     const color=PIPELINE_COLORS[stage]||'var(--t3)';
     const bg=PIPELINE_BG[stage]||'var(--s2)';
     return`<div style="min-width:200px;max-width:220px;flex-shrink:0">
@@ -3720,12 +3657,12 @@ function renderKanban(){
                 <span style="font-size:10px;font-weight:700;color:${profitColor}">${fm(d.profit)}</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-                <span style="font-size:9px;color:var(--t3)">${d.dealType||'—'}</span>
+                <span style="font-size:9px;color:var(--t3)">${d.dealType||'—'}${d.contactedOn?' · <span style=\"color:var(--green)\">✓☎</span>':''}${d.notes?' 📝':''}</span>
                 <span style="font-size:10px;font-weight:700;color:${sc}">${d.score||0}</span>
               </div>
             </div>
             <select onchange="updatePipelineAndRefresh(${realIdx},this.value)" style="width:100%;margin-top:6px;font-size:9px;padding:3px 4px;border-radius:4px;border:1px solid var(--border);background:var(--s1);color:var(--t2);font-weight:700;cursor:pointer">
-              ${['New','Contacted','Offer Approved','Offer Made','Under Contract','Assigned','Closed','Dead'].map(s=>`<option value="${s}"${d.pipeline===s?' selected':''}>${s}</option>`).join('')}
+              ${PIPELINE_STAGES.map(s=>`<option value="${s}"${d.pipeline===s?' selected':''}>${s}</option>`).join('')}
             </select>
           </div>`;
         }).join(''):'<div style="text-align:center;padding:20px 8px;font-size:11px;color:var(--t3)">No deals</div>'}
@@ -3814,8 +3751,16 @@ function exportSavedPDF(){
 
 // ── BATCHDATA PROPERTY LOOKUP ──────────────────────────────────────────
 function useAddress(){
-  const addr=document.getElementById('bd-address').value.trim();
+  let addr=document.getElementById('bd-address').value.trim();
   if(!addr)return;
+
+  // MLS number arriving as an address suffix (e.g. "… 89142 #2774524") → MLS field
+  const mlsMatch=addr.match(/#\s*(\d{5,})\s*$/);
+  if(mlsMatch){
+    const mlsEl=document.getElementById('c-mls');
+    if(mlsEl&&!mlsEl.value)mlsEl.value=mlsMatch[1];
+    addr=addr.replace(/#\s*\d{5,}\s*$/,'').trim().replace(/,$/,'');
+  }
 
   // Sync address to Calculator and Scripts
   const propEl=document.getElementById('c-prop-addr');
@@ -4397,7 +4342,7 @@ function checkSession(){
 
 initTheme();
 checkSession();
-loadState();loadKPI();initStackFilters();updateListType();setRoute('seller');setContact('seller');renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();loadSavedDeals();
+loadState();loadKPI();initStackFilters();initPipelineFilters();updateListType();setRoute(route);setContact(contactMode);setDealType(currentDealType);renderMotDims();renderPains();renderObjs();genScript();calcMAO();updateMot();loadSavedDeals();
 
 // ── BAC readout (hooks calcMAO non-invasively) ───────────────────────────
 const __calcMAO_base = calcMAO;
@@ -4807,6 +4752,28 @@ function deskExport(){
 
 deskLoadState();
 screenLoadState();
+
+// Google Places autocomplete on the address bar — activates when GOOGLE_MAPS_KEY is set in Vercel
+(async function(){
+  try{
+    const r=await fetch('/api/config');
+    const cfg=await r.json();
+    if(!cfg.googleMapsKey)return;
+    window._initPlaces=function(){
+      const el=document.getElementById('bd-address');
+      if(!el||!window.google||!google.maps||!google.maps.places)return;
+      const ac=new google.maps.places.Autocomplete(el,{types:['address'],componentRestrictions:{country:'us'},fields:['formatted_address']});
+      ac.addListener('place_changed',()=>{
+        const pl=ac.getPlace();
+        if(pl&&pl.formatted_address){el.value=pl.formatted_address;useAddress();}
+      });
+    };
+    const sc=document.createElement('script');
+    sc.src='https://maps.googleapis.com/maps/api/js?key='+encodeURIComponent(cfg.googleMapsKey)+'&libraries=places&callback=_initPlaces';
+    sc.async=true;
+    document.head.appendChild(sc);
+  }catch(e){}
+})();
 (function(){const h=(location.hash||'').replace('#','');nav(['home','desk','analyzer','calc','scripts','leads','saved','agents'].includes(h)?h:'home');})();
 
 // ── BUYERS LIST / DISPOSITION CRM ────────────────────────────────────
