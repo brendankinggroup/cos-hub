@@ -2,6 +2,7 @@
 // Takes arbitrary pasted text (spreadsheet rows, jumbled columns, freeform
 // notes) and returns clean, canonical queue rows. ANTHROPIC_API_KEY required.
 import Anthropic from '@anthropic-ai/sdk';
+import { requireRole, unauthorized } from './_auth.js';
 import { z } from 'zod';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 
@@ -35,6 +36,7 @@ Extract every property you can find. Rules:
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!requireRole(req, 'admin')) return unauthorized(res);
   if (!process.env.ANTHROPIC_API_KEY) {
     return res.status(500).json({ error: 'Smart Paste not configured — add ANTHROPIC_API_KEY in Vercel project settings.' });
   }

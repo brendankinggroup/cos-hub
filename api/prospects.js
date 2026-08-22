@@ -1,18 +1,13 @@
 // Vercel serverless API route for Prospects (Deal Analyzer temp lists) — COS Hub
+import { requireRole, unauthorized } from './_auth.js';
+
 const AT_KEY = process.env.AIRTABLE_API_KEY;
 const AT_BASE = 'app467uZVWGxnatwK';
 const AT_TABLE = 'tblyo6Bej3kQhjLdm';
 const AT_URL = `https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}`;
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-
+  if (!requireRole(req, 'admin')) return unauthorized(res);
   if (!AT_KEY) {
     return res.status(500).json({ error: 'AIRTABLE_API_KEY not configured' });
   }

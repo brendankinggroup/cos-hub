@@ -1,18 +1,15 @@
 // Vercel serverless API route for Apply Leads table — COS Hub
+import { requireRole, unauthorized } from './_auth.js';
+
 const AT_KEY = process.env.AIRTABLE_API_KEY;
 const AT_BASE = 'app467uZVWGxnatwK';
 const AT_TABLE = 'tblbWdHiLX24xBbIh';
 const AT_URL = `https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}`;
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-
+  // POST (lead creation) is public — the /apply, /sell, /offer, and /agent forms
+  // depend on it. Reading, editing, and deleting leads require the hub session.
+  if (req.method !== 'POST' && !requireRole(req, 'admin')) return unauthorized(res);
   if (!AT_KEY) {
     return res.status(500).json({ error: 'AIRTABLE_API_KEY not configured' });
   }

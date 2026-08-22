@@ -3,6 +3,7 @@
 // server-side so the model is "all-knowing" regardless of what the browser
 // has loaded, then answers the question grounded in that data.
 import Anthropic from '@anthropic-ai/sdk';
+import { requireRole, unauthorized } from './_auth.js';
 
 const AT_KEY = process.env.AIRTABLE_API_KEY;
 const AT_BASE = 'app467uZVWGxnatwK';
@@ -104,6 +105,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  if (!requireRole(req, 'admin')) return unauthorized(res);
   if (!process.env.ANTHROPIC_API_KEY) {
     return res.status(500).json({ error: 'Copilot not configured — add ANTHROPIC_API_KEY in Vercel project settings.' });
   }
