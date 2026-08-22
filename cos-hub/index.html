@@ -4590,7 +4590,10 @@ function deskIngest(text){
     dom:findCol(['dom','days on']),
     arv:findCol(['arv','after repair']),
     sqft:findCol(['sqft','sq ft','square']),
-    tier:findCol(['tier','condition','reno'])
+    tier:findCol(['tier','condition','reno']),
+    city:findCol(['city']),
+    state:findCol(['state']),
+    zip:findCol(['zip','postal'])
   };
   const hasHeader=idx.addr>-1&&idx.arv>-1;
   const dataLines=hasHeader?lines.slice(1):lines;
@@ -4599,7 +4602,9 @@ function deskIngest(text){
     const c=deskCSVLine(l);
     const g=i=>i>-1?(c[i]||''):'';
     const num=i=>g(i).replace(/[^0-9.]/g,'');
-    const addr=g(idx.addr).replace(/,/g,' ').replace(/\s+/g,' ').trim();
+    // Compose the FULL address (street + city + state + zip) when the file splits them
+    let addr=[g(idx.addr),g(idx.city),g(idx.state),g(idx.zip)].filter(Boolean).join(' ');
+    addr=addr.replace(/,/g,' ').replace(/\s+/g,' ').trim();
     if(!addr||!num(idx.arv))return'';
     return[addr,g(idx.agent).replace(/,/g,' ')||'there',num(idx.list),num(idx.dom),num(idx.arv),num(idx.sqft),num(idx.tier)||'2'].join(', ');
   }).filter(Boolean);
@@ -4716,7 +4721,7 @@ function renderScreen(){
   const card=(p,i)=>`<div class="card" style="margin-bottom:8px;border-left:3px solid ${tierColor[p.tier]}">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
       <div>
-        <div style="font-size:14px;font-weight:700;color:var(--t1)">${esc(p.address)} <span style="color:var(--t3);font-weight:400">· ${esc(p.zip)}</span></div>
+        <div style="font-size:14px;font-weight:700;color:var(--t1)">${esc(p.address)}</div>
         <div style="font-size:11px;color:var(--t3);margin-top:2px">${p.list_price?fm(p.list_price):'—'} · ${p.dom||'—'} DOM · ${p.sqft?p.sqft.toLocaleString()+' sqft':'—'} · rehab guess T${p.rehab_tier_guess||2}${p.arv_estimate>0?` · <span style="color:var(--amber)">ARV ~${fm(p.arv_estimate)} (modeled)</span>`:''}</div>
         <div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap">${(p.flags||[]).map(f=>`<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:${tierColor[p.tier]}22;color:${tierColor[p.tier]}">🚩 ${esc(f)}</span>`).join('')}</div>
       </div>

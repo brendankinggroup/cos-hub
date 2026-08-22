@@ -10,7 +10,7 @@ const MAX_ROWS = 60;
 const ScreenResult = z.object({
   market_note: z.string(),
   properties: z.array(z.object({
-    address: z.string(),
+    address: z.string(), // FULL address: street, city, state zip
     zip: z.string(),
     list_price: z.number(),
     dom: z.number(),
@@ -85,6 +85,8 @@ OUTPUT FIELD RULES
   number rather than refusing. Use 0 only when the row truly cannot support an estimate.
 - rehab_tier_guess: 1 cosmetic / 2 standard / 3 heavy / 4 gut, inferred from remarks,
   year built, and condition language. Default 2 when unclear.
+- address: the COMPLETE address — street, city, state, and zip combined from the
+  row's columns (e.g. "5788 Mia Skye ST, Las Vegas, NV 89148"). Never street-only.
 - agent: pull name/phone/email from the row's agent columns; empty string when absent.
 - list_price / dom / sqft: parse numerics from the row ("$500,000" → 500000,
   "2,116" → 2116). Use 0 when truly absent.
