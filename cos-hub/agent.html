@@ -49,10 +49,10 @@
     <form class="card" id="ref-form" onsubmit="return submitReferral(event)">
         <div class="hdr" style="font-size:18px;color:var(--blue)">THE PROPERTY</div>
         <label>Property address (street, city, state, zip) *</label>
-        <input id="f-address" required placeholder="5568 Trilling Bird Dr, Las Vegas, NV 89148"/>
+        <input id="f-address" required placeholder="1234 Example Ave, Las Vegas, NV 89123"/>
         <div class="row2">
-            <div><label>MLS # (if listed)</label><input id="f-mls" placeholder="2774524"/></div>
-            <div><label>List / asking price</label><input id="f-price" inputmode="numeric" placeholder="$500,000"/></div>
+            <div><label>MLS # (if listed)</label><input id="f-mls" placeholder="1234567"/></div>
+            <div><label>List / asking price</label><input id="f-price" inputmode="numeric" placeholder="$450,000"/></div>
         </div>
         <div class="row3">
             <div><label>Beds</label><input id="f-beds" inputmode="numeric" placeholder="3"/></div>
@@ -91,12 +91,12 @@
 
         <div class="hdr" style="font-size:18px;color:var(--blue);margin-top:26px">ABOUT YOU</div>
         <div class="row2">
-            <div><label>Your name *</label><input id="f-agent" required placeholder="Sarah Johnson"/></div>
+            <div><label>Your name *</label><input id="f-agent" required placeholder="Jane Smith"/></div>
             <div><label>Brokerage *</label><input id="f-brokerage" required placeholder="Coxen &amp; King"/></div>
         </div>
         <div class="row2">
-            <div><label>Phone *</label><input id="f-phone" required inputmode="tel" placeholder="(702) 555-1234"/></div>
-            <div><label>Email *</label><input id="f-email" required type="email" placeholder="you@brokerage.com"/></div>
+            <div><label>Phone *</label><input id="f-phone" required inputmode="tel" placeholder="(702) 555-0123"/></div>
+            <div><label>Email *</label><input id="f-email" required type="email" placeholder="jane@yourbrokerage.com"/></div>
         </div>
         <label>Anything else we should know?</label>
         <textarea id="f-notes" rows="2" placeholder="Optional"></textarea>
