@@ -4154,7 +4154,7 @@ function renderIncomingLeads(){
     const statusColors={'New':'var(--blue)','Contacted':'var(--amber)','Offer Made':'var(--purple)','Converted':'var(--green)','Dead':'var(--red)'};
     const sc=statusColors[l.status]||'var(--t3)';
     const date=l.submitted?new Date(l.submitted).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
-    const sourceLabel=l.source||'Unknown';
+    const sourceLabel=l.source==='agent'?'🤝 Agent Referral':(l.source||'Unknown');
     return `<div class="card" style="margin-bottom:10px;padding:16px;cursor:pointer" onclick="viewLead('${l._atId}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
         <div>

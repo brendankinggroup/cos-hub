@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Referral — Cash Offer Specialist</title>
+    <meta name="description" content="Agents: refer a Las Vegas property that needs a cash offer. Priced within 24 hours — cash, as-is, no financing contingency, close in 14–21 days.">
+    <link rel="canonical" href="https://cashofferspecialist.com/agent">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Agent Referral — Cash Offer Specialist">
+    <meta property="og:description" content="Refer a property that needs a cash offer. Priced within 24 hours.">
+    <meta property="og:url" content="https://cashofferspecialist.com/agent">
+    <meta property="og:site_name" content="Cash Offer Specialist">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%226%22%20fill%3D%22%23061020%22%2F%3E%3Ctext%20x%3D%2216%22%20y%3D%2222%22%20font-family%3D%22sans-serif%22%20font-weight%3D%22900%22%20font-size%3D%2216%22%20fill%3D%22%234f8ef7%22%20text-anchor%3D%22middle%22%3EC%3C%2Ftext%3E%3C%2Fsvg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#f5f7fa;--card:#ffffff;--border:#e5e7eb;--blue:#4f8ef7;--green:#0ecf8a;--text:#111827;--muted:#6b7280;--r:8px}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+        .wrap{max-width:680px;margin:0 auto;padding:28px 20px 60px}
+        .hdr{font-family:'Barlow Condensed',sans-serif;font-weight:800;letter-spacing:.02em}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;box-shadow:0 1px 3px rgba(16,24,40,.07)}
+        label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 5px}
+        input,select,textarea{width:100%;font-family:'DM Sans',sans-serif;font-size:15px;padding:11px 13px;border:1px solid var(--border);border-radius:var(--r);background:#fff;color:var(--text);outline:none}
+        input:focus,select:focus,textarea:focus{border-color:var(--blue)}
+        .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+        @media(max-width:560px){.row2,.row3{grid-template-columns:1fr}}
+        .btn{width:100%;margin-top:22px;padding:15px;font-size:16px;font-weight:700;border:none;border-radius:var(--r);background:var(--blue);color:#fff;cursor:pointer;font-family:'DM Sans',sans-serif}
+        .btn:disabled{opacity:.6}
+        .pill{display:inline-block;background:#e6f9f1;color:#067a52;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;margin:4px 3px}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div style="text-align:center;margin-bottom:22px">
+        <img src="https://image-cdn.carrot.com/uploads/sites/71649/2025/12/cropped-4.png" alt="Cash Offer Specialist" style="height:64px;width:auto;margin-bottom:10px"/>
+        <div class="hdr" style="font-size:34px;line-height:1.15">Agent Referral</div>
+        <div style="font-size:15px;color:var(--muted);margin-top:6px;max-width:520px;margin-left:auto;margin-right:auto">
+            Have a listing or a client that needs a cash offer? Send it over — we'll price it and get back to you <b style="color:var(--text)">within 24 hours</b>.
+        </div>
+        <div style="margin-top:12px">
+            <span class="pill">Cash · as-is</span><span class="pill">No financing contingency</span><span class="pill">7-day due diligence</span><span class="pill">Close in 14–21 days</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);margin-top:10px">Your commission is protected — and agents who refer are taken care of.</div>
+    </div>
+
+    <form class="card" id="ref-form" onsubmit="return submitReferral(event)">
+        <div class="hdr" style="font-size:18px;color:var(--blue)">THE PROPERTY</div>
+        <label>Property address (street, city, state, zip) *</label>
+        <input id="f-address" required placeholder="5568 Trilling Bird Dr, Las Vegas, NV 89148"/>
+        <div class="row2">
+            <div><label>MLS # (if listed)</label><input id="f-mls" placeholder="2774524"/></div>
+            <div><label>List / asking price</label><input id="f-price" inputmode="numeric" placeholder="$500,000"/></div>
+        </div>
+        <div class="row3">
+            <div><label>Beds</label><input id="f-beds" inputmode="numeric" placeholder="3"/></div>
+            <div><label>Baths</label><input id="f-baths" inputmode="numeric" placeholder="2"/></div>
+            <div><label>SqFt</label><input id="f-sqft" inputmode="numeric" placeholder="1,750"/></div>
+        </div>
+        <div class="row2">
+            <div><label>Condition *</label>
+                <select id="f-condition" required>
+                    <option value="">Select…</option>
+                    <option>Move-in ready</option>
+                    <option>Light work needed</option>
+                    <option>Heavy work needed</option>
+                    <option>Full gut / major issues</option>
+                </select>
+            </div>
+            <div><label>Occupancy</label>
+                <select id="f-occupancy">
+                    <option value="">Select…</option>
+                    <option>Owner occupied</option>
+                    <option>Tenant in place</option>
+                    <option>Vacant</option>
+                </select>
+            </div>
+        </div>
+        <label>Why is cash the right fit? *</label>
+        <textarea id="f-situation" required rows="3" placeholder="Died escrow, tenant in place, appraisal issues, probate, seller needs speed/certainty…"></textarea>
+        <label>Seller's timeline</label>
+        <select id="f-timeline">
+            <option value="">Select…</option>
+            <option>ASAP — days matter</option>
+            <option>Within 30 days</option>
+            <option>1–3 months</option>
+            <option>Flexible / exploring</option>
+        </select>
+
+        <div class="hdr" style="font-size:18px;color:var(--blue);margin-top:26px">ABOUT YOU</div>
+        <div class="row2">
+            <div><label>Your name *</label><input id="f-agent" required placeholder="Sarah Johnson"/></div>
+            <div><label>Brokerage *</label><input id="f-brokerage" required placeholder="Coxen &amp; King"/></div>
+        </div>
+        <div class="row2">
+            <div><label>Phone *</label><input id="f-phone" required inputmode="tel" placeholder="(702) 555-1234"/></div>
+            <div><label>Email *</label><input id="f-email" required type="email" placeholder="you@brokerage.com"/></div>
+        </div>
+        <label>Anything else we should know?</label>
+        <textarea id="f-notes" rows="2" placeholder="Optional"></textarea>
+
+        <button class="btn" id="f-submit" type="submit">Send the Property →</button>
+        <div id="f-status" style="display:none;font-size:14px;margin-top:12px;text-align:center"></div>
+    </form>
+
+    <div id="f-done" style="display:none" class="card">
+        <div style="text-align:center;padding:20px 0">
+            <div style="font-size:44px;margin-bottom:10px">✅</div>
+            <div class="hdr" style="font-size:24px">Got it — we're on it.</div>
+            <div style="font-size:15px;color:var(--muted);margin-top:10px;max-width:440px;margin-left:auto;margin-right:auto">
+                We'll price the property and get back to you <b style="color:var(--text)">within 24 hours</b>. Need us sooner? Call or text <a href="tel:+17252261303" style="color:var(--blue);text-decoration:none;font-weight:700">(725) 226-1303</a>.
+            </div>
+            <button class="btn" style="max-width:280px" onclick="location.reload()">Refer Another Property</button>
+        </div>
+    </div>
+
+    <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:22px">
+        Cash Offer Specialist · Las Vegas, NV · (725) 226-1303 · cashofferspecialist.com
+    </div>
+</div>
+
+<script>
+const v=id=>document.getElementById(id).value.trim();
+const num=id=>+(v(id).replace(/[^0-9.]/g,''))||0;
+
+async function submitReferral(e){
+    e.preventDefault();
+    const btn=document.getElementById('f-submit');
+    const status=document.getElementById('f-status');
+    btn.disabled=true;btn.textContent='Sending…';
+    status.style.display='none';
+
+    const mls=v('f-mls');
+    const notesParts=['AGENT REFERRAL — '+v('f-brokerage')];
+    if(mls)notesParts.push('MLS # '+mls);
+    if(v('f-notes'))notesParts.push(v('f-notes'));
+
+    const fields={
+        'Address':v('f-address'),
+        'Property Type':'Agent referral',
+        'Beds':num('f-beds'),'Baths':num('f-baths'),'SqFt':num('f-sqft'),
+        'Asking Price':v('f-price'),
+        'Condition Summary':v('f-condition')+(v('f-situation')?' — '+v('f-situation'):''),
+        'Occupancy':v('f-occupancy'),
+        'Timeline':v('f-timeline'),
+        'Reason':'Agent referral — cash fit',
+        'Seller Name':v('f-agent'),
+        'Seller Phone':v('f-phone'),
+        'Seller Email':v('f-email'),
+        'Contact Pref':'Agent: call or email',
+        'Notes':notesParts.join(' · '),
+        'Status':'New',
+        'Source Page':'agent',
+        'Submitted At':new Date().toLocaleString()
+    };
+
+    let saved=false;
+    try{
+        const r=await fetch('/api/applyleads',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{fields}]})});
+        const json=await r.json();
+        saved=!!(json.records&&json.records.length);
+    }catch(err){console.error('Airtable save failed:',err);}
+
+    try{
+        await fetch('/api/notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+            subject:'🤝 Agent Referral — '+v('f-address'),
+            from_name:v('f-agent')+' ('+v('f-brokerage')+')',
+            replyto:v('f-email'),
+            'Property':v('f-address')+(mls?' · MLS # '+mls:''),
+            'List/Asking':v('f-price')||'—',
+            'Beds/Baths/SqFt':(v('f-beds')||'—')+' / '+(v('f-baths')||'—')+' / '+(v('f-sqft')||'—'),
+            'Condition':v('f-condition'),
+            'Occupancy':v('f-occupancy')||'—',
+            'Why cash fits':v('f-situation'),
+            'Timeline':v('f-timeline')||'—',
+            'Agent':v('f-agent')+' · '+v('f-brokerage')+' · '+v('f-phone')+' · '+v('f-email'),
+            'Notes':v('f-notes')||'—'
+        })});
+    }catch(err){console.error('Notify failed:',err);}
+
+    if(saved){
+        document.getElementById('ref-form').style.display='none';
+        document.getElementById('f-done').style.display='block';
+        window.scrollTo({top:0,behavior:'smooth'});
+    }else{
+        btn.disabled=false;btn.textContent='Send the Property →';
+        status.style.display='block';status.style.color='#e5405e';
+        status.textContent='Something went wrong saving your referral — please try again, or call (725) 226-1303.';
+    }
+    return false;
+}
+</script>
+</body>
+</html>
