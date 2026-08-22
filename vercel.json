@@ -5,6 +5,9 @@
   "functions": {
     "api/screen.js": {
       "maxDuration": 300
+    },
+    "api/ask.js": {
+      "maxDuration": 300
     }
   }
 }

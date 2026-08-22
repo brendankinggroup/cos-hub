@@ -940,6 +940,29 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
   </div>
 </div>
 
+<!-- COS COPILOT -->
+<button id="copilot-fab" onclick="copilotToggle()" title="Ask the Copilot — it knows your whole pipeline" style="position:fixed;bottom:22px;right:22px;z-index:900;width:54px;height:54px;border-radius:50%;border:1px solid var(--blue);background:var(--bluedim);color:var(--blue);font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.35)">🤖</button>
+<div id="copilot-panel" style="display:none;position:fixed;bottom:0;right:0;top:0;width:min(440px,100vw);z-index:950;background:var(--s1);border-left:1px solid var(--border);box-shadow:-8px 0 30px rgba(0,0,0,.4);flex-direction:column">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--border)">
+    <div>
+      <div class="hdr" style="font-size:16px;color:var(--t1)">🤖 COS COPILOT</div>
+      <div style="font-size:10px;color:var(--t3)">Knows every deal, buyer, and lead · read-only</div>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button onclick="copilotClear()" style="background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700">Clear</button>
+      <button onclick="copilotToggle()" style="background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:13px;font-weight:700">✕</button>
+    </div>
+  </div>
+  <div id="copilot-msgs" style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px"></div>
+  <div style="padding:10px 16px;border-top:1px solid var(--border)">
+    <div id="copilot-chips" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px"></div>
+    <div style="display:flex;gap:6px">
+      <textarea id="copilot-input" rows="2" placeholder="Ask anything about your pipeline…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();copilotSend();}" style="flex:1;font-size:12px;resize:none;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--t1)"></textarea>
+      <button id="copilot-send" onclick="copilotSend()" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:8px;padding:0 16px;font-size:13px;font-weight:700">Ask</button>
+    </div>
+  </div>
+</div>
+
 <!-- OUTREACH MODAL -->
 <div id="outreach-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,.6);overflow-y:auto;padding:40px 20px">
   <div style="max-width:650px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;position:relative">
@@ -3044,6 +3067,7 @@ function renderSavedDeals(){
           <button onclick="buyerPdf('${d._atId}')" style="background:#f25116;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Buyer Sheet">🏷️ Buyer</button>
           <button onclick="recalcDeal('${d._atId}')" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Recalc">🧮 Recalc</button>
           <button onclick="event.stopPropagation();openAssignModal('${d._atId}')" style="background:#f9731622;color:#f97316;border:1px solid #f9731644;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Assign to Buyer">🤝 ${d.assignedBuyer?'Reassign':'Assign'}</button>
+          <button onclick="event.stopPropagation();askDeal('${d._atId}')" style="background:#0a2a30;color:#00d4ff;border:1px solid #00d4ff44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Ask the Copilot about this deal">🤖 AI</button>
           <button onclick="event.stopPropagation();openOutreach('${d._atId}')" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:700" title="Generate Outreach">📧 Outreach</button>
           <button onclick="deleteDeal('${d._atId}')" style="background:transparent;color:var(--red);border:1px solid var(--red)44;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700" title="Delete">✕</button>
         </div>
@@ -4752,8 +4776,119 @@ function deskExport(){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cos-offer-desk.csv';a.click();
 }
 
+// ── COS COPILOT — hub-wide read-only analyst ─────────────────────────────
+let _copilotHist=[];
+let _copilotBusy=false;
+let _copilotFocus=null;
+
+const COPILOT_CHIPS=[
+  ['🩺 Pipeline health','Give me a pipeline health check: where is money sitting, what is stalled, and what should I do about it today?'],
+  ['🕐 Gone quiet?','Which deals have gone quiet — Offer Made or later with no recent contact? Rank by potential fee.'],
+  ['🎯 Today\'s priorities','What are my top 3 priorities today across deals, buyers, and leads? Be specific with addresses and names.'],
+  ['🤝 Buyer matches','Match my active offers (Offer Made and later) to the best-fit buyers in my CRM and tell me who to call first.'],
+  ['🧮 Analyze calculator','__CALC__']
+];
+
+function copilotToggle(){
+  const p=document.getElementById('copilot-panel');
+  const open=p.style.display!=='flex';
+  p.style.display=open?'flex':'none';
+  if(open){copilotRender();setTimeout(()=>{const i=document.getElementById('copilot-input');if(i)i.focus();},50);}
+}
+function copilotClear(){
+  _copilotHist=[];_copilotFocus=null;
+  try{localStorage.removeItem('cosCopilotChat');}catch(e){}
+  copilotRender();
+}
+function copilotMd(t){
+  let h=esc(t);
+  h=h.replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>');
+  h=h.replace(/^#{1,3} (.*)$/gm,'<div style="font-weight:800;margin-top:6px">$1</div>');
+  h=h.replace(/^[-•] (.*)$/gm,'<div style="padding-left:12px">• $1</div>');
+  h=h.replace(/\n/g,'<br>');
+  return h;
+}
+function copilotRender(){
+  const box=document.getElementById('copilot-msgs');
+  if(!box)return;
+  if(!_copilotHist.length){
+    box.innerHTML='<div style="font-size:12px;color:var(--t3);text-align:center;padding:30px 10px;line-height:1.6">Ask me anything — I can see all your saved deals, your whole buyers CRM, and recent leads.<br>Try a quick prompt below. 👇</div>';
+  }else{
+    box.innerHTML=_copilotHist.map(m=>m.role==='user'
+      ?`<div style="align-self:flex-end;max-width:85%;background:var(--bluedim);border:1px solid var(--blue)33;border-radius:10px 10px 2px 10px;padding:8px 11px;font-size:12px;color:var(--t1)">${esc(m.content)}</div>`
+      :`<div style="align-self:flex-start;max-width:92%;background:var(--card);border:1px solid var(--border);border-radius:10px 10px 10px 2px;padding:9px 12px;font-size:12px;color:var(--t1);line-height:1.55">${copilotMd(m.content)}</div>`
+    ).join('');
+  }
+  box.scrollTop=box.scrollHeight;
+}
+function copilotChipsInit(){
+  const el=document.getElementById('copilot-chips');
+  if(el)el.innerHTML=COPILOT_CHIPS.map((c,i)=>`<button onclick="copilotChip(${i})" style="background:transparent;border:1px solid var(--border);border-radius:14px;color:var(--t2);font-size:10px;font-weight:700;padding:4px 9px;cursor:pointer">${c[0]}</button>`).join('');
+}
+function copilotChip(i){
+  const c=COPILOT_CHIPS[i];if(!c)return;
+  const input=document.getElementById('copilot-input');
+  if(c[1]==='__CALC__'){
+    _copilotFocus={type:'calculator',snapshot:getDealSummaryData()};
+    input.value='Analyze the deal currently on my calculator. Is it worth pursuing, and at what number?';
+  }else{
+    input.value=c[1];
+  }
+  copilotSend();
+}
+function askDeal(atId){
+  const idx=resolveDealIdx(atId);
+  const d=savedDealsCache[idx];if(!d)return;
+  _copilotFocus={type:'deal',deal:d};
+  const p=document.getElementById('copilot-panel');
+  if(p.style.display!=='flex')copilotToggle();
+  document.getElementById('copilot-input').value=`Analyze this deal: ${d.address}. Current stage, economics, risks, and my exact next move.`;
+  copilotSend();
+}
+async function copilotSend(){
+  if(_copilotBusy)return;
+  const input=document.getElementById('copilot-input');
+  const q=input.value.trim();
+  if(!q)return;
+  _copilotBusy=true;
+  input.value='';
+  const sendBtn=document.getElementById('copilot-send');
+  if(sendBtn)sendBtn.disabled=true;
+  let focus=_copilotFocus;
+  if(!focus&&window._screen&&_screen.properties&&_screen.properties.length){
+    focus={type:'screener',flagged:_screen.properties.filter(p=>p.tier<3)};
+  }
+  _copilotFocus=null;
+  _copilotHist.push({role:'user',content:q});
+  copilotRender();
+  const box=document.getElementById('copilot-msgs');
+  box.insertAdjacentHTML('beforeend','<div id="copilot-spin" style="align-self:flex-start;font-size:11px;color:var(--t3);padding:6px 10px">🤖 Thinking… (10–30s)</div>');
+  box.scrollTop=box.scrollHeight;
+  try{
+    const r=await fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:q,history:_copilotHist.slice(0,-1).slice(-12),focus})});
+    const json=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(json.error||('HTTP '+r.status));
+    _copilotHist.push({role:'assistant',content:json.answer||'(no answer)'});
+  }catch(e){
+    _copilotHist.push({role:'assistant',content:'⚠️ '+e.message});
+  }
+  try{localStorage.setItem('cosCopilotChat',JSON.stringify(_copilotHist.slice(-12)));}catch(e){}
+  _copilotBusy=false;
+  if(sendBtn)sendBtn.disabled=false;
+  copilotRender();
+}
+function copilotLoadState(){
+  try{
+    const h=JSON.parse(localStorage.getItem('cosCopilotChat'));
+    if(Array.isArray(h))_copilotHist=h;
+  }catch(e){}
+  copilotChipsInit();
+}
+
 deskLoadState();
 screenLoadState();
+copilotLoadState();
 
 // Google Places autocomplete on the address bar — activates when GOOGLE_MAPS_KEY is set in Vercel
 (async function(){
