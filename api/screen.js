@@ -2,6 +2,7 @@
 // Sends a batch of raw MLS export rows to Claude and returns a tiered,
 // structured hit list. Requires the ANTHROPIC_API_KEY env var.
 import Anthropic from '@anthropic-ai/sdk';
+import { requireRole, unauthorized } from './_auth.js';
 import { z } from 'zod';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 
@@ -102,6 +103,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  if (!requireRole(req, 'admin')) return unauthorized(res);
   if (!process.env.ANTHROPIC_API_KEY) {
     return res.status(500).json({ error: 'Screener not configured — add ANTHROPIC_API_KEY in Vercel project settings.' });
   }

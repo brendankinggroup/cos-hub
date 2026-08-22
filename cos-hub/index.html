@@ -92,7 +92,8 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
     <button onclick="nav('calc')" id="n-calc" style="padding:8px 15px;font-size:12px;font-weight:700;letter-spacing:.05em;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t2)">CALCULATOR</button>
     <button onclick="nav('scripts')" id="n-scripts" style="padding:8px 15px;font-size:12px;font-weight:700;letter-spacing:.05em;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t2)">SCRIPTS</button>
     <button onclick="nav('leads')" id="n-leads" style="padding:8px 15px;font-size:12px;font-weight:700;letter-spacing:.05em;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t2)">LEADS</button>
-    <button id="theme-btn" onclick="toggleTheme()" style="padding:8px 12px;font-size:14px;border-radius:7px;border:1px solid var(--border);background:transparent;cursor:pointer" title="Toggle Light/Dark Mode">🌙</button>
+    <button id="theme-btn" onclick="toggleTheme()" style="padding:8px 12px;font-size:14px;border-radius:20px;border:1px solid var(--border);background:transparent;cursor:pointer" title="Toggle Light/Dark Mode">🌙</button>
+    <button onclick="hubLogout()" style="padding:8px 12px;font-size:11px;font-weight:700;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer" title="Sign out of the hub">Sign out</button>
   </div>
   <div style="margin-left:auto;font-size:13px;color:var(--t3)" id="list-counter">No list loaded</div>
 </div>
@@ -4343,18 +4344,52 @@ async function deleteLeadConfirm(atId){
   }catch(e){console.error('Delete lead failed:',e);}
 }
 
-// ── AUTH / LOGIN ──────────────────────────────────────────────────────
-const _hp='Q2FzaE9mZmVyU2h1ZmZsZQ==';
-function doLogin(){
+// ── AUTH / LOGIN — server-verified, role-aware session tokens ─────────
+function hubToken(){try{return localStorage.getItem('hub_token_v2')||'';}catch(e){return '';}}
+
+// Every same-origin /api/* request carries the session token automatically;
+// a 401 anywhere means the session died — clear it and re-gate.
+(function(){
+  const rawFetch=window.fetch.bind(window);
+  window.fetch=function(url,opts){
+    if(typeof url==='string'&&url.startsWith('/api/')){
+      opts=opts||{};
+      opts.headers=Object.assign({},opts.headers||{},{'x-hub-token':hubToken()});
+      return rawFetch(url,opts).then(r=>{
+        if(r.status===401&&!url.startsWith('/api/auth')){hubLogout(false);}
+        return r;
+      });
+    }
+    return rawFetch(url,opts);
+  };
+})();
+
+async function doLogin(){
   const pw=document.getElementById('login-pw').value.trim();
   const err=document.getElementById('login-error');
+  const btn=document.getElementById('login-btn');
   if(!pw){err.textContent='Please enter a password';err.style.display='block';return;}
-  if(pw===atob(_hp)){
-    const token=btoa(pw+':'+new Date().toISOString().slice(0,10));
-    sessionStorage.setItem('hub_token',token);
+  btn.disabled=true;btn.textContent='Signing in…';
+  try{
+    const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});
+    const json=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(json.error||'Sign-in failed');
+    try{localStorage.setItem('hub_token_v2',json.token);}catch(e){}
+    err.style.display='none';
     showApp();
-  }else{
-    err.textContent='Incorrect password';err.style.display='block';
+    loadSavedDeals();loadKPI();
+  }catch(e){
+    err.textContent=e.message;err.style.display='block';
+  }
+  btn.disabled=false;btn.textContent='Sign In';
+}
+
+function hubLogout(reload=true){
+  try{localStorage.removeItem('hub_token_v2');}catch(e){}
+  if(reload)location.reload();
+  else{
+    document.getElementById('login-gate').style.display='flex';
+    document.getElementById('app-wrap').style.display='none';
   }
 }
 
@@ -4364,14 +4399,11 @@ function showApp(){
 }
 
 function checkSession(){
-  const token=sessionStorage.getItem('hub_token');
+  const token=hubToken();
   if(token){
-    try{
-      const decoded=atob(token);
-      const datePart=decoded.split(':').pop();
-      if(datePart===new Date().toISOString().slice(0,10)){showApp();return;}
-    }catch(e){}
-    sessionStorage.removeItem('hub_token');
+    const parts=token.split('.');
+    if(parts.length===3&&+parts[1]>Date.now()){showApp();return;}
+    try{localStorage.removeItem('hub_token_v2');}catch(e){}
   }
   document.getElementById('login-gate').style.display='flex';
   document.getElementById('app-wrap').style.display='none';
