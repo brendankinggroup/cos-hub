@@ -8,6 +8,9 @@
     },
     "api/ask.js": {
       "maxDuration": 300
+    },
+    "api/normalize.js": {
+      "maxDuration": 300
     }
   }
 }

@@ -233,11 +233,12 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
     </div>
     <div class="card">
       <span class="label">Paste the Morning Queue</span>
-      <div style="font-size:11px;color:var(--t3);margin-bottom:6px">One property per line, comma-separated: <b style="color:var(--t2)">Address, Agent First Name, List Price, DOM, ARV, Sqft, Tier(1-4)</b> — header row optional.</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:6px">Paste anything — spreadsheet rows, tabs or commas, any column order. <b style="color:var(--t2)">✨ Smart Paste</b> cleans it up; exact format (<span style="color:var(--t2)">Address, Agent, List, DOM, ARV, Sqft, Tier</span>) prices instantly without it.</div>
       <textarea id="dk-input" rows="7" style="font-size:11px;resize:vertical;margin-bottom:8px" oninput="deskSaveState()" placeholder="6864 Armistead St Las Vegas 89149, Patti, 395000, 120, 470000, 1750, 2&#10;3338 Oneida Way Las Vegas 89169, Mike, 564000, 171, 625000, 2100, 2"></textarea>
       <input type="file" id="dk-file" accept=".csv,.txt,.xlsx,.xls" style="display:none" onchange="deskFile(this)"/>
       <div style="display:flex;gap:6px">
         <button onclick="document.getElementById('dk-file').click()" style="flex:1;background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:6px;padding:9px;font-size:12px;font-weight:700">📁 Import File</button>
+        <button id="dk-smart-btn" onclick="deskSmartPaste()" title="AI cleans up whatever you pasted — any format, any column order" style="flex:1;background:var(--purpledim);color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:9px;font-size:12px;font-weight:700">✨ Smart Paste</button>
         <button onclick="deskSample()" style="flex:1;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:9px;font-size:12px;font-weight:700">Sample Queue</button>
         <button onclick="deskPrice()" style="flex:2;background:var(--greendim);color:var(--green);border:1px solid var(--green);border-radius:6px;padding:9px;font-size:12px;font-weight:700">⚡ Price the Queue →</button>
         <button onclick="deskExport()" style="flex:1;background:transparent;color:var(--t3);border:1px solid var(--border);border-radius:6px;padding:9px;font-size:12px;font-weight:700">Export CSV</button>
@@ -4406,7 +4407,7 @@ function deskParse(){
   const raw=document.getElementById('dk-input').value.trim();
   if(!raw)return[];
   return raw.split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
-    const c=line.split(',').map(x=>x.trim());
+    const c=(line.includes('\t')?line.split('\t'):line.split(',')).map(x=>x.trim());
     return{addr:c[0]||'',agent:c[1]||'there',list:+(String(c[2]||'').replace(/[^0-9.]/g,''))||0,
       dom:+(String(c[3]||'').replace(/[^0-9.]/g,''))||0,arv:+(String(c[4]||'').replace(/[^0-9.]/g,''))||0,
       sqft:+(String(c[5]||'').replace(/[^0-9.]/g,''))||0,tier:Math.min(4,Math.max(1,+(c[6]||2)||2))};
@@ -4611,6 +4612,28 @@ function deskIngest(text){
   if(!rows.length){alert('No usable rows found — the file needs at least Address and ARV columns.');return;}
   document.getElementById('dk-input').value=rows.join('\n');
   deskPrice();
+}
+
+// ── SMART PASTE — arbitrary text → /api/normalize → canonical queue rows ──
+async function deskSmartPaste(){
+  const ta=document.getElementById('dk-input');
+  const text=ta.value.trim();
+  if(!text){alert('Paste something first — any format works.');return;}
+  const btn=document.getElementById('dk-smart-btn');
+  const orig=btn.textContent;
+  btn.textContent='✨ Cleaning…';btn.disabled=true;
+  try{
+    const r=await fetch('/api/normalize',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text})});
+    const json=await r.json().catch(()=>({}));
+    if(!r.ok)throw new Error(json.error||('HTTP '+r.status));
+    const rows=(json.rows||[]).filter(x=>x.address);
+    if(!rows.length)throw new Error('No properties found in that paste.');
+    ta.value=rows.map(x=>`${(x.address||'').replace(/,/g,' ').replace(/\s+/g,' ').trim()}, ${x.agent||'there'}, ${x.list_price||''}, ${x.dom||''}, ${x.arv||''}, ${x.sqft||''}, ${x.tier||2}`).join('\n');
+    deskPrice();
+  }catch(e){
+    alert('Smart Paste: '+e.message);
+  }
+  btn.textContent=orig;btn.disabled=false;
 }
 
 // ── AI SCREENER — raw MLS export → /api/screen → tiered hit list ─────────
