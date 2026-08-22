@@ -257,7 +257,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       </tbody>
     </table>
   </div>
-  <div style="font-size:10px;color:var(--t3);margin-top:8px">📧 = copy the agent cover email · 📋 = copy Transaction Desk field summary (price, EMD, DD, COE, BAC, POF amount) · 💾 = save to the deal pipeline as “Offer Made” · Sent ✓ = offer went out (tracked per address). Offers over $750K ARV or unusual situations → Deal Desk before sending. The queue and sent-list are remembered on this device.</div>
+  <div style="font-size:10px;color:var(--t3);margin-top:8px">📧 = copy the agent cover email · 📋 = copy Transaction Desk field summary (price, EMD, DD, COE, BAC, POF amount) · 💾 = save to the deal pipeline (lands in New) · Sent ✓ = offer went out (tracked per address). Offers over $750K ARV or unusual situations → Deal Desk before sending. The queue and sent-list are remembered on this device.</div>
 </div>
 
 <div id="p-analyzer" class="panel">
@@ -4445,7 +4445,7 @@ function deskPrice(){
       <td style="color:var(--green);font-weight:700">${fm(r.totalRev)}</td>
       <td style="white-space:nowrap"><button onclick="deskCopy(${i},'email',this)" title="Copy the agent cover email" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">📧 Email</button>
       <button onclick="deskCopy(${i},'td',this)" title="Copy the Transaction Desk field summary" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">📋 TD Fields</button>
-      <button onclick="deskSaveDeal(${i},this)" title="Save to deal pipeline as Offer Made" style="background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">💾 Save</button></td>
+      <button onclick="deskSaveDeal(${i},this)" title="Save to the deal pipeline (starts in New)" style="background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">💾 Save</button></td>
       <td style="text-align:center"><input type="checkbox" ${sent?'checked':''} onchange="deskSent(${i},this)" title="Mark offer as sent" style="width:15px;height:15px;cursor:pointer;accent-color:var(--amber)"/></td></tr>`;
     }).join('');
   }
@@ -4525,7 +4525,7 @@ async function deskSaveDeal(i,btn){
     'All-In':allin,'Profit':profit,'ROI':allin>0?profit/allin:0,
     'SqFt':r.sqft,'Offer %':Math.round(r.usePct*100),
     'Close Days':21,
-    'Deal Type':'MLS / Agent','Pipeline':'Offer Made','Status':'New',
+    'Deal Type':'MLS / Agent','Pipeline':'New','Status':'New',
     'Notes':`Offer Desk · Agent: ${r.agent} · List ${r.list?fm(r.list):'—'} · DOM ${r.dom||'—'} · Tier ${r.tier} · BAC ${r.bac?fm(r.bac):'none'} · Total rev ${fm(r.totalRev)}`,
     'Saved At':new Date().toISOString()
   };
