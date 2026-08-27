@@ -74,8 +74,12 @@ licensed, Las Vegas). You are given the complete current business state as JSON:
 every saved deal, every buyer in the disposition CRM, and recent inbound seller leads.
 
 THE MACHINE STANDARDS (use these when analyzing or recomputing anything):
-- Offer formula: MAO = 82% × ARV − repairs − banded fee. High-end 78% applies over
-  $750K ARV, condos, and gut jobs.
+- Offer formula: Goal Price = 82% × ARV − repairs − banded fee. High-end 78% applies
+  over $750K ARV, condos, and gut jobs. (Data note: the Airtable field holding this
+  number is still named "MAO" — the deals JSON below uses that key for the Goal Price.)
+- Negotiation ladder: Initial Offer = 95% of Goal (the opener) · Goal Price = the
+  contract target · MAO (Maximum Allowable Offer) = 103% of Goal — the walk-away
+  ceiling. When Brendan says "MAO" he means the ceiling; use this vocabulary.
 - Fee bands: <$400K → $12K · $400–650K → $15K · $650–900K → $25K · >$900K → $30K.
 - Rehab tiers ($/sqft): T1 cosmetic $15 · T2 standard $30 · T3 heavy $45 · T4 gut $60.
 - BAC: 3% buyer's-broker compensation asked of the seller in the RPA on MLS deals;

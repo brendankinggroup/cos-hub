@@ -401,6 +401,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       oninput="document.getElementById('c-arv-lbl').textContent='$'+(+this.value).toLocaleString();calcMAO()"
       style="font-size:18px;font-weight:700;color:var(--blue);width:100%;text-align:right" />
   </div>
+  <div id="c-arv-psf" style="font-size:10px;color:var(--t3);margin-top:3px;text-align:right"></div>
   <span class="hdr" id="c-arv-lbl" style="font-size:0;height:0;overflow:hidden">$380,000</span>
 </div>
         <div><span class="label">MLS #</span>
@@ -450,7 +451,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
         <div style="font-size:9px;color:var(--t3);margin-bottom:4px;text-transform:uppercase;letter-spacing:.07em">Or type exact total (overrides above)</div>
         <input type="number" id="c-rep-override" placeholder="e.g. 45000" oninput="syncOverrideToSlider()" style="font-size:13px;font-weight:700;color:var(--amber);border-color:var(--amber)44;padding:7px 10px;text-align:right"/>
         <div style="display:flex;justify-content:space-between;margin-top:5px">
-          <span style="font-size:9px;color:var(--t3)">Active total used in MAO</span>
+          <span style="font-size:9px;color:var(--t3)">Active total used in Goal Price</span>
           <span class="hdr" id="c-rep-total" style="font-size:14px;color:var(--amber)">$40,000</span>
         </div>
       </div>
@@ -473,6 +474,10 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
           <input id="c-tax-records" type="url" placeholder="https://drive.google.com/..." style="flex:1;font-size:12px"/>
           <button onclick="var u=document.getElementById('c-tax-records').value;if(u)window.open(u,'_blank')" style="background:var(--s2);color:var(--t2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer">Open</button>
         </div>
+      </div>
+      <div id="c-notes-wrap" style="display:none;grid-column:1/-1">
+        <span class="label">📝 Deal Notes <span style="color:var(--t3);font-weight:400">(saves to this deal)</span></span>
+        <textarea id="c-notes" placeholder="Notes…" onblur="if(window._editingAtId)saveDealNotes(window._editingAtId,this)" style="width:100%;font-size:12px;min-height:44px;resize:vertical;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--t1);font-family:'DM Sans',sans-serif"></textarea>
       </div>
     </div>
     <div class="card">
@@ -538,12 +543,13 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
         <div style="background:var(--card);border-radius:3px;height:5px;margin-top:10px;overflow:hidden"><div id="c-score-bar" style="height:100%;width:76%;background:var(--green);border-radius:3px;transition:width .4s"></div></div>
       </div>
       <div class="card" style="text-align:center;padding:20px">
-        <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">MAO</div>
+        <div style="font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:4px">Goal Price</div>
         <div class="hdr" id="c-mao" style="font-size:48px;color:var(--blue);line-height:1">$194,600</div>
+        <div id="c-mao-psf" style="font-size:10px;color:var(--t3);margin-top:3px"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:10px">
-          <div style="background:var(--card);border-radius:5px;padding:5px;text-align:center"><div style="font-size:8px;color:var(--t3)">Anchor</div><div class="hdr" id="c-mao-lo" style="font-size:13px;color:var(--t3)">$185K</div></div>
-          <div style="background:var(--bluedim);border:1px solid var(--blue)55;border-radius:5px;padding:5px;text-align:center"><div style="font-size:8px;color:var(--blue)">Target</div><div class="hdr" id="c-mao-mi" style="font-size:13px;color:var(--blue)">$195K</div></div>
-          <div style="background:var(--card);border-radius:5px;padding:5px;text-align:center"><div style="font-size:8px;color:var(--t3)">Stretch</div><div class="hdr" id="c-mao-hi" style="font-size:13px;color:var(--purple)">$200K</div></div>
+          <div style="background:var(--card);border-radius:5px;padding:5px;text-align:center"><div style="font-size:8px;color:var(--t3)">Initial Offer</div><div class="hdr" id="c-mao-lo" style="font-size:13px;color:var(--t3)">$185K</div><div id="c-mao-lo-psf" style="font-size:8px;color:var(--t3)"></div></div>
+          <div style="background:var(--bluedim);border:1px solid var(--blue)55;border-radius:5px;padding:5px;text-align:center"><div style="font-size:8px;color:var(--blue)">Goal</div><div class="hdr" id="c-mao-mi" style="font-size:13px;color:var(--blue)">$195K</div><div id="c-mao-mi-psf" style="font-size:8px;color:var(--t3)"></div></div>
+          <div title="Maximum Allowable Offer — the walk-away ceiling" style="background:var(--card);border-radius:5px;padding:5px;text-align:center"><div style="font-size:8px;color:var(--purple)">MAO (Max)</div><div class="hdr" id="c-mao-hi" style="font-size:13px;color:var(--purple)">$200K</div><div id="c-mao-hi-psf" style="font-size:8px;color:var(--t3)"></div></div>
         </div>
       </div>
     </div>
@@ -551,13 +557,13 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       <div class="card" style="border:1px solid var(--green)33">
         <div style="font-size:12px;color:var(--green);margin-bottom:4px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Rehabber's Price</div>
         <div class="hdr" id="c-disposition" style="font-size:26px;color:var(--green)">$207K</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:3px">Contract + your fee</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:3px">Contract + your fee <span id="c-dispo-psf"></span></div>
       </div>
       <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Purchase Costs <span style="font-size:11px;opacity:.6">(1%)</span></div><div class="hdr" id="c-purchase-costs" style="font-size:26px;color:var(--amber)">—</div></div>
       <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Selling Costs <span style="font-size:11px;opacity:.6">(6.5%)</span></div><div class="hdr" id="c-selling-costs" style="font-size:26px;color:var(--amber)">—</div></div>
-      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Buyer All-In</div><div class="hdr" id="c-allin" style="font-size:26px;color:var(--t1)">$247K</div><div style="font-size:11px;color:var(--t3);margin-top:3px">Dispo + purch + rehab + sell</div></div>
+      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Buyer All-In</div><div class="hdr" id="c-allin" style="font-size:26px;color:var(--t1)">$247K</div><div style="font-size:11px;color:var(--t3);margin-top:3px">Dispo + purch + rehab + sell <span id="c-allin-psf"></span></div></div>
       <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Est. Profit</div><div class="hdr" id="c-equity" style="font-size:26px;color:var(--green)">$132K</div><div style="font-size:11px;color:var(--t3);margin-top:3px">ARV − All-In</div></div>
-      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Straight ROI</div><div class="hdr" id="c-roi" style="font-size:26px;color:var(--amber)">—</div><div style="font-size:11px;color:var(--t3);margin-top:3px">Profit ÷ All-In — based on your offer price (Price Offered if set, otherwise MAO)</div></div>
+      <div class="card"><div style="font-size:13px;color:var(--t3);margin-bottom:4px">Straight ROI</div><div class="hdr" id="c-roi" style="font-size:26px;color:var(--amber)">—</div><div style="font-size:11px;color:var(--t3);margin-top:3px">Profit ÷ All-In — based on your offer price (Price Offered if set, otherwise Goal Price)</div></div>
       <div class="card" style="border:1px solid var(--green)33"><div style="font-size:13px;color:var(--green);margin-bottom:4px;font-weight:700">Your Fee</div><div class="hdr" id="c-myfee" style="font-size:26px;color:var(--green)">$13K</div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">
@@ -614,7 +620,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       <!-- Data summary bar -->
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px">
         <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center;border:1px solid var(--border)">
-          <div style="font-size:8px;color:var(--t3)">OFFER (MAO)</div>
+          <div style="font-size:8px;color:var(--t3)">OFFER (GOAL)</div>
           <div class="hdr" id="c-vs-mao" style="font-size:13px;color:var(--blue)">—</div>
         </div>
         <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center;border:1px solid var(--border)">
@@ -1019,6 +1025,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
 
 <script>
 const fm=(n)=>n||n===0?'$'+Math.round(n).toLocaleString():'—';
+const psfFm=(price,sqft)=>(price>0&&sqft>0)?'$'+Math.round(price/sqft)+'/sqft':'';
 const esc=(s)=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 function _csvSplitRow(row){const cols=[];let cur='',inQ=false;for(let i=0;i<row.length;i++){const ch=row[i];if(inQ){if(ch==='"'&&row[i+1]==='"'){cur+='"';i++;}else if(ch==='"'){inQ=false;}else{cur+=ch;}}else{if(ch==='"'){inQ=true;}else if(ch===','){cols.push(cur.trim());cur='';}else{cur+=ch;}}}cols.push(cur.trim());return cols;}
 let contactMode='agent',sTab='cold',calcMode='quick',route='agent',openObj=null;
@@ -1441,7 +1448,7 @@ function sortLeads(){
 
 function exportTop(){
   const top=filteredLeads.slice(0,10);
-  const lines=['Name,Address,City,Zip,Beds,Baths,SqFt,AI Score,Score Label,ARV,Asking,Debt,MAO,Equity%,Equity$,DOM,Price Cuts,Distress,Source,Flags,Agent,Agent Phone,Notes'];
+  const lines=['Name,Address,City,Zip,Beds,Baths,SqFt,AI Score,Score Label,ARV,Asking,Debt,Goal Price,Equity%,Equity$,DOM,Price Cuts,Distress,Source,Flags,Agent,Agent Phone,Notes'];
   const csvQ=(v)=>{const s=String(v==null?'':v);return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
   top.forEach(l=>{
     const eq=l.arv>0?Math.round(((l.arv-(l.debt||0))/l.arv)*100):0;
@@ -1485,11 +1492,11 @@ function renderLeads(){
   </div>
   ${(l.beds||l.baths||l.sqft||l.propType||l.city)?`<div style="display:flex;gap:12px;margin-bottom:8px;font-size:11px;color:var(--t2);flex-wrap:wrap">${l.propType?`<span style="font-weight:600">🏠 ${esc(l.propType)}</span>`:''}${l.beds?`<span>🛏 <b>${l.beds}</b> bed${l.beds!=1?'s':''}</span>`:''}${l.baths?`<span>🚿 <b>${l.baths}</b> bath${l.baths!=1?'s':''}</span>`:''}${l.sqft?`<span>📐 <b>${(+l.sqft).toLocaleString()}</b> sqft</span>`:''}${l.city?`<span style="margin-left:auto;color:var(--t3)">📍 ${esc(l.city)}${l.zip?', '+l.zip:''}</span>`:''}</div>`:''}
   ${l.mlsRemarks?`<div style="font-size:10px;color:var(--cyan);background:var(--bluedim);border-left:2px solid var(--cyan);padding:5px 8px;border-radius:0 5px 5px 0;margin-bottom:8px;line-height:1.4">📋 MLS: "${esc(l.mlsRemarks)}"</div>`:''}
-  ${l.notes?`<div style="font-size:10px;color:var(--t2);background:var(--card);padding:5px 8px;border-radius:5px;margin-bottom:8px;line-height:1.4;border-left:2px solid var(--border2)">${esc(l.notes)}</div>`:''}
+  <textarea placeholder="Notes…" onblur="prospectNoteSave(${i},this)" style="width:100%;margin-bottom:8px;font-size:10px;min-height:28px;resize:vertical;background:var(--card);border:1px solid var(--border2);border-radius:5px;padding:5px 8px;color:var(--t2);line-height:1.4;font-family:'DM Sans',sans-serif">${esc(l.notes||'')}</textarea>
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px">
-    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">ARV${l.arvEstimated?' <span style=\"color:var(--amber)\">est.</span>':''}</div><div class="hdr" style="font-size:13px;color:${l.arvEstimated?'var(--amber)':'var(--t1)'}">${l.arv?'$'+Math.round(l.arv/1000)+'K':'—'}</div></div>
-    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">Asking</div><div class="hdr" style="font-size:13px;color:var(--amber)">${l.asking?'$'+Math.round(l.asking/1000)+'K':'—'}</div></div>
-    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">MAO</div><div class="hdr" style="font-size:13px;color:var(--blue)">${mao>0?'$'+Math.round(mao/1000)+'K':'—'}</div></div>
+    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">ARV${l.arvEstimated?' <span style=\"color:var(--amber)\">est.</span>':''}</div><div class="hdr" style="font-size:13px;color:${l.arvEstimated?'var(--amber)':'var(--t1)'}">${l.arv?'$'+Math.round(l.arv/1000)+'K':'—'}</div>${psfFm(l.arv,+l.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(l.arv,+l.sqft)+'</div>':''}</div>
+    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">Asking</div><div class="hdr" style="font-size:13px;color:var(--amber)">${l.asking?'$'+Math.round(l.asking/1000)+'K':'—'}</div>${psfFm(l.asking,+l.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(l.asking,+l.sqft)+'</div>':''}</div>
+    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">GOAL</div><div class="hdr" style="font-size:13px;color:var(--blue)">${mao>0?'$'+Math.round(mao/1000)+'K':'—'}</div>${psfFm(mao,+l.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(mao,+l.sqft)+'</div>':''}</div>
     <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">Equity</div><div class="hdr" style="font-size:13px;color:var(--green)">${eq}%</div></div>
   </div>
   <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
@@ -1512,6 +1519,15 @@ function renderLeads(){
 function launchSellerScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('seller');document.getElementById('sc-name').value=l.name||'Homeowner';document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-offer').value=Math.max(0,Math.round(stdMAO(l.arv||0,l.repairs||0)));const lt=document.getElementById('list-type').value;const tm={preforeclosure:'preforeclosure',taxdelinquent:'taxdelinquent',probate:'probate',mls_expired:'mls_expired',mls_active:'mls_active',mls_pricecut:'mls_active',fsbo:'fsbo',vacant:'vacant',divorce:'divorce',highequity:'highequity',taxlien:'codeviolation',absentee:'tiredlandlord',distressed:'distressed',distressed_landvoice:'distressed_landvoice',damage:'damage',senior:'senior',bankruptcy:'bankruptcy',military:'military'};document.getElementById('sc-type').value=tm[lt]||'preforeclosure';genScript();}
 function launchAgentScript(idx){const l=filteredLeads[idx];if(!l)return;nav('scripts');setContact('agent');document.getElementById('sc-agent').value=l.agentName||'the listing agent';document.getElementById('sc-offer').value=Math.max(0,Math.round(stdMAO(l.arv||0,l.repairs||0)));document.getElementById('sc-addr').value=l.address||'the property';document.getElementById('sc-listprice').value=l.asking||0;document.getElementById('sc-dom').value=l.dom||0;const lt=document.getElementById('list-type').value;document.getElementById('sc-type').value=lt.includes('expired')?'mls_expired':'mls_active';genScript();}
 function launchCalc(arv,repairs){nav('calc');document.getElementById('c-arv').value=arv||380000;if(repairs>0){const sqft=+(document.getElementById('c-sqft').value)||1600;const psf=Math.round(repairs/sqft);const clamped=Math.min(80,Math.max(5,psf));document.getElementById('c-psf').value=clamped;['c-r1','c-r2','c-r3','c-r4'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});}calcMAO();}
+
+// Prospect notes edit in place (filteredLeads rows are the same objects as `leads`);
+// persists locally via saveState() and flows to Airtable on the next prospects save.
+function prospectNoteSave(i,ta){
+  const l=filteredLeads[i];if(!l)return;
+  l.notes=ta.value.trim();
+  if(typeof saveState==='function')saveState();
+  ta.style.borderColor='var(--green)';setTimeout(()=>{ta.style.borderColor='var(--border2)';},1200);
+}
 
 // ── PROSPECT KEEP / DROP ──────────────────────────────────────────────
 function keepLead(filteredIdx){
@@ -1796,6 +1812,10 @@ function calcMAO(){
   const distressVal=(document.getElementById('c-distress')||{value:''}).value;
   document.getElementById('c-mao').textContent=fm(mao);
   document.getElementById('c-mao-lo').textContent=fm(mao*.95);document.getElementById('c-mao-mi').textContent=fm(mao);document.getElementById('c-mao-hi').textContent=fm(mao*1.03);
+  // $/sqft under every price — quick comps sanity check
+  const setPsf=(id,price)=>{const el=document.getElementById(id);if(el)el.textContent=psfFm(price,sqft);};
+  setPsf('c-arv-psf',arv);setPsf('c-mao-psf',mao);
+  setPsf('c-mao-lo-psf',mao*.95);setPsf('c-mao-mi-psf',mao);setPsf('c-mao-hi-psf',mao*1.03);
   const calcRepairs=sqft*psf+flat;
   // Active total = override if set, else calculated
   const activeRepairs=repOverride>0?repOverride:calcRepairs;
@@ -1889,11 +1909,13 @@ function calcMAO(){
 
   const dispEl=document.getElementById('c-disposition');
   if(dispEl){dispEl.textContent=disposition>0?fm(disposition):'—';dispEl.style.color=disposition>0?'var(--green)':'var(--red)';}
+  const dispoPsfEl=document.getElementById('c-dispo-psf');if(dispoPsfEl)dispoPsfEl.textContent=psfFm(disposition,sqft)?'· '+psfFm(disposition,sqft):'';
+  const allinPsfEl=document.getElementById('c-allin-psf');if(allinPsfEl)allinPsfEl.textContent=psfFm(allin,sqft)?'· '+psfFm(allin,sqft):'';
   const formulaLines=[
     [`ARV × ${Math.round(pct*100)}%`,fm(arv*pct),'var(--t1)',false],
     ['− Repairs','−'+fm(repairs),'var(--red)',false],
     ['− Wholesale Fee','−'+fm(fee),'var(--red)',false],
-    ['= Contract Price (MAO)',fm(mao),'var(--blue)',true],
+    ['= Goal Price (contract target)',fm(mao),'var(--blue)',true],
     ['','','',false],
     ...(priceOffered>0?[['Price Offered (override)',fm(priceOffered),'var(--green)',false]]:[] ),
     [`Rehabber's Price (dispo)${priceOffered>0?' ★':''}`,fm(disposition),'var(--green)',false],
@@ -2288,7 +2310,7 @@ function updateMot(){
   const total=Object.values(motVals).reduce((a,v)=>a+v,0);
   const p=Math.round((total/25)*100);
   const sc=p>=75?'var(--red)':p>=50?'var(--blue)':p>=25?'var(--amber)':'var(--t3)';
-  const strat=p>=75?{l:'AGGRESSIVE — Same Day Offer',d:'Lead with anchor offer. Urgency language. Paperwork today.'}:p>=50?{l:'STANDARD — Present MAO',d:'Lead with MAO. Emphasize speed, certainty, as-is.'}:p>=25?{l:'PATIENT — Build Rapport',d:'2–3 touchpoints first. Listen more than you talk.'}:{l:'LOW — Nurture Only',d:'30-day drip. Call when circumstances change.'};
+  const strat=p>=75?{l:'AGGRESSIVE — Same Day Offer',d:'Lead with the Initial Offer. Urgency language. Paperwork today.'}:p>=50?{l:'STANDARD — Present Goal Price',d:'Lead with the Goal Price. Emphasize speed, certainty, as-is.'}:p>=25?{l:'PATIENT — Build Rapport',d:'2–3 touchpoints first. Listen more than you talk.'}:{l:'LOW — Nurture Only',d:'30-day drip. Call when circumstances change.'};
   document.getElementById('sc-mot-score').textContent=p;document.getElementById('sc-mot-score').style.color=sc;
   document.getElementById('sc-mot-bar').style.width=p+'%';document.getElementById('sc-mot-bar').style.background=sc;
   document.getElementById('sc-strategy').style.borderLeftColor=sc;document.getElementById('sc-strategy').style.color=sc;
@@ -2526,9 +2548,10 @@ async function exportDealEmail(){
 '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n'+
 'DEAL NUMBERS\n'+
 'ARV:               '+fm(d.arv)+'\n'+
-(d.sqft&&d.arv?'Price/SqFt:        $'+Math.round(d.arv/d.sqft)+'/sqft\n':'')+
+(d.sqft&&d.arv?'ARV/SqFt:          $'+Math.round(d.arv/d.sqft)+'/sqft\n':'')+
 'Rehab Cost:        '+fm(d.repairs)+'\n'+
-'Contract (MAO):    '+fm(d.mao)+'\n'+
+'Goal Price:        '+fm(d.mao)+'\n'+
+(d.sqft&&d.mao?'Goal/SqFt:         $'+Math.round(d.mao/d.sqft)+'/sqft\n':'')+
 'Wholesale Fee:     '+fm(d.fee)+'\n'+
 'Rehabbers Price:   '+fm(d.disposition)+'\n'+
 'Purchase Costs:    '+fm(d.purchaseCosts)+'\n'+
@@ -2654,7 +2677,7 @@ function exportDealPDF(){
   <div class="numbers-grid">
     <div class="num-cell"><div class="num-label">ARV</div><div class="num-value">${fm(d.arv)}</div>${arvPsf?'<div class="num-sub">'+arvPsf+'</div>':''}</div>
     <div class="num-cell"><div class="num-label">Rehab Cost</div><div class="num-value amber">${fm(d.repairs)}</div>${repPsf?'<div class="num-sub">'+repPsf+'</div>':''}</div>
-    <div class="num-cell blue-hl"><div class="num-label">Contract Price (MAO)</div><div class="num-value blue">${fm(d.mao)}</div><div class="num-sub">${d.pct}% of ARV − repairs − fee</div></div>
+    <div class="num-cell blue-hl"><div class="num-label">Goal Price</div><div class="num-value blue">${fm(d.mao)}</div><div class="num-sub">${d.pct}% of ARV − repairs − fee${d.sqft&&d.mao?' · $'+Math.round(d.mao/d.sqft)+'/sqft':''}</div></div>
     <div class="num-cell green-hl"><div class="num-label">Rehabber's Price</div><div class="num-value green">${fm(d.disposition)}</div><div class="num-sub">Contract + ${fm(d.fee)} fee</div></div>
     <div class="num-cell"><div class="num-label">Purchase Costs (1%)</div><div class="num-value amber">${fm(d.purchaseCosts)}</div></div>
     <div class="num-cell"><div class="num-label">Selling Costs (6.5%)</div><div class="num-value amber">${fm(d.sellingCosts)}</div></div>
@@ -2669,9 +2692,9 @@ function exportDealPDF(){
 <div class="section">
   <div class="section-title">Offer Range</div>
   <div class="offer-range">
-    <div class="offer-cell"><div class="lbl">Anchor (Low)</div><div class="val" style="color:var(--t3)">${fm(d.maoLo)}</div><div class="num-sub">Start here</div></div>
-    <div class="offer-cell target"><div class="lbl">Target Offer</div><div class="val" style="color:var(--blue)">${fm(d.mao)}</div><div class="num-sub">Your MAO</div></div>
-    <div class="offer-cell"><div class="lbl">Stretch (Max)</div><div class="val" style="color:var(--purple)">${fm(d.maoHi)}</div><div class="num-sub">Absolute ceiling</div></div>
+    <div class="offer-cell"><div class="lbl">Initial Offer</div><div class="val" style="color:var(--t3)">${fm(d.maoLo)}</div><div class="num-sub">Open here${d.sqft&&d.maoLo?' · $'+Math.round(d.maoLo/d.sqft)+'/sqft':''}</div></div>
+    <div class="offer-cell target"><div class="lbl">Goal Price</div><div class="val" style="color:var(--blue)">${fm(d.mao)}</div><div class="num-sub">Contract target${d.sqft&&d.mao?' · $'+Math.round(d.mao/d.sqft)+'/sqft':''}</div></div>
+    <div class="offer-cell"><div class="lbl">MAO (Max)</div><div class="val" style="color:var(--purple)">${fm(d.maoHi)}</div><div class="num-sub">Maximum Allowable Offer — ceiling${d.sqft&&d.maoHi?' · $'+Math.round(d.maoHi/d.sqft)+'/sqft':''}</div></div>
   </div>
 </div>
 
@@ -2680,7 +2703,7 @@ function exportDealPDF(){
   <div class="formula-row"><span class="fl">ARV × ${d.pct}%</span><span class="fv">${fm(d.arv*d.pct/100)}</span></div>
   <div class="formula-row"><span class="fl">− Repairs</span><span class="fv" style="color:var(--red)">−${fm(d.repairs)}</span></div>
   <div class="formula-row"><span class="fl">− Wholesale Fee</span><span class="fv" style="color:var(--red)">−${fm(d.fee)}</span></div>
-  <div class="formula-row total"><span class="fl">= Contract Price (MAO)</span><span class="fv">${fm(d.mao)}</span></div>
+  <div class="formula-row total"><span class="fl">= Goal Price</span><span class="fv">${fm(d.mao)}</span></div>
   <div style="height:10px"></div>
   <div class="formula-row"><span class="fl">Rehabber's Price (dispo)</span><span class="fv">${fm(d.disposition)}</span></div>
   <div class="formula-row"><span class="fl">+ Purchase Costs (1%)</span><span class="fv" style="color:var(--amber)">${fm(d.purchaseCosts)}</span></div>
@@ -3015,7 +3038,6 @@ function renderSavedDeals(){
           <div style="min-width:0">
             <div style="font-size:16px;font-weight:800;color:var(--t1);line-height:1.3;word-break:break-word">${esc(d.address||'No Address')}</div>
             <div style="font-size:13px;color:var(--t2);margin-top:2px;word-break:break-word">${esc(d.seller||'—')}${d.sellerPhone?' · <a href="tel:'+esc(d.sellerPhone)+'" style="color:var(--blue);text-decoration:none">'+esc(d.sellerPhone)+'</a>':''} · ${esc(d.distress||'—')} · ${date}</div>
-            ${d.notes?'<div style="font-size:11px;color:var(--amber);margin-top:3px;font-style:italic">📝 '+esc(d.notes)+'</div>':''}
             ${d.reason?'<div style="font-size:11px;color:var(--t3);margin-top:2px">Reason: '+esc(d.reason)+'</div>':''}
           </div>
         </div>
@@ -3031,14 +3053,17 @@ function renderSavedDeals(){
         <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">ARV</div>
           <div style="font-size:16px;font-weight:800;color:var(--t1);white-space:nowrap">${fm(d.arv)}</div>
+          ${psfFm(d.arv,d.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(d.arv,d.sqft)+'</div>':''}
         </div>
         <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Repairs</div>
           <div style="font-size:16px;font-weight:800;color:var(--amber);white-space:nowrap">${fm(d.repairs)}</div>
+          ${psfFm(d.repairs,d.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(d.repairs,d.sqft)+'</div>':''}
         </div>
         <div style="text-align:center;padding:10px 6px;background:var(--bluedim);border-radius:6px;overflow:hidden">
-          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">MAO</div>
+          <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Goal</div>
           <div style="font-size:16px;font-weight:800;color:var(--blue);white-space:nowrap">${fm(d.mao)}</div>
+          ${psfFm(d.mao,d.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(d.mao,d.sqft)+'</div>':''}
         </div>
         <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Fee</div>
@@ -3049,10 +3074,12 @@ function renderSavedDeals(){
         <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Dispo</div>
           <div style="font-size:16px;font-weight:800;color:var(--green);white-space:nowrap">${fm(d.disposition)}</div>
+          ${psfFm(d.disposition,d.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(d.disposition,d.sqft)+'</div>':''}
         </div>
         <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">All-In</div>
           <div style="font-size:16px;font-weight:800;color:var(--t1);white-space:nowrap">${fm(d.allin)}</div>
+          ${psfFm(d.allin,d.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(d.allin,d.sqft)+'</div>':''}
         </div>
         <div style="text-align:center;padding:10px 6px;background:${d.profit>0?'var(--greendim)':'var(--reddim)'};border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Profit</div>
@@ -3086,7 +3113,7 @@ function renderSavedDeals(){
       </div>
       ${d.mls?`<div style="font-size:10px;color:var(--t3);margin-top:8px">MLS # ${esc(d.mls)}</div>`:''}
       <div style="margin-top:8px" onclick="event.stopPropagation()">
-        <textarea placeholder="Notes…" onblur="saveDealNotes('${d._atId}',this)" style="width:100%;font-size:11px;min-height:34px;resize:vertical;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--t1);font-family:'DM Sans',sans-serif">${esc(d.notes||'')}</textarea>
+        <textarea placeholder="Notes…" data-note="${d._atId}" onblur="saveDealNotes('${d._atId}',this)" style="width:100%;font-size:11px;min-height:34px;resize:vertical;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--t1);font-family:'DM Sans',sans-serif">${esc(d.notes||'')}</textarea>
       </div>
     </div>`;
   }).join('');
@@ -3121,6 +3148,8 @@ async function saveDealNotes(atId,ta){
     const json=await r.json();
     if(json.error)throw new Error('save failed');
     d.notes=v;
+    // Sync every other notes box for this deal (card, kanban, modal, calc) without a re-render
+    document.querySelectorAll('textarea[data-note="'+atId+'"]').forEach(el=>{if(el!==ta)el.value=v;});
     ta.style.borderColor='var(--green)';setTimeout(()=>{ta.style.borderColor='var(--border)';},1200);
   }catch(e){ta.style.borderColor='var(--red)';}
 }
@@ -3232,13 +3261,24 @@ function recalcDeal(idx){
 
 function updateSaveBtn(){
   const btn=document.getElementById('save-deal-btn');
-  if(!btn)return;
+  if(btn){
+    btn.textContent=window._editingAtId?'💾 Update Deal':'💾 Save Deal';
+    btn.style.background='var(--amber)';btn.style.color='#000';btn.style.borderColor='var(--amber)';
+  }
+  syncCalcNotes();
+}
+
+// The calculator's notes box only exists while re-analyzing a saved deal
+function syncCalcNotes(){
+  const wrap=document.getElementById('c-notes-wrap');if(!wrap)return;
+  const ta=document.getElementById('c-notes');
   if(window._editingAtId){
-    btn.textContent='💾 Update Deal';
-    btn.style.background='var(--amber)';btn.style.color='#000';btn.style.borderColor='var(--amber)';
+    const d=savedDealsCache[resolveDealIdx(window._editingAtId)];
+    wrap.style.display='block';
+    if(ta){ta.value=d?(d.notes||''):'';ta.setAttribute('data-note',window._editingAtId);}
   }else{
-    btn.textContent='💾 Save Deal';
-    btn.style.background='var(--amber)';btn.style.color='#000';btn.style.borderColor='var(--amber)';
+    wrap.style.display='none';
+    if(ta){ta.value='';ta.removeAttribute('data-note');}
   }
 }
 
@@ -3291,8 +3331,9 @@ function viewDeal(idx){
         ${repPsf?'<div style="font-size:10px;color:var(--t3)">'+repPsf+'</div>':''}
       </div>
       <div style="background:var(--bluedim);border:1px solid var(--blue);border-radius:8px;padding:10px;text-align:center">
-        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">MAO</div>
+        <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">Goal Price</div>
         <div style="font-size:18px;font-weight:800;color:var(--blue)">${fm(d.mao)}</div>
+        ${psfFm(d.mao,d.sqft)?'<div style="font-size:10px;color:var(--t3)">'+psfFm(d.mao,d.sqft)+'</div>':''}
       </div>
     </div>
 
@@ -3325,10 +3366,10 @@ function viewDeal(idx){
       </div>
     </div>`:''}
 
-    ${d.notes?`<div style="background:var(--card);border:1px solid var(--amber)44;border-radius:8px;padding:12px;margin-bottom:12px">
+    <div style="background:var(--card);border:1px solid var(--amber)44;border-radius:8px;padding:12px;margin-bottom:12px">
       <div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">📝 Notes</div>
-      <div style="font-size:13px;color:var(--t1);white-space:pre-wrap">${esc(d.notes)}</div>
-    </div>`:''}
+      <textarea placeholder="Notes…" data-note="${d._atId}" onblur="saveDealNotes('${d._atId}',this)" style="width:100%;font-size:13px;min-height:56px;resize:vertical;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--t1);font-family:'DM Sans',sans-serif">${esc(d.notes||'')}</textarea>
+    </div>
 
     <div style="display:flex;gap:8px;margin-bottom:10px">
       ${d.compsLink?`<a href="${esc(d.compsLink)}" target="_blank" style="flex:1;text-align:center;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:8px;font-size:12px;font-weight:700;text-decoration:none">🔗 View Comps</a>`:''}
@@ -3419,12 +3460,12 @@ function pdfDeal(idx){
 <div class="section">
   <div class="section-title">Deal Numbers</div>
   <div class="numbers-grid">
-    <div class="num-cell"><div class="num-label">ARV</div><div class="num-value">$${d.arv.toLocaleString()}</div></div>
-    <div class="num-cell"><div class="num-label">Repairs</div><div class="num-value amber">$${d.repairs.toLocaleString()}</div></div>
-    <div class="num-cell blue-hl"><div class="num-label">Your Offer (MAO)</div><div class="num-value blue">$${d.mao.toLocaleString()}</div></div>
+    <div class="num-cell"><div class="num-label">ARV</div><div class="num-value">$${d.arv.toLocaleString()}</div>${arvPsf?'<div class="num-sub">'+arvPsf+'</div>':''}</div>
+    <div class="num-cell"><div class="num-label">Repairs</div><div class="num-value amber">$${d.repairs.toLocaleString()}</div>${repPsf?'<div class="num-sub">'+repPsf+'</div>':''}</div>
+    <div class="num-cell blue-hl"><div class="num-label">Your Offer (Goal Price)</div><div class="num-value blue">$${d.mao.toLocaleString()}</div>${psfFm(d.mao,d.sqft)?'<div class="num-sub">'+psfFm(d.mao,d.sqft)+'</div>':''}</div>
     <div class="num-cell"><div class="num-label">Your Fee</div><div class="num-value green">$${d.fee.toLocaleString()}</div></div>
-    <div class="num-cell"><div class="num-label">Dispo Price</div><div class="num-value">$${d.disposition.toLocaleString()}</div></div>
-    <div class="num-cell"><div class="num-label">All-In Cost</div><div class="num-value">$${d.allin.toLocaleString()}</div></div>
+    <div class="num-cell"><div class="num-label">Dispo Price</div><div class="num-value">$${d.disposition.toLocaleString()}</div>${psfFm(d.disposition,d.sqft)?'<div class="num-sub">'+psfFm(d.disposition,d.sqft)+'</div>':''}</div>
+    <div class="num-cell"><div class="num-label">All-In Cost</div><div class="num-value">$${d.allin.toLocaleString()}</div>${psfFm(d.allin,d.sqft)?'<div class="num-sub">'+psfFm(d.allin,d.sqft)+'</div>':''}</div>
   </div>
 </div>
 <div class="section">
@@ -3435,12 +3476,12 @@ function pdfDeal(idx){
   </div>
 </div>
 <div class="section">
-  <div class="section-title">MAO Formula Breakdown</div>
+  <div class="section-title">Goal Price Formula Breakdown</div>
   <div class="formula-row"><span class="fl">ARV</span><span class="fv">$${d.arv.toLocaleString()}</span></div>
   <div class="formula-row"><span class="fl">× Offer %</span><span class="fv">${d.pct}%</span></div>
   <div class="formula-row"><span class="fl">− Repairs</span><span class="fv">$${d.repairs.toLocaleString()}</span></div>
   <div class="formula-row"><span class="fl">− Your Fee</span><span class="fv">$${d.fee.toLocaleString()}</span></div>
-  <div class="formula-row total"><span class="fl">= MAO (Your Offer)</span><span class="fv">$${d.mao.toLocaleString()}</span></div>
+  <div class="formula-row total"><span class="fl">= Goal Price (Your Offer)</span><span class="fv">$${d.mao.toLocaleString()}</span></div>
 </div>
 <div class="footer">
   <span>COS Hub · Cash Offer Specialist</span>
@@ -3695,9 +3736,13 @@ function renderKanban(){
                 <span style="font-size:10px;font-weight:700;color:${profitColor}">${fm(d.profit)}</span>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-                <span style="font-size:9px;color:var(--t3)">${d.dealType||'—'}${d.contactedOn?' · <span style=\"color:var(--green)\">✓☎</span>':''}${d.notes?' 📝':''}</span>
+                <span style="font-size:9px;color:var(--t3)">${d.dealType||'—'}${d.contactedOn?' · <span style=\"color:var(--green)\">✓☎</span>':''}</span>
                 <span style="font-size:10px;font-weight:700;color:${sc}">${d.score||0}</span>
               </div>
+            </div>
+            <div onclick="event.stopPropagation()" style="margin-top:6px">
+              <button onclick="kbToggleNotes(this)" style="background:transparent;border:none;color:${d.notes?'var(--amber)':'var(--t3)'};font-size:9px;font-weight:700;padding:0;cursor:pointer">📝 Notes${d.notes?' ·':''}</button>
+              <textarea placeholder="Notes…" data-note="${d._atId}" onblur="saveDealNotes('${d._atId}',this)" style="display:${d.notes?'block':'none'};width:100%;margin-top:4px;font-size:10px;min-height:30px;resize:vertical;background:var(--s1);border:1px solid var(--border);border-radius:5px;padding:4px 6px;color:var(--t1);font-family:'DM Sans',sans-serif">${esc(d.notes||'')}</textarea>
             </div>
             <select onchange="updatePipelineAndRefresh(${realIdx},this.value)" style="width:100%;margin-top:6px;font-size:9px;padding:3px 4px;border-radius:4px;border:1px solid var(--border);background:var(--s1);color:var(--t2);font-weight:700;cursor:pointer">
               ${PIPELINE_STAGES.map(s=>`<option value="${s}"${d.pipeline===s?' selected':''}>${s}</option>`).join('')}
@@ -3707,6 +3752,13 @@ function renderKanban(){
       </div>
     </div>`;
   }).join('');
+}
+
+function kbToggleNotes(btn){
+  const ta=btn.parentElement.querySelector('textarea');
+  const open=ta.style.display==='none';
+  ta.style.display=open?'block':'none';
+  if(open)ta.focus();
 }
 
 async function clearSavedDeals(){
@@ -3724,7 +3776,7 @@ async function clearSavedDeals(){
 function exportSavedCSV(){
   const deals=savedDealsCache;if(!deals.length)return;
   const csvQ=(v)=>{const s=String(v==null?'':v);return s.includes(',')||s.includes('"')||s.includes('\n')?'"'+s.replace(/"/g,'""')+'"':s;};
-  const headers=['Address','Seller','ARV','Repairs','MAO','Fee','Dispo','Purchase Costs','Selling Costs','All-In','Profit','ROI','Score','Distress','Neighborhood','SqFt','Pct','Close Days','Saved'];
+  const headers=['Address','Seller','ARV','Repairs','Goal Price','Fee','Dispo','Purchase Costs','Selling Costs','All-In','Profit','ROI','Score','Distress','Neighborhood','SqFt','Pct','Close Days','Saved'];
   const lines=[headers.join(',')];
   deals.forEach(d=>{
     lines.push([d.address,d.seller,d.arv,d.repairs,d.mao,d.fee,d.disposition,d.purchaseCosts,d.sellingCosts,d.allin,d.profit,d.roi?d.roi.toFixed(1)+'%':'',d.score,d.distress,d.hood,d.sqft,d.pct+'%',d.closeDays+'d',new Date(d.savedAt).toLocaleDateString()].map(csvQ).join(','));
@@ -3776,7 +3828,7 @@ function exportSavedPDF(){
   <div style="text-align:right;font-size:11px;color:#888"><div style="font-weight:700;color:#111">DEAL PIPELINE</div><div>${today}</div><div style="margin-top:4px">${deals.length} deal${deals.length===1?'':'s'}</div></div>
 </div>
 <table>
-  <thead><tr><th>Address</th><th>Seller</th><th style="text-align:right">ARV</th><th style="text-align:right">Repairs</th><th style="text-align:right">MAO</th><th style="text-align:right">Fee</th><th style="text-align:right">All-In</th><th style="text-align:right">Profit</th><th style="text-align:right">ROI</th><th style="text-align:center">Score</th><th>Distress</th></tr></thead>
+  <thead><tr><th>Address</th><th>Seller</th><th style="text-align:right">ARV</th><th style="text-align:right">Repairs</th><th style="text-align:right">Goal</th><th style="text-align:right">Fee</th><th style="text-align:right">All-In</th><th style="text-align:right">Profit</th><th style="text-align:right">ROI</th><th style="text-align:center">Score</th><th>Distress</th></tr></thead>
   <tbody>${rows}</tbody>
 </table>
 <div style="margin-top:20px;padding-top:12px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:10px;color:#888">
@@ -4175,7 +4227,10 @@ function renderIncomingLeads(){
         <span class="tag-pill" style="font-size:10px;background:var(--bluedim);color:var(--blue)">${sourceLabel}</span>
         ${l.offerLow||l.offerHigh?'<span class="tag-pill" style="font-size:10px;background:var(--greendim);color:var(--green)">Range: $'+(l.offerLow||0).toLocaleString()+'–$'+(l.offerHigh||0).toLocaleString()+'</span>':''}
       </div>
-      ${l.condition?'<div style="font-size:11px;color:var(--t2);margin-bottom:10px;white-space:pre-wrap;max-height:60px;overflow:hidden">'+l.condition+'</div>':''}
+      ${l.condition?'<div style="font-size:11px;color:var(--t2);margin-bottom:10px;white-space:pre-wrap;max-height:60px;overflow:hidden">'+esc(l.condition)+'</div>':''}
+      <div style="margin-bottom:10px" onclick="event.stopPropagation()">
+        <textarea placeholder="Notes…" data-lead-note="${l._atId}" onblur="saveLeadNotes('${l._atId}',this)" style="width:100%;font-size:11px;min-height:30px;resize:vertical;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--t1);font-family:'DM Sans',sans-serif">${esc(l.notes||'')}</textarea>
+      </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
         <button onclick="event.stopPropagation();runNumbersFromLead('${l._atId}')" style="padding:6px 14px;font-size:11px;font-weight:700;border-radius:6px;border:none;background:var(--blue);color:#fff;cursor:pointer">🧮 Run Numbers</button>
         <select onclick="event.stopPropagation()" onchange="event.stopPropagation();updateLeadStatus('${l._atId}',this.value)" style="padding:5px 8px;font-size:11px;font-weight:600;border-radius:6px;width:auto">
@@ -4200,6 +4255,20 @@ async function updateLeadStatus(atId, newStatus){
     if(lead)lead.status=newStatus;
     renderIncomingLeads();
   }catch(e){console.error('Lead status update failed:',e);}
+}
+
+async function saveLeadNotes(atId,ta){
+  const lead=leadsCache.find(l=>l._atId===atId);if(!lead)return;
+  const v=ta.value;
+  if(v===(lead.notes||''))return;
+  try{
+    const r=await fetch(LEADS_URL,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({records:[{id:atId,fields:{'Notes':v}}]})});
+    const json=await r.json();
+    if(json.error)throw new Error('save failed');
+    lead.notes=v;
+    document.querySelectorAll('textarea[data-lead-note="'+atId+'"]').forEach(el=>{if(el!==ta)el.value=v;});
+    ta.style.borderColor='var(--green)';setTimeout(()=>{ta.style.borderColor='var(--border)';},1200);
+  }catch(e){ta.style.borderColor='var(--red)';}
 }
 
 function runNumbersFromLead(atId){
@@ -4315,10 +4384,13 @@ function viewLead(atId){
     </div>
 
     <!-- Condition -->
-    ${l.condition?'<div style="background:var(--card);border:1px solid var(--amber)44;border-radius:8px;padding:14px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Condition Notes</div><div style="font-size:13px;color:var(--t1);white-space:pre-wrap">'+l.condition+'</div></div>':''}
+    ${l.condition?'<div style="background:var(--card);border:1px solid var(--amber)44;border-radius:8px;padding:14px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Condition Notes</div><div style="font-size:13px;color:var(--t1);white-space:pre-wrap">'+esc(l.condition)+'</div></div>':''}
 
     <!-- Notes -->
-    ${l.notes?'<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px"><div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Notes</div><div style="font-size:13px;color:var(--t1);white-space:pre-wrap">'+l.notes+'</div></div>':''}
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📝 Notes</div>
+      <textarea placeholder="Notes…" data-lead-note="${l._atId}" onblur="saveLeadNotes('${l._atId}',this)" style="width:100%;font-size:13px;min-height:52px;resize:vertical;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 8px;color:var(--t1);font-family:'DM Sans',sans-serif">${esc(l.notes||'')}</textarea>
+    </div>
 
     <!-- Photos -->
     ${photoHtml}
@@ -4431,7 +4503,8 @@ try{ updateBAC(); }catch(e){}
 
 // ── OFFER DESK — batch pricing for the daily 25 ──────────────────────────
 function deskFee(arv){return arv>=900000?30000:arv>=650000?25000:arv>=400000?15000:12000;}
-// The machine standard — one MAO formula everywhere: 82% ARV − repairs − banded fee
+// The machine standard — one Goal Price formula everywhere: 82% ARV − repairs − banded fee
+// (Displayed as "Goal Price"; stored in the Airtable field still named "MAO".)
 function stdMAO(arv,repairs){return (arv||0)*0.82-(repairs||0)-deskFee(arv||0);}
 const DESK_TIERS=[15,30,45,60];
 
@@ -4468,6 +4541,7 @@ function deskPrice(){
       const pl=r.list>0&&r.offer>0?(r.offer/r.list*100).toFixed(1)+'%':'—';
       const bad=r.offer<=0;
       const sent=!!_deskSent[deskKey(r.addr)];
+      const note=_deskNotes[deskKey(r.addr)]||'';
       return`<tr style="${bad||sent?'opacity:.45':''}">
       <td style="color:var(--t1);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis">${r.addr}<div style="font-size:9px;color:var(--t3)">${r.agent} · T${r.tier} · ${Math.round(r.usePct*100)}%</div></td>
       <td>${r.list?fm(r.list):'—'}</td><td>${r.dom||'—'}</td><td>${fm(r.arv)}</td>
@@ -4477,8 +4551,10 @@ function deskPrice(){
       <td style="color:var(--green);font-weight:700">${fm(r.totalRev)}</td>
       <td style="white-space:nowrap"><button onclick="deskCopy(${i},'email',this)" title="Copy the agent cover email" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">📧 Email</button>
       <button onclick="deskCopy(${i},'td',this)" title="Copy the Transaction Desk field summary" style="background:var(--greendim);color:var(--green);border:1px solid var(--green)44;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">📋 TD Fields</button>
-      <button onclick="deskSaveDeal(${i},this)" title="Save to the deal pipeline (starts in New)" style="background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">💾 Save</button></td>
-      <td style="text-align:center"><input type="checkbox" ${sent?'checked':''} onchange="deskSent(${i},this)" title="Mark offer as sent" style="width:15px;height:15px;cursor:pointer;accent-color:var(--amber)"/></td></tr>`;
+      <button onclick="deskSaveDeal(${i},this)" title="Save to the deal pipeline (starts in New)" style="background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">💾 Save</button>
+      <button onclick="deskNoteToggle(${i},this)" title="Notes for this property" style="background:transparent;color:${note?'var(--amber)':'var(--t3)'};border:1px solid ${note?'var(--amber)44':'var(--border)'};border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">📝</button></td>
+      <td style="text-align:center"><input type="checkbox" ${sent?'checked':''} onchange="deskSent(${i},this)" title="Mark offer as sent" style="width:15px;height:15px;cursor:pointer;accent-color:var(--amber)"/></td></tr>
+      <tr data-dk-notes="${i}" style="display:${note?'':'none'}"><td colspan="12" style="padding:2px 8px 10px;border-bottom:1px solid var(--border)"><textarea placeholder="Notes for ${esc(r.addr)}…" onblur="deskNoteSave(${i},this)" style="width:100%;font-size:11px;min-height:30px;resize:vertical;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--t1);font-family:'DM Sans',sans-serif">${esc(note)}</textarea></td></tr>`;
     }).join('');
   }
   deskUpdateStats();
@@ -4496,7 +4572,23 @@ function deskUpdateStats(){
 
 // ── sent tracking (per address, remembered 30 days on this device) ──
 let _deskSent={};
+// ── per-property notes (keyed by address like _deskSent; survive re-parses/refresh) ──
+let _deskNotes={};
 function deskKey(a){return(a||'').toLowerCase().replace(/\s+/g,' ').trim();}
+function deskNoteToggle(i,btn){
+  const tr=document.querySelector('tr[data-dk-notes="'+i+'"]');if(!tr)return;
+  const open=tr.style.display==='none';
+  tr.style.display=open?'':'none';
+  if(open){const ta=tr.querySelector('textarea');if(ta)ta.focus();}
+}
+function deskNoteSave(i,ta){
+  const d=window._desk;if(!d)return;
+  const r=d.rows[i];if(!r)return;
+  const k=deskKey(r.addr),v=ta.value.trim();
+  if(v)_deskNotes[k]=v;else delete _deskNotes[k];
+  deskSaveState();
+  ta.style.borderColor='var(--green)';setTimeout(()=>{ta.style.borderColor='var(--border)';},1200);
+}
 function deskSent(i,el){
   const d=window._desk;if(!d)return;
   const r=d.rows[i];if(!r)return;
@@ -4518,7 +4610,8 @@ function deskSaveState(){
       pct2:document.getElementById('dk-pct2').value,
       bacOn:document.getElementById('dk-bac-on').checked,
       bac:document.getElementById('dk-bac').value,
-      sent:_deskSent
+      sent:_deskSent,
+      notes:_deskNotes
     }));
   }catch(e){}
 }
@@ -4529,6 +4622,7 @@ function deskLoadState(){
     const cutoff=new Date(Date.now()-30*864e5).toISOString().slice(0,10);
     _deskSent={};
     Object.entries(s.sent||{}).forEach(([k,v])=>{if(typeof v==='string'&&v>=cutoff)_deskSent[k]=v;});
+    _deskNotes=(s.notes&&typeof s.notes==='object')?s.notes:{};
     if(s.pct)document.getElementById('dk-pct').value=s.pct;
     if(s.pct2)document.getElementById('dk-pct2').value=s.pct2;
     if(typeof s.bacOn==='boolean')document.getElementById('dk-bac-on').checked=s.bacOn;
@@ -4558,7 +4652,8 @@ async function deskSaveDeal(i,btn){
     'SqFt':r.sqft,'Offer %':Math.round(r.usePct*100),
     'Close Days':21,
     'Deal Type':'MLS / Agent','Pipeline':'New','Status':'New',
-    'Notes':`Offer Desk · Agent: ${r.agent} · List ${r.list?fm(r.list):'—'} · DOM ${r.dom||'—'} · Tier ${r.tier} · BAC ${r.bac?fm(r.bac):'none'} · Total rev ${fm(r.totalRev)}`,
+    // Generated line stays FIRST — Outreach parses "Agent:" and "BAC none" out of it
+    'Notes':`Offer Desk · Agent: ${r.agent} · List ${r.list?fm(r.list):'—'} · DOM ${r.dom||'—'} · Tier ${r.tier} · BAC ${r.bac?fm(r.bac):'none'} · Total rev ${fm(r.totalRev)}`+((_deskNotes[deskKey(r.addr)]||'')?'\n'+_deskNotes[deskKey(r.addr)]:''),
     'Saved At':new Date().toISOString()
   };
   try{
@@ -4748,6 +4843,8 @@ function screenToQueue(i,btn){
   const p=_screen&&_screen.properties[i];if(!p)return;
   const agentFirst=((p.agent&&p.agent.name)||'there').split(' ')[0]||'there';
   const arv=p.arv_estimate>0?Math.round(p.arv_estimate):'';
+  // Carry the screener note into the queue's per-address notes
+  if(p.notes)_deskNotes[deskKey((p.address||'').replace(/,/g,' '))]=p.notes;
   const line=`${(p.address||'').replace(/,/g,' ')}, ${agentFirst}, ${p.list_price||''}, ${p.dom||''}, ${arv}, ${p.sqft||''}, ${p.rehab_tier_guess||2}`;
   const ta=document.getElementById('dk-input');
   ta.value=(ta.value.trim()?ta.value.trim()+'\n':'')+line;
@@ -4789,6 +4886,7 @@ function renderScreen(){
     <div style="font-size:12px;color:var(--green);margin-top:4px;line-height:1.5"><b>Play:</b> ${esc(p.play)}</div>
     <div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.5;font-style:italic">${esc(p.outreach_angle)}</div>
     <div style="font-size:10px;color:var(--t3);margin-top:5px">${esc((p.agent&&p.agent.name)||'')}${p.agent&&p.agent.phone?` · <a href="tel:${esc(p.agent.phone)}" style="color:var(--blue);text-decoration:none">${esc(p.agent.phone)}</a>`:''}${p.agent&&p.agent.email?` · <a href="mailto:${esc(p.agent.email)}" style="color:var(--blue);text-decoration:none">${esc(p.agent.email)}</a>`:''} · <span style="color:var(--amber)">${esc(p.arv_note||'')}</span></div>
+    <textarea placeholder="Notes…" onblur="screenNoteSave(${i},this)" style="width:100%;margin-top:7px;font-size:11px;min-height:28px;resize:vertical;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--t1);font-family:'DM Sans',sans-serif">${esc(p.notes||'')}</textarea>
   </div>`;
   const section=(tier,label)=>{
     const items=props.map((p,i)=>({p,i})).filter(x=>x.p.tier===tier);
@@ -4809,6 +4907,13 @@ function screenLoadState(){
     const s=JSON.parse(localStorage.getItem('cosOfferScreen'));
     if(s&&s.properties){_screen=s;renderScreen();}
   }catch(e){}
+}
+
+function screenNoteSave(i,ta){
+  const p=_screen&&_screen.properties[i];if(!p)return;
+  p.notes=ta.value.trim();
+  try{localStorage.setItem('cosOfferScreen',JSON.stringify(_screen));}catch(e){}
+  ta.style.borderColor='var(--green)';setTimeout(()=>{ta.style.borderColor='var(--border)';},1200);
 }
 
 function deskCopy(i,kind,btn){
