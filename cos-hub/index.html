@@ -118,7 +118,7 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
       <div style="font-size:14px;font-weight:700;color:var(--t1)">Offer Desk</div>
       <div style="font-size:11px;color:var(--t3);margin-top:4px">Batch-price the daily 25</div>
     </div>
-    <div class="card" onclick="nav('calc')" style="cursor:pointer;text-align:center;padding:24px;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+    <div class="card" onclick="calcClear();nav('calc')" style="cursor:pointer;text-align:center;padding:24px;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
       <div style="font-size:28px;margin-bottom:8px">🧮</div>
       <div style="font-size:14px;font-weight:700;color:var(--t1)">Calculator</div>
       <div style="font-size:11px;color:var(--t3);margin-top:4px">Run your numbers</div>
@@ -579,6 +579,7 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
           <div style="font-size:11px;color:var(--t3);margin-top:2px">Live — updates as you change numbers above</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button onclick="calcClear()" title="Clear every field and start a fresh property" style="background:transparent;color:var(--t2);border:1px solid var(--border);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">🆕 New Deal</button>
         <button onclick="copyVerbalOffer()" id="c-copy-btn" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">Copy Script</button>
         <button onclick="exportDealEmail()" style="background:var(--greendim);color:var(--green);border:1px solid var(--green);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">✉️ Export Email</button>
         <button onclick="exportDealPDF()" style="background:var(--purpledim);color:var(--purple);border:1px solid var(--purple);border-radius:6px;padding:7px 18px;font-size:13px;font-weight:700">Export PDF</button>
@@ -1814,6 +1815,18 @@ function calcMAO(){
   if(calcMode==='quick'){mao=arv*pct-repairs-fee;}
   else{const bp=(+(document.getElementById('c-bp')||{value:10}).value||10)/100;const hm=+(document.getElementById('c-hm')||{value:3}).value||3;const ac=(+(document.getElementById('c-ac')||{value:6}).value||6)/100;const fc=arv*0.03+arv*ac+800*hm+1800+(arv/500)*2.55;const fullMao=arv-repairs-fc-arv*bp-fee;const quickCap=arv*pct-repairs-fee;mao=Math.min(fullMao,quickCap);}
   const distressVal=(document.getElementById('c-distress')||{value:''}).value;
+  // Empty state — no ARV yet (fresh/cleared calculator): show dashes, not sample math
+  if(arv<=0){
+    const dash=id=>{const el=document.getElementById(id);if(el)el.textContent='—';};
+    const blank=id=>{const el=document.getElementById(id);if(el)el.textContent='';};
+    ['c-mao','c-mao-lo','c-mao-mi','c-mao-hi','c-disposition','c-purchase-costs','c-selling-costs','c-allin','c-equity','c-roi','c-myfee','c-rep-slider','c-rep-total','c-vs-mao','c-vs-init','c-vs-arv','c-vs-rep','c-vs-fee','c-rev-bac','c-rev-total'].forEach(dash);
+    ['c-arv-psf','c-mao-psf','c-mao-lo-psf','c-mao-mi-psf','c-mao-hi-psf','c-dispo-psf','c-allin-psf'].forEach(blank);
+    const f=document.getElementById('c-formula');if(f)f.innerHTML='<div style="color:var(--t3);padding:8px 0">Enter an ARV above to see the full breakdown.</div>';
+    const x=document.getElementById('c-exits');if(x)x.innerHTML='';
+    const vs=document.getElementById('c-verbal-script');if(vs)vs.textContent='Enter the deal numbers above and your talking script will build itself here.';
+    window._c_mao=0;window._c_arv=0;window._c_repairs=0;window._c_fee=fee;window._c_maoLo=0;window._c_maoHi=0;
+    return;
+  }
   document.getElementById('c-mao').textContent=fm(mao);
   document.getElementById('c-mao-lo').textContent=fm(mao*.95);document.getElementById('c-mao-mi').textContent=fm(mao);document.getElementById('c-mao-hi').textContent=fm(mao*1.03);
   // $/sqft under every price — quick comps sanity check
@@ -2769,7 +2782,7 @@ function syncSliderToOverride(){
 function saveState(){
   const state={
     leads,
-    calculator:{arv:+(document.getElementById('c-arv')||{value:0}).value||0,sqft:+(document.getElementById('c-sqft')||{value:1600}).value||1600,repairs:+(document.getElementById('c-rep-override')||{value:0}).value||0,offerPct:+(document.getElementById('c-pct')||{value:82}).value||82,assignmentFee:+(document.getElementById('c-fee')||{value:0}).value||0,feeManual:!!window._feeManual},
+    calculator:{arv:+(document.getElementById('c-arv')||{value:0}).value||0,sqft:+(document.getElementById('c-sqft')||{value:0}).value||0,repairs:+(document.getElementById('c-rep-override')||{value:0}).value||0,offerPct:+(document.getElementById('c-pct')||{value:82}).value||82,assignmentFee:+(document.getElementById('c-fee')||{value:0}).value||0,feeManual:!!window._feeManual},
     contactMode,
     route,
     activeTab:document.querySelector('[data-nav-tab].active')?.getAttribute('data-nav-tab')||'analyzer'
@@ -2783,8 +2796,8 @@ function loadState(){
     if(state.leads&&Array.isArray(state.leads)){leads=state.leads;}
     if(state.calculator){
       const c=state.calculator;
-      const arvEl=document.getElementById('c-arv');if(arvEl)arvEl.value=c.arv;
-      const sqftEl=document.getElementById('c-sqft');if(sqftEl)sqftEl.value=c.sqft;
+      const arvEl=document.getElementById('c-arv');if(arvEl)arvEl.value=c.arv||'';
+      const sqftEl=document.getElementById('c-sqft');if(sqftEl)sqftEl.value=c.sqft||'';
       const repEl=document.getElementById('c-rep-override');if(repEl)repEl.value=c.repairs||'';
       if(c.offerPct){const pctEl=document.getElementById('c-pct');if(pctEl){pctEl.value=c.offerPct;updateCalcPct(c.offerPct);}}
       if(c.feeManual){window._feeManual=true;const feeEl=document.getElementById('c-fee');if(feeEl&&c.assignmentFee){feeEl.value=c.assignmentFee;const fl=document.getElementById('c-fee-lbl');if(fl)fl.textContent='$'+(+c.assignmentFee).toLocaleString();}}
@@ -3240,6 +3253,8 @@ function recalcDeal(idx){
   set('c-pct',d.pct||70);
   updateCalcPct(d.pct||70);
   set('c-fee',d.fee||13000);
+  // Keep a custom saved fee from being overwritten by the auto-band on recalc
+  window._feeManual=!!(d.fee&&d.arv&&d.fee!==deskFee(d.arv));
   set('c-close-days',d.closeDays||14);
   const feeLbl=document.getElementById('c-fee-lbl');if(feeLbl)feeLbl.textContent='$'+(d.fee||13000).toLocaleString();
 
@@ -3292,6 +3307,23 @@ function syncCalcNotes(){
 function clearEditing(){
   window._editingAtId=null;
   updateSaveBtn();
+}
+
+// 🆕 New Deal — wipe the calculator to an empty slate (also used when
+// entering the Calculator from the home page, never from Recalc/lead flows)
+function calcClear(){
+  window._editingAtId=null;window._activeLeadId=null;window._activeLeadData=null;window._feeManual=false;
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v;};
+  ['c-arv','c-mls','c-sqft','c-r1','c-r2','c-r3','c-r4','c-rep-override','c-price-offered','c-comps-link','c-tax-records','c-seller-name','c-prop-addr'].forEach(id=>set(id,''));
+  set('c-psf',30);set('c-fee',15000);set('c-hm',3);set('c-ac',6);set('c-bp',10);set('c-close-days',14);
+  const bacOn=document.getElementById('c-bac-on');if(bacOn)bacOn.checked=true;
+  set('c-bac-pct',3);
+  const t=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  t('c-arv-lbl','');t('c-sqft-lbl','');t('c-fee-lbl','$15,000');
+  const bd=document.getElementById('bd-address');if(bd)bd.value='';
+  set('c-pct',82);updateCalcPct(82);
+  updateSaveBtn();
+  if(typeof saveState==='function')saveState();
 }
 
 function viewDeal(idx){
