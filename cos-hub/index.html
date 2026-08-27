@@ -618,10 +618,14 @@ table.dk td{padding:8px;border-bottom:1px solid var(--border);color:var(--t2);ve
       <div id="c-verbal-script" style="background:var(--card);border:1px solid var(--border2);border-radius:8px;padding:14px;font-size:12px;line-height:1.9;color:var(--t1);white-space:pre-wrap;font-family:'DM Sans',sans-serif;min-height:120px"></div>
 
       <!-- Data summary bar -->
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px">
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:10px">
         <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center;border:1px solid var(--border)">
           <div style="font-size:8px;color:var(--t3)">OFFER (GOAL)</div>
           <div class="hdr" id="c-vs-mao" style="font-size:13px;color:var(--blue)">—</div>
+        </div>
+        <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center;border:1px solid var(--border)">
+          <div style="font-size:8px;color:var(--t3)">INITIAL OFFER</div>
+          <div class="hdr" id="c-vs-init" style="font-size:13px;color:var(--t2)">—</div>
         </div>
         <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center;border:1px solid var(--border)">
           <div style="font-size:8px;color:var(--t3)">ARV</div>
@@ -1496,7 +1500,7 @@ function renderLeads(){
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;margin-bottom:8px">
     <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">ARV${l.arvEstimated?' <span style=\"color:var(--amber)\">est.</span>':''}</div><div class="hdr" style="font-size:13px;color:${l.arvEstimated?'var(--amber)':'var(--t1)'}">${l.arv?'$'+Math.round(l.arv/1000)+'K':'—'}</div>${psfFm(l.arv,+l.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(l.arv,+l.sqft)+'</div>':''}</div>
     <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">Asking</div><div class="hdr" style="font-size:13px;color:var(--amber)">${l.asking?'$'+Math.round(l.asking/1000)+'K':'—'}</div>${psfFm(l.asking,+l.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(l.asking,+l.sqft)+'</div>':''}</div>
-    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">GOAL</div><div class="hdr" style="font-size:13px;color:var(--blue)">${mao>0?'$'+Math.round(mao/1000)+'K':'—'}</div>${psfFm(mao,+l.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(mao,+l.sqft)+'</div>':''}</div>
+    <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">GOAL</div><div class="hdr" style="font-size:13px;color:var(--blue)">${mao>0?'$'+Math.round(mao/1000)+'K':'—'}</div>${psfFm(mao,+l.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(mao,+l.sqft)+'</div>':''}${mao>0?'<div style="font-size:9px;color:var(--t2)">Init $'+Math.round(mao*.95/1000)+'K</div>':''}</div>
     <div style="background:var(--card);border-radius:6px;padding:6px;text-align:center"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">Equity</div><div class="hdr" style="font-size:13px;color:var(--green)">${eq}%</div></div>
   </div>
   <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">
@@ -2075,6 +2079,7 @@ I can have the signed RPA in your inbox within the hour. Do we have a deal to pr
   // Update data summary bar
   const setEl=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
   setEl('c-vs-mao', mao>0?fm(mao):'—');
+  setEl('c-vs-init', mao>0?fm(mao*.95):'—');
   setEl('c-vs-arv', arv>0?fm(arv):'—');
   setEl('c-vs-rep', repairs>0?fm(repairs):'—');
   setEl('c-vs-fee', fm(fee));
@@ -2552,6 +2557,7 @@ async function exportDealEmail(){
 'Rehab Cost:        '+fm(d.repairs)+'\n'+
 'Goal Price:        '+fm(d.mao)+'\n'+
 (d.sqft&&d.mao?'Goal/SqFt:         $'+Math.round(d.mao/d.sqft)+'/sqft\n':'')+
+'Initial Offer:     '+fm(d.mao*.95)+'\n'+
 'Wholesale Fee:     '+fm(d.fee)+'\n'+
 'Rehabbers Price:   '+fm(d.disposition)+'\n'+
 'Purchase Costs:    '+fm(d.purchaseCosts)+'\n'+
@@ -3064,6 +3070,7 @@ function renderSavedDeals(){
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Goal</div>
           <div style="font-size:16px;font-weight:800;color:var(--blue);white-space:nowrap">${fm(d.mao)}</div>
           ${psfFm(d.mao,d.sqft)?'<div style="font-size:9px;color:var(--t3)">'+psfFm(d.mao,d.sqft)+'</div>':''}
+          ${d.mao>0?'<div style="font-size:9px;color:var(--t2);white-space:nowrap">Initial '+fm(d.mao*.95)+'</div>':''}
         </div>
         <div style="text-align:center;padding:10px 6px;background:var(--s2);border-radius:6px;overflow:hidden">
           <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em">Fee</div>
@@ -3334,6 +3341,7 @@ function viewDeal(idx){
         <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em">Goal Price</div>
         <div style="font-size:18px;font-weight:800;color:var(--blue)">${fm(d.mao)}</div>
         ${psfFm(d.mao,d.sqft)?'<div style="font-size:10px;color:var(--t3)">'+psfFm(d.mao,d.sqft)+'</div>':''}
+        ${d.mao>0?'<div style="font-size:10px;color:var(--t2);margin-top:2px">Initial Offer '+fm(d.mao*.95)+'</div>':''}
       </div>
     </div>
 
@@ -3462,7 +3470,7 @@ function pdfDeal(idx){
   <div class="numbers-grid">
     <div class="num-cell"><div class="num-label">ARV</div><div class="num-value">$${d.arv.toLocaleString()}</div>${arvPsf?'<div class="num-sub">'+arvPsf+'</div>':''}</div>
     <div class="num-cell"><div class="num-label">Repairs</div><div class="num-value amber">$${d.repairs.toLocaleString()}</div>${repPsf?'<div class="num-sub">'+repPsf+'</div>':''}</div>
-    <div class="num-cell blue-hl"><div class="num-label">Your Offer (Goal Price)</div><div class="num-value blue">$${d.mao.toLocaleString()}</div>${psfFm(d.mao,d.sqft)?'<div class="num-sub">'+psfFm(d.mao,d.sqft)+'</div>':''}</div>
+    <div class="num-cell blue-hl"><div class="num-label">Your Offer (Goal Price)</div><div class="num-value blue">$${d.mao.toLocaleString()}</div>${psfFm(d.mao,d.sqft)?'<div class="num-sub">'+psfFm(d.mao,d.sqft)+'</div>':''}<div class="num-sub">Initial Offer ${fm(d.mao*.95)}</div></div>
     <div class="num-cell"><div class="num-label">Your Fee</div><div class="num-value green">$${d.fee.toLocaleString()}</div></div>
     <div class="num-cell"><div class="num-label">Dispo Price</div><div class="num-value">$${d.disposition.toLocaleString()}</div>${psfFm(d.disposition,d.sqft)?'<div class="num-sub">'+psfFm(d.disposition,d.sqft)+'</div>':''}</div>
     <div class="num-cell"><div class="num-label">All-In Cost</div><div class="num-value">$${d.allin.toLocaleString()}</div>${psfFm(d.allin,d.sqft)?'<div class="num-sub">'+psfFm(d.allin,d.sqft)+'</div>':''}</div>
@@ -3735,6 +3743,7 @@ function renderKanban(){
                 <span style="font-size:12px;font-weight:800;color:var(--blue)">${fm(d.mao)}</span>
                 <span style="font-size:10px;font-weight:700;color:${profitColor}">${fm(d.profit)}</span>
               </div>
+              ${d.mao>0?'<div style="font-size:9px;color:var(--t3)">Initial '+fm(d.mao*.95)+'</div>':''}
               <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
                 <span style="font-size:9px;color:var(--t3)">${d.dealType||'—'}${d.contactedOn?' · <span style=\"color:var(--green)\">✓☎</span>':''}</span>
                 <span style="font-size:10px;font-weight:700;color:${sc}">${d.score||0}</span>
@@ -4546,7 +4555,7 @@ function deskPrice(){
       <td style="color:var(--t1);font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis">${r.addr}<div style="font-size:9px;color:var(--t3)">${r.agent} · T${r.tier} · ${Math.round(r.usePct*100)}%</div></td>
       <td>${r.list?fm(r.list):'—'}</td><td>${r.dom||'—'}</td><td>${fm(r.arv)}</td>
       <td style="color:var(--amber)">${fm(r.rehab)}</td><td>${fm(r.fee)}</td>
-      <td class="hdr" style="color:var(--blue);font-size:14px">${bad?'ESCALATE':fm(r.offer)}</td>
+      <td class="hdr" style="color:var(--blue);font-size:14px">${bad?'ESCALATE':fm(r.offer)+'<div style="font-size:9px;color:var(--t3);font-weight:400">Init '+fm(Math.round(r.offer*.95/1000)*1000)+'</div>'}</td>
       <td>${pl}</td><td style="color:var(--amber)">${r.bac?fm(r.bac):'—'}</td>
       <td style="color:var(--green);font-weight:700">${fm(r.totalRev)}</td>
       <td style="white-space:nowrap"><button onclick="deskCopy(${i},'email',this)" title="Copy the agent cover email" style="background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700">📧 Email</button>
