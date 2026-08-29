@@ -146,8 +146,8 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
   </div>
 
   <div style="margin-top:20px">
-    <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;text-align:center">Seller-Facing Pages</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+    <div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;text-align:center">Public Pages</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
       <a href="/sell" style="text-decoration:none">
         <div class="card" style="cursor:pointer;text-align:center;padding:18px;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
           <div style="font-size:22px;margin-bottom:6px">🏠</div>
@@ -167,6 +167,14 @@ button{font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
           <div style="font-size:22px;margin-bottom:6px">💰</div>
           <div style="font-size:13px;font-weight:700;color:var(--t1)">Offer Page</div>
           <div style="font-size:10px;color:var(--t3);margin-top:3px">Quick cash offer</div>
+        </div>
+      </a>
+      <a href="/agent" target="_blank" rel="noopener" style="text-decoration:none">
+        <div class="card" style="cursor:pointer;text-align:center;padding:18px;transition:transform .15s;border:1px solid var(--blue)33" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+          <div style="font-size:22px;margin-bottom:6px">🤝</div>
+          <div style="font-size:13px;font-weight:700;color:var(--t1)">Agent Referral</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:3px">Coxen &amp; King + any agent</div>
+          <button onclick="event.preventDefault();event.stopPropagation();copyAgentLink(this)" style="margin-top:8px;background:var(--bluedim);color:var(--blue);border:1px solid var(--blue)44;border-radius:12px;padding:3px 12px;font-size:10px;font-weight:700;cursor:pointer">🔗 Copy link</button>
         </div>
       </a>
     </div>
@@ -4078,6 +4086,14 @@ function applyRehabTotal(){
 }
 
 // ── HOME PAGE ──────────────────────────────────────────────────────────
+// Copy the public agent-referral link (uses the live domain, so it follows a future custom domain)
+function copyAgentLink(btn){
+  const url=location.origin+'/agent';
+  navigator.clipboard.writeText(url).then(()=>{
+    const o=btn.textContent;btn.textContent='✓ Copied';setTimeout(()=>{btn.textContent=o;},1500);
+  }).catch(()=>{prompt('Copy the agent form link:',url);});
+}
+
 function renderHome(){
   const now=new Date();
   const hour=now.getHours();
